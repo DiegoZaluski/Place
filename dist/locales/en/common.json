@@ -1,0 +1,20 @@
+{
+  "welcome": "Welcome",
+  "loading": "Loading...",
+  "error": "An error occurred",
+  "success": "Success",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "search": "Search...",
+  "noResults": "No results found",
+  "back": "Back",
+  "submit": "Submit",
+  "confirm": "Confirm",
+  "close": "Close",
+  "next": "Next",
+  "previous": "Previous",
+  "required": "Required",
+  "optional": "Optional"
+}
