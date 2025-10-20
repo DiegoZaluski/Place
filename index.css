@@ -21,3 +21,18 @@
 .shadow-b-md { 
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.18); 
 }
+.avif {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/images/6674f0cdb5b7b401612cf065_noise-50.avif');
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+}
+

@@ -10,78 +10,53 @@ export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
   
   return {
-    // Base configuration
     base: './',
     publicDir: 'public',
-    
-    // Plugins
     plugins: [react()],
     
-    // Development server configuration
     server: {
-      port: 3000,         // Initial port
-      open: '/index.html',  // Ensures index.html opens by default
-      host: true,         // Allows local network access
-      strictPort: false,  // Tries alternative ports if 3000 is busy
-      cors: true,        // Enable CORS
-      proxy: {
-        // Proxy para o n8n
-        '/api': {
-          target: 'http://localhost:5678',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
-          secure: false
-        },
-        // Proxy para webhook de teste
-        '/webhook-test': {
-          target: 'http://localhost:5678',
-          changeOrigin: true,
-          secure: false
-        },
-        // Proxy para outros webhooks
-        '/webhook': {
-          target: 'http://localhost:5678',
-          changeOrigin: true,
-          secure: false
-        }
+      port: 3000,
+      host: true,
+      strictPort: false,
+      cors: true,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
       }
     },
     
-    // Preview configuration
     preview: {
       port: 3000,
       cors: true
     },
-
-    // Module resolution and aliases
+    
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
         '@assets': resolve(__dirname, 'src/assets'),
         '@components': resolve(__dirname, 'src/components'),
-        '@styles': resolve(__dirname, 'src'), // Moved to src since we don't have a styles directory
+        '@styles': resolve(__dirname, 'src'),
       },
-      extensions: ['.js', '.jsx', '.json'], // Added common extensions
+      extensions: ['.js', '.jsx', '.json'],
     },
     
-    // CSS configuration
     css: {
       modules: {
         localsConvention: 'camelCaseOnly',
       },
       preprocessorOptions: {
         scss: {
-          additionalData: `@import "@/styles/variables.scss";` // If you use SCSS
+          additionalData: `@import "@/styles/variables.scss";`
         }
       }
     },
     
-    // Build configuration // adding i18n 
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
-      sourcemap: isProduction ? false : 'inline', // Improves performance in production
-      minify: isProduction ? 'terser' : false,   // Minifies only in production
+      sourcemap: isProduction ? false : 'inline',
+      minify: isProduction ? 'terser' : false,
       assetsInlineLimit: 0,
       rollupOptions: {
         input: {
@@ -91,17 +66,23 @@ export default defineConfig(({ mode }) => {
           entryFileNames: 'assets/[name]-[hash].js',
           chunkFileNames: 'assets/[name]-[hash].js',
           assetFileNames: (assetInfo) => {
-            const info = assetInfo.name.split('.');
-            const ext = info[info.length - 1];
-            if (['json'].includes(ext)) {
-              return `locales/[name].[ext]`;
+            const name = String(assetInfo.name || '');
+            
+            if (!name) {
+              return 'assets/[name]-[hash][extname]';
             }
-            return `assets/[name]-[hash][extname]`;
+            
+            const parts = name.split('.');
+            const extension = parts.length > 1 ? parts[parts.length - 1] : '';
+            
+            if (extension === 'json') {
+              return 'locales/[name].[ext]';
+            }
+            
+            return 'assets/[name]-[hash][extname]';
           }
         }
       },
-
-      // Production optimizations
       ...(isProduction && {
         terserOptions: {
           compress: {
@@ -109,10 +90,8 @@ export default defineConfig(({ mode }) => {
             drop_debugger: true,
           },
         },
-        chunkSizeWarningLimit: 1000, // Increases chunk size warning limit
+        chunkSizeWarningLimit: 1000,
       }),
     },
-    
-    // Preview configuration is already defined above with proxy settings
   };
 });

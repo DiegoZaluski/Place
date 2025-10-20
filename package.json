@@ -1,14 +1,18 @@
 {
-  "name": "portfolio",
+  "name": "Place",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint src --ext .js,.jsx",
     "lint:fix": "eslint src --ext .js,.jsx --fix",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron .",
+    "start": "electron ."
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
@@ -16,6 +20,9 @@
     "@types/react-dom": "^18.0.11",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
+    "electron": "^38.3.0",
+    "electron-builder": "^25.3.3",
     "eslint": "^9.38.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -23,7 +30,8 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.3",
     "terser": "^5.43.1",
-    "vite": "^7.0.6"
+    "vite": "^7.0.6",
+    "wait-on": "^8.0.1"
   },
   "dependencies": {
     "dompurify": "^3.2.7",
@@ -32,6 +40,7 @@
     "i18next-http-backend": "^3.0.2",
     "i18next-localstorage-backend": "^4.2.0",
     "lucide-react": "^0.539.0",
+    "prismjs": "^1.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^15.6.1",
@@ -41,5 +50,20 @@
     "rehype-sanitize": "^6.0.0",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1"
+  },
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DiegoZaluski/Place.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DiegoZaluski/Place/issues"
+  },
+  "homepage": "https://github.com/DiegoZaluski/Place#readme",
+  "overrides": {
+    "prismjs": "^1.30.0"
   }
 }

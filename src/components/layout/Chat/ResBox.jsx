@@ -227,7 +227,7 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
   if (processedMessages.length === 0 && !isGenerating && showWelcome) {
     return (
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
-        <h1 className="font-playfair text-[#F5F5DC] font-bold text-4xl">Conte-me sobre o seu projetos!</h1> 
+        <h1 className="font-playfair text-[#F5F5DC] font-bold text-4xl">Conte-me sobre o seu projeto!</h1> 
       </div>
     );
   }
