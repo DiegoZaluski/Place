@@ -36,3 +36,103 @@
   mix-blend-mode: overlay;
 }
 
+/* Tema Claro (Light Mode) - Estilos simples e diretos */
+
+ [data-theme="light"] {
+  /* --- 1. Definição das Variáveis de Cores (Tokens) --- */
+
+  /* Cores base */
+  --cor-fundo-principal: #ffffff;    /* Fundo principal (body) */
+  --cor-texto-padrao: #000000;       /* Cor de texto padrão (preto) */
+
+  /* Superfícies (Backgrounds de elementos) */
+  --cor-fundo-superficie: #f8fafc;   /* Fundo secundário (ex: .bg-black no dark mode) */
+  --cor-fundo-card-interno: #f3f4f6; /* Cards internos (ex: .bg-[#605C4E]) */
+
+  /* Cores de borda */
+  --cor-borda-leve-1: #f3f4f6;       /* Borda mais clara (ex: .border-white/10) */
+  --cor-borda-leve-2: #e5e7eb;       /* Borda um pouco mais escura (ex: .border-white/20) */
+  --cor-borda-statusbox: rgba(255, 255, 255, 0.3); /* Borda branca com opacidade */
+
+  /* Transparências (geralmente baseadas no texto-padrão) */
+  --cor-transparente-10: rgba(55, 65, 81, 0.1); /* Cor de fundo com 10% opacidade */
+  --cor-transparente-20: rgba(55, 65, 81, 0.2); /* Cor de fundo com 20% opacidade */
+
+  /* Cores Específicas */
+  --cor-statusbox-fundo: #000000;    /* Fundo do StatusBox (preto sólido) */
+  --cor-statusbox-texto: #ffffff;    /* Texto que deve permanecer branco */
+
+  /* Sombra (Box-shadow) */
+  --sombra-2xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* A regra do seletor base do tema */
+  background-color: var(--cor-fundo-principal);
+  color: var(--cor-texto-padrao);
+}
+
+/* O body também usa o fundo principal e texto padrão */
+[data-theme="light"] body {
+  background-color: var(--cor-fundo-principal);
+  color: var(--cor-texto-padrao);
+}
+
+/* --- 2. Aplicação das Variáveis nas Classes (Tailwind Overrides) --- */
+
+/* Fundo Principal e Superfície */
+[data-theme="light"] .bg-black {
+  background-color: var(--cor-fundo-superficie) !important;
+}
+
+/* Cards Internos */
+[data-theme="light"] .bg-\[#605C4E\]\/90,
+[data-theme="light"] .bg-\[#605C4E\]\/95 {
+  background-color: var(--cor-fundo-card-interno) !important;
+}
+
+/* Fundos Transparentes */
+[data-theme="light"] .bg-white\/10 {
+  background-color: var(--cor-transparente-10) !important;
+}
+
+[data-theme="light"] .bg-white\/20 {
+  background-color: var(--cor-transparente-20) !important;
+}
+
+/* StatusBox (Fundo Principal) */
+[data-theme="light"] .bg-gradient-to-r\.from-black\/90\.to-black\/70 {
+  background: var(--cor-statusbox-fundo) !important; /* Aqui, se for um gradiente, pode ser ajustado: linear-gradient(to right, var(--cor-statusbox-fundo), var(--cor-statusbox-fundo-final)) */
+}
+
+/* Textos (De branco para a cor padrão do light mode) */
+[data-theme="light"] .text-white,
+/* Header (Textos Principais) */
+[data-theme="light"] .justify-self-center .text-white {
+  color: var(--cor-texto-padrao) !important;
+}
+
+/* StatusBox (Textos que permanecem brancos) */
+[data-theme="light"] .group .text-white {
+  color: var(--cor-statusbox-texto) !important;
+}
+
+/* Bordas */
+[data-theme="light"] .border-white\/20 {
+  border-color: var(--cor-borda-leve-2) !important;
+}
+
+[data-theme="light"] .border-white\/10 {
+  border-color: var(--cor-borda-leve-1) !important;
+}
+
+/* StatusBox (Borda) */
+[data-theme="light"] .border-white\/30 {
+  border-color: var(--cor-borda-statusbox) !important;
+}
+
+/* Sombras */
+[data-theme="light"] .shadow-2xl {
+  box-shadow: var(--sombra-2xl) !important;
+}
+[data-theme="light"] .box-father-github {
+  background-color: black !important;
+}/*Ajustar aqui*/
