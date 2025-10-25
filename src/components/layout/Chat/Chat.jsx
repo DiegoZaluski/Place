@@ -1,24 +1,21 @@
 // components/Chat.js
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import MessageInput from './MessageInput';
 import ResBox from './ResBox';
+import { useLlama } from '../../../hooks/useLlama';
 
 // Custom hook to manage tooltip
 const useTooltip = () => {
   const tooltipRef = useRef(null);
   
-  const showTooltip = useCallback(() => {
-    if (tooltipRef.current) {
-      tooltipRef.current.style.opacity = '1';
-    }
-  }, []);
+  const showTooltip = () => {
+    if (tooltipRef.current) tooltipRef.current.style.opacity = '1';
+  };
   
-  const hideTooltip = useCallback(() => {
-    if (tooltipRef.current) {
-      tooltipRef.current.style.opacity = '0';
-    }
-  }, []);
+  const hideTooltip = () => {
+    if (tooltipRef.current) tooltipRef.current.style.opacity = '0';
+  };
   
   return { tooltipRef, showTooltip, hideTooltip };
 };
@@ -27,85 +24,15 @@ const useTooltip = () => {
 const useAutoResize = () => {
   const textareaRef = useRef(null);
   
-  const adjustHeight = useCallback(() => {
+  const adjustHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
       textarea.style.height = `${textarea.scrollHeight}px`;
     }
-  }, []);
+  };
   
   return { textareaRef, adjustHeight };
-};
-
-// Custom hook to manage chat state
-const useChatState = () => {
-  const [showOp, setShowOp] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const chatRef = useRef(null);
-
-  const sendMessage = useCallback((messageText) => {
-    if (!messageText.trim()) return;
-    
-    // Add user message
-    const userMessage = { text: messageText, sender: 'user' };
-    setMessages(prev => [...prev, userMessage]);
-    
-    // Simulate bot response
-    setIsGenerating(true);
-    setTimeout(() => {
-      const botResponse = { 
-        text: `This is a response to: ${messageText}`,
-        sender: 'bot',
-      };
-      setMessages(prev => [...prev, botResponse]);
-      setIsGenerating(false);
-    }, 1000);
-  }, []);
-
-  const handleSend = useCallback((messageText) => {
-    if (!messageText.trim()) return;
-    sendMessage(messageText);
-    setMessage('');
-  }, [sendMessage]);
-
-  const toggleMenu = useCallback(() => {
-    setShowOp(prev => !prev);
-  }, []);
-
-  const closeMenu = useCallback(() => {
-    setShowOp(false);
-  }, []);
-
-  const handleHeightAdjust = useCallback((height) => {
-    console.log('Height adjusted:', height);
-  }, []);
-
-  const clearMessage = useCallback(() => {
-    setMessage('');
-  }, []);
-
-  const updateMessage = useCallback((event) => {
-    const value = typeof event === 'string' ? event : event?.target?.value || '';
-    setMessage(value);
-  }, []);
-
-  return {
-    showOp,
-    message,
-    toggleMenu,
-    closeMenu,
-    updateMessage,
-    clearMessage,
-    handleHeightAdjust,
-    handleSend,
-    isGenerating,
-    stopGeneration: () => setIsGenerating(false),
-    messages,
-    chatRef,
-  };
 };
 
 // Isolated Header component
@@ -118,22 +45,33 @@ const ChatHeader = React.memo(() => (
 // Main Chat component
 const Chat = () => {
   const { t, ready } = useTranslation(['auth']);
-  const { 
-    message,
-    updateMessage,
-    clearMessage,
-    handleSend,
-    isConnected,
-    isGenerating, 
-    stopGeneration,
+  
+  // Aqui usamos o hook real do LLaMA
+  const {
     messages,
-    showOp,
-    toggleMenu,
-    closeMenu
-  } = useChatState();
+    isGenerating,
+    sendPrompt,
+    stopGeneration,
+    clearMessages
+  } = useLlama();
+
+  const [message, setMessage] = React.useState('');
   const { tooltipRef, showTooltip, hideTooltip } = useTooltip();
   const { textareaRef, adjustHeight } = useAutoResize();
-  
+
+  const handleSend = (msg) => {
+    if (!msg?.trim()) return;
+    sendPrompt(msg);
+    setMessage('');
+  };
+
+  const updateMessage = (e) => {
+    const value = typeof e === 'string' ? e : e?.target?.value || '';
+    setMessage(value);
+  };
+
+  const clearMessage = () => setMessage('');
+
   // Loading state
   if (!ready) {
     return (
@@ -146,35 +84,26 @@ const Chat = () => {
   return (
     <div className="flex flex-col flex-wrap justify-center items-center h-screen w-full paddEnv bg-[#0f0f11] p-0 m-0 noScroll">
       
-      {/* Header */}
-      <ChatHeader 
-        showOp={showOp}
-        onToggleMenu={toggleMenu}
-        t={t}
-      />
-      
-      {/* Main Content Area */}
+      <ChatHeader />
+
       <div
-        onClick={closeMenu}
         className="flex flex-col justify-end items-center flex-1 w-full bg-[#0f0f11]"
         role="main"
       >
-        {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto w-full">
           <ResBox 
             messages={messages}
             isGenerating={isGenerating} 
             showTypingIndicator={isGenerating}
-            showWelcome={messages.length === 0 && !isConnected}
+            showWelcome={messages.length === 0}
           />
         </div>
         
-        {/* Input Container */}
         <MessageInput 
           textareaRef={textareaRef}
           value={message}
           onChange={updateMessage}
-          placeholder={isConnected ? t('question') : 'enviar mensagem'}
+          placeholder={t('question')}
           onHeightAdjust={adjustHeight}
           onClear={clearMessage}
           onSend={handleSend} 
@@ -183,11 +112,9 @@ const Chat = () => {
           hideTooltip={hideTooltip}
           isGenerating={isGenerating} 
           stopGeneration={stopGeneration}
-          disabled={!isConnected}
         />
       </div>
       
-      {/* Footer */}
       <footer className="flex items-center justify-center h-10 w-full text-white bg-[#0f0f11] text-sm">
         <span>Place&trade;</span>
       </footer>
@@ -196,7 +123,6 @@ const Chat = () => {
   );
 };
 
-// Add displayName for debugging
 Chat.displayName = 'Chat';
 ChatHeader.displayName = 'ChatHeader';
 

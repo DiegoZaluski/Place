@@ -1,4 +1,4 @@
-1. sincronizar modelo com chat 
+1. sincronizar modelo com chat / debugar 
 
 2. criar biblioteca de modelos locais pronto para baixar e instalar com apenas um click de forma pratica e rapida 
 

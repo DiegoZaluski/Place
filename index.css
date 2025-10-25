@@ -42,12 +42,12 @@
   /* --- 1. Definição das Variáveis de Cores (Tokens) --- */
 
   /* Cores base */
-  --cor-fundo-principal: #ffffff;    /* Fundo principal (body) */
+  --cor-fundo-principal: #f5f5dc;    /* Fundo principal (body) */
   --cor-texto-padrao: #000000;       /* Cor de texto padrão (preto) */
 
   /* Superfícies (Backgrounds de elementos) */
-  --cor-fundo-superficie: #f8fafc;   /* Fundo secundário (ex: .bg-black no dark mode) */
-  --cor-fundo-card-interno: #f3f4f6; /* Cards internos (ex: .bg-[#605C4E]) */
+  --cor-fundo-superficie: #f5f5dc;   /* Fundo secundário (ex: .bg-black no dark mode) */
+  --cor-fundo-card-interno: #f5f5dc; /* Cards internos (ex: .bg-[#605C4E]) */
 
   /* Cores de borda */
   --cor-borda-leve-1: #f3f4f6;       /* Borda mais clara (ex: .border-white/10) */
@@ -60,7 +60,7 @@
 
   /* Cores Específicas */
   --cor-statusbox-fundo: #000000;    /* Fundo do StatusBox (preto sólido) */
-  --cor-statusbox-texto: #ffffff;    /* Texto que deve permanecer branco */
+  --cor-statusbox-texto: #f5f5dc;    /* Texto que deve permanecer branco */
 
   /* Sombra (Box-shadow) */
   --sombra-2xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -136,3 +136,10 @@
 [data-theme="light"] .box-father-github {
   background-color: black !important;
 }/*Ajustar aqui*/
+[data-theme="light"]  .color-black {
+  color: black !important; /*inverte a cor do texto tornando preta metodo mas carantido em inconstante*/
+}
+
+[data-theme="light"] .forced-white:hover {
+  filter: invert(1) !important;
+}
