@@ -5,8 +5,11 @@ const path = require("path");
 const serverManager = require("./server-manager.cjs");
 const websocketManager = require("./websocket-manager.cjs");
 
-let mainWindow;
+// --- new code ----
+const N8NManager = require('./n8nManager.cjs');
 
+// -----------------------------------------------------------------
+let mainWindow;
 /**
  * Cria a janela principal do Electron
  */
@@ -113,7 +116,12 @@ ipcMain.handle("model:clear-memory", async () => {
 });
 
 // Event handlers do Electron
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  // ---- new code ----
+  global.n8nManager = new N8NManager();
+  global.n8nManager.initialize();
+});
 
 app.on("window-all-closed", () => {
   websocketManager.closeWebSocket();

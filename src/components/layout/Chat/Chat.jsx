@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import MessageInput from './MessageInput';
 import ResBox from './ResBox';
 import { useLlama } from '../../../hooks/useLlama';
-
+import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from '../../shared/WindowsComponents'
 // Custom hook to manage tooltip
 const useTooltip = () => {
   const tooltipRef = useRef(null);
@@ -37,8 +37,20 @@ const useAutoResize = () => {
 
 // Isolated Header component
 const ChatHeader = React.memo(() => (
-  <header className="h-20 w-full flex items-center flex-row text-white shadow-b-md z-10">
-    {/*ADD:conteudos futuros para o header*/}
+  <header className="h-20 w-full flex items-center text-white shadow-b-md z-10">
+    <div className="flex items-center ml-8 flex-1">
+      <BackBtn whiteFixed={true} />
+    </div>
+    
+    <div className="flex-1 flex justify-center">
+      {/* conteúdo futuro aqui */}
+    </div>
+    
+    <div className="flex items-center justify-end gap-4 mr-10 flex-1">
+      <MinimizeBtn whiteFixed={true} />
+      <MaximizeBtn whiteFixed={true} />
+      <CloseBtn whiteFixed={true} />
+    </div>
   </header>
 ));
 

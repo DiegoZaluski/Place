@@ -39,7 +39,7 @@ class LlamaChatServer:
             ]
         return self.session_history[session_id]
     
-    def cleanup_session(self, session_id: str) -> None:
+    def cleanup_session(self, session_id: str) -> None: # apenas limpa uma sessão 
         """Remove uma sessão e limpa seu histórico."""
         if session_id in self.session_history:
             del self.session_history[session_id]
@@ -58,20 +58,20 @@ class LlamaChatServer:
         """
         print(f"[SERVER] Processing prompt {prompt_id} for session {session_id}")
 
-        history = self.get_session_history(session_id).copy()
-        history.append({"role": "user", "content": prompt_text})
+        history = self.get_session_history(session_id).copy() # cria uma instancia para copiar o historico de sessão;
+        history.append({"role": "user", "content": prompt_text}) # adiciona o prompt ao historico de sessão;
         
         loop = asyncio.get_event_loop()
         
         # Função síncrona que encapsula a chamada bloqueante do LLM
-        def get_stream_sync():
-            return self.llm.create_chat_completion(
+        def get_stream_sync(): 
+            return self.llm.create_chat_completion( #passa paramentros de comportametos para o modelo em tempo de execução 
                 history, 
                 max_tokens=512, 
                 stream=True, 
                 temperature=0.7, 
-                top_p=0.9, 
-                repeat_penalty=1.1,
+                top_p=0.9, # entender melhor 
+                repeat_penalty=1.1, # entender melhor 
             )
 
         try:

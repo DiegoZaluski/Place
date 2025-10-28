@@ -21,32 +21,20 @@
 .shadow-b-md { 
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.18); 
 }
-.avif {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('/images/6674f0cdb5b7b401612cf065_noise-50.avif');
-  background-repeat: repeat;
-  background-size: 200px 200px;
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0.03;
-  mix-blend-mode: overlay;
-}
 
 /* Tema Claro (Light Mode) - Estilos simples e diretos */
-
- [data-theme="light"] {
+:root{
+  --cor-fundo-superficie:#151517;
+}
+ [data-theme="light"]:root {
   /* --- 1. Definição das Variáveis de Cores (Tokens) --- */
 
   /* Cores base */
   --cor-fundo-principal: #f5f5dc;    /* Fundo principal (body) */
-  --cor-texto-padrao: #000000;       /* Cor de texto padrão (preto) */
+  --cor-texto-padrao: #151517;       /* Cor de texto padrão (preto) */
 
   /* Superfícies (Backgrounds de elementos) */
-  --cor-fundo-superficie: #f5f5dc;   /* Fundo secundário (ex: .bg-black no dark mode) */
+  --cor-fundo-superficie: white;  /* Fundo secundário (ex: .bg-black no dark mode) */
   --cor-fundo-card-interno: #f5f5dc; /* Cards internos (ex: .bg-[#605C4E]) */
 
   /* Cores de borda */
@@ -59,7 +47,7 @@
   --cor-transparente-20: rgba(55, 65, 81, 0.2); /* Cor de fundo com 20% opacidade */
 
   /* Cores Específicas */
-  --cor-statusbox-fundo: #000000;    /* Fundo do StatusBox (preto sólido) */
+  --cor-statusbox-fundo: #151517;    /* Fundo do StatusBox (preto sólido) */
   --cor-statusbox-texto: #f5f5dc;    /* Texto que deve permanecer branco */
 
   /* Sombra (Box-shadow) */
@@ -71,15 +59,12 @@
 }
 
 /* O body também usa o fundo principal e texto padrão */
-[data-theme="light"] body {
-  background-color: var(--cor-fundo-principal);
-  color: var(--cor-texto-padrao);
-}
+
 
 /* --- 2. Aplicação das Variáveis nas Classes (Tailwind Overrides) --- */
 
 /* Fundo Principal e Superfície */
-[data-theme="light"] .bg-black {
+.bg-color {
   background-color: var(--cor-fundo-superficie) !important;
 }
 
@@ -134,12 +119,21 @@
   box-shadow: var(--sombra-2xl) !important;
 }
 [data-theme="light"] .box-father-github {
-  background-color: black !important;
+  background-color: #151517!important;
 }/*Ajustar aqui*/
 [data-theme="light"]  .color-black {
-  color: black !important; /*inverte a cor do texto tornando preta metodo mas carantido em inconstante*/
+  color: #151517!important; /*inverte a cor do texto tornando preta metodo mas carantido em inconstante*/
 }
 
 [data-theme="light"] .forced-white:hover {
-  filter: invert(1) !important;
+  filter: invert(1)!important;
+}
+[data-theme="light"] .theme {
+
+}
+.forced-reverse {
+  filter: invert(1)!important;
+}
+.bg-2{
+  background-color: #324376;
 }

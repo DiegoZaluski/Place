@@ -7,7 +7,7 @@ import { MinimizeBtn, MaximizeBtn, CloseBtn, BackBtn } from '../../shared/Window
 
 function Header() {
   return (
-    <header className="w-full h-20 border-b border-white/20 px-8 bg-black shadow-2xl sticky top-0 z-10">
+    <header className="w-full h-20 border-b border-white/20 px-8 bg-color shadow-2xl sticky top-0 z-10">
       <div className="h-full grid grid-cols-3 items-center">
         <BackBtn/>
         {/* 1. Seção Esquerda: Tabs */}

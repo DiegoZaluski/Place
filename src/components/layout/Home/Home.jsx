@@ -5,7 +5,7 @@ import BottomCardsSection from './BottomCardsSection';
 
 function Home() {
   return (
-    <div className="min-h-screen bg-black font-sans" data-theme-aware>
+    <div className="min-h-screen bg-color font-sans" data-theme-aware>
       <Header />
       <main className="container mx-auto p-10 flex flex-col items-center">
         <TopCardsSection />

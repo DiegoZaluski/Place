@@ -80,13 +80,16 @@ if (typeof window !== 'undefined') {
       };
       ipcRenderer.on('model:memory-cleared', listener);
       return () => ipcRenderer.removeListener('model:memory-cleared', listener);
-    }
+    },
+    openN8NWindow: () => ipcRenderer.invoke('n8n-window:open'),
+    closeN8NWindow: () => ipcRenderer.invoke('n8n-window:close'),
+    getN8NStatus: () => ipcRenderer.invoke('n8n-window:status')
   });
 
-  // ADICIONE ESTA PARTE - API para controles da janela
+  // CONTROLE DE JANELA - NÃO REMOVA 
   contextBridge.exposeInMainWorld('electron', {
     invoke: (channel, data) => ipcRenderer.invoke(channel, data)
   });
 
-  console.log('✅ Preload script executed successfully');
+  console.log('Preload script executed successfully');
 }
