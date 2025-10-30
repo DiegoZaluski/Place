@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
         '@components': resolve(__dirname, 'src/components'),
         '@styles': resolve(__dirname, 'src'),
       },
-      extensions: ['.js', '.jsx', '.json'],
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     },
     
     css: {

@@ -1,49 +1,63 @@
 import asyncio
 import json
 import uuid
+import logging
 from typing import Dict, Set, Optional, List, Any
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
 
-# --- Configurações Globais ---
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# --- Global Configuration ---
 CONTEXT_SIZE = 4096 
-MODEL_PATH = model_path = "../transformers/llama.cpp/models/llama-2-7b-chat.Q4_K_M.gguf"
+MODEL_PATH = "../transformers/llama.cpp/models/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
 
 class LlamaChatServer:
-    """Servidor WebSocket para chat com modelo LLaMA, otimizado para contexto nativo e interrupção assíncrona."""
+    """WebSocket server for LLaMA model chat with native context optimization and async interruption support."""
     
     def __init__(self, model_path: str):
-        # 1. 🚀 Inicialização Otimizada
+        # --- Model Initialization ---
         self.llm = Llama(
             model_path=model_path, 
             n_ctx=CONTEXT_SIZE,
-            n_gpu_layers=-1,  # Máximo uso de VRAM/GPU.
+            n_gpu_layers=-1,
             seed=42,
             verbose=False,
-            chat_format="llama-2", 
+            chat_format="llama-3", 
             use_mlock=True,       
             use_mmap=True
         )
         
-        self.llm.set_cache(LlamaCache()) # para Calculos reutilizaveis pelo modelo para aumentar a velocidade de resposta 
+        self.llm.set_cache(LlamaCache())
         
         self.active_prompts: Set[str] = set()
-        self.session_history: Dict[str, List[Dict[str, str]]] = {} #vai recebre um json 
+        self.session_history: Dict[str, List[Dict[str, str]]] = {}
     
     def get_session_history(self, session_id: str) -> List[Dict[str, str]]:
-        """Obtém ou cria histórico para uma sessão."""
+        """Retrieves or creates conversation history for a session."""
         if session_id not in self.session_history:
             self.session_history[session_id] = [
-                {"role": "system", "content": "Você é um assistente prestativo, amigável e paciente. Responda sempre no idioma do usuário, com clareza e precisão"}
+                {
+                    "role": "system", 
+                    "content": "You are a helpful, knowledgeable, and professional AI assistant. "
+                               "Provide clear, accurate, and well-structured responses. "
+                               "Always maintain a respectful and patient tone. "
+                               "Adapt your communication style to match the user's language and level of expertise."
+                }
             ]
         return self.session_history[session_id]
     
-    def cleanup_session(self, session_id: str) -> None: # apenas limpa uma sessão 
-        """Remove uma sessão e limpa seu histórico."""
+    def cleanup_session(self, session_id: str) -> None:
+        """Removes a session and clears its conversation history."""
         if session_id in self.session_history:
             del self.session_history[session_id]
-        print(f"[SERVER] Session cleanup complete for {session_id}")
+        logger.info(f"Session cleanup complete for {session_id}")
     
     async def handle_prompt(
         self, 
@@ -53,42 +67,40 @@ class LlamaChatServer:
         websocket: websockets.WebSocketServerProtocol
     ) -> None:
         """
-        CORREÇÃO: Processa um prompt usando run_in_executor para thread separado, 
-        e inclui asyncio.sleep(0) no loop para garantir a prioridade do cancelamento.
+        Processes a prompt using run_in_executor for separate thread execution,
+        with asyncio.sleep(0) in the loop to ensure cancellation priority.
         """
-        print(f"[SERVER] Processing prompt {prompt_id} for session {session_id}")
+        logger.info(f"Processing prompt {prompt_id} for session {session_id}")
 
-        history = self.get_session_history(session_id).copy() # cria uma instancia para copiar o historico de sessão;
-        history.append({"role": "user", "content": prompt_text}) # adiciona o prompt ao historico de sessão;
+        history = self.get_session_history(session_id).copy()
+        history.append({"role": "user", "content": prompt_text})
         
         loop = asyncio.get_event_loop()
         
-        # Função síncrona que encapsula a chamada bloqueante do LLM
+        # --- Synchronous LLM Call Wrapper ---
         def get_stream_sync(): 
-            return self.llm.create_chat_completion( #passa paramentros de comportametos para o modelo em tempo de execução 
+            return self.llm.create_chat_completion(
                 history, 
                 max_tokens=512, 
                 stream=True, 
                 temperature=0.7, 
-                top_p=0.9, # entender melhor 
-                repeat_penalty=1.1, # entender melhor 
+                top_p=0.9,
+                repeat_penalty=1.1,
             )
 
         try:
-            # CORREÇÃO 1: Move a chamada do LLM para o Thread Pool Executor
+            # --- Execute LLM call in thread pool ---
             stream = await loop.run_in_executor(None, get_stream_sync)
             
-            assistant_response = ""
+            response_tokens = []
             
             for chunk in stream:
-                # CORREÇÃO 2: Ponto de troca de contexto assíncrono
-                # Garante que o loop de eventos processe o comando 'cancel' imediatamente.
-                await asyncio.sleep(0) 
+                # --- Async context switch point ---
+                await asyncio.sleep(0)
                 
-                # 🛑 Verificação de Cancelamento
+                # --- Cancellation Check ---
                 if prompt_id not in self.active_prompts:
-                    print(f"[SERVER] Prompt {prompt_id} canceled by user request")
-                    # Sinaliza a conclusão/parada no frontend (limpeza de estado)
+                    logger.info(f"Prompt {prompt_id} canceled by user request")
                     await websocket.send(json.dumps({
                         "promptId": prompt_id, 
                         "complete": True,
@@ -99,18 +111,20 @@ class LlamaChatServer:
                 token = chunk["choices"][0]["delta"].get("content", "")
                 
                 if token:
-                    assistant_response += token
+                    response_tokens.append(token)
                     await websocket.send(json.dumps({
                         "promptId": prompt_id, 
                         "token": token,
                         "type": "token"
                     }))
 
-            # --- Conclusão (Se não foi cancelado) ---
+            # --- Completion Handler ---
             if prompt_id in self.active_prompts:
                 self.active_prompts.remove(prompt_id)
                 
-                # Adiciona ao histórico PERMANENTE da sessão.
+                assistant_response = "".join(response_tokens)
+                
+                # --- Update session history ---
                 self.get_session_history(session_id).append({"role": "user", "content": prompt_text})
                 if assistant_response:
                     self.get_session_history(session_id).append({"role": "assistant", "content": assistant_response})
@@ -121,19 +135,18 @@ class LlamaChatServer:
                     "type": "complete"
                 }))
                 
-                print(f"[SERVER] Prompt {prompt_id} complete. New history length: {len(self.get_session_history(session_id))}")
+                logger.info(f"Prompt {prompt_id} complete. History length: {len(self.get_session_history(session_id))}")
 
         except ConnectionClosedOK:
-            print(f"[SERVER] Connection closed normally during processing of {prompt_id}.")
+            logger.info(f"Connection closed normally during processing of {prompt_id}")
             self.active_prompts.discard(prompt_id)
         except Exception as e:
-            error_msg = f"[SERVER] Fatal error during prompt {prompt_id}: {type(e).__name__}: {e}"
-            print(error_msg)
+            logger.error(f"Fatal error during prompt {prompt_id}: {type(e).__name__}: {e}", exc_info=True)
             await self._send_error(websocket, prompt_id, f"Server Error: {e}")
             self.active_prompts.discard(prompt_id)
     
 # --- Métodos Auxiliares de Gerenciamento de Cliente ---
-
+    # PARADA 
     async def handle_client(self, websocket: websockets.WebSocketServerProtocol, path: Optional[str] = None) -> None:
         """Gerencia a conexão do cliente e processa mensagens."""
         session_id = str(uuid.uuid4())[:8]

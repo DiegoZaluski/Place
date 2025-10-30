@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from './WindowsComponents';
-import BubbleLoading  from './BubbleLoading';
+import Loading  from './Loading';
 function N8NPage() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ function N8NPage() {
       <div className="flex-1 relative">
         {isLoading && (
           <div className="absolute inset-0 flex flex-colum items-center justify-center bg-black background-color">
-          <BubbleLoading size={500} speed={2}/>
+          <Loading size={500} speed={2}/>
           </div>
         )}
         

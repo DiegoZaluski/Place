@@ -9,3 +9,6 @@ remove commit feito
 ## testar mudança de cores aqui 
 ./n8n/packages/frontend/n8n/design-system/src/css/_tokens.dark.scss
 
+
+senha 
+p8Syt=KkYmb]uX&

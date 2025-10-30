@@ -1,6 +1,7 @@
 import React from 'react';
-
+import { useTranslation } from 'react-i18next';
 function StatusBox() {
+  const { t } = useTranslation('auth');
   return (
     <div className="flex items-center bg-gradient-to-r from-black/90 to-black/70 backdrop-blur-sm border border-white/30 rounded-2xl px-4 py-2 space-x-3 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.05] cursor-pointer group box-father-github">
       <div className="relative">
@@ -21,7 +22,7 @@ function StatusBox() {
       <div className="flex flex-col">
         {/* Contador de Contribuições/Status */}
         <span className="text-white font-bold text-xl group-hover:text-white transition-colors duration-300">3k</span>
-        <span className="text-white/60 text-xs font-medium">Commits</span>
+        <span className="text-white/60 text-xs font-medium">commits</span>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { headerTabsContent } from './data';
+import { useTranslation } from 'react-i18next';
 
 // Constantes otimizadas
 const STYLES = {
@@ -11,6 +12,7 @@ const STYLES = {
 };
 
 function HeaderTabs() {
+  const { t } = useTranslation();
   return (
     <nav className={STYLES.container} aria-label="Navegação principal">
       <div className={STYLES.wrapper}>

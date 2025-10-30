@@ -4,6 +4,7 @@ import StatusBox from './StatusBox';
 import LogoBox from '../../shared/LogoBox';
 import ButtonTheme from '../../shared/ButtonTheme';
 import { MinimizeBtn, MaximizeBtn, CloseBtn, BackBtn } from '../../shared/WindowsComponents';
+import ButtonI18n from '../../shared/ButtonI18n';
 
 function Header() {
   return (
@@ -26,7 +27,7 @@ function Header() {
             {/* Box de Status/Contador (GitHub) */}
             <StatusBox />
             {/* Avatar do Usuário */}
-            <div className="w-10 h-10 rounded-full border-2 border-white/20 bg-white/10 shadow-md cursor-pointer"></div>
+            <ButtonI18n/>
             <ButtonTheme className='p-6'/>
             <MinimizeBtn/>
             <MaximizeBtn/>

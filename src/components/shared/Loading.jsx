@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const BubbleLoading = ({ size = 64, speed = 1 }) => {
+const Loading = ({ size = 64, speed = 1 }) => {
   const [particles, setParticles] = useState([]);
 
   useEffect(() => {
@@ -103,4 +103,4 @@ const BubbleLoading = ({ size = 64, speed = 1 }) => {
   );
 };
 
-export default BubbleLoading;
+export default Loading;
