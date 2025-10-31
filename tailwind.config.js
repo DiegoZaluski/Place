@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: ['class'],
   content: [
     "./index.html",
     "./app.html",
@@ -7,15 +8,14 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        primary: '#4F46E5',
-        secondary: '#10B981',
-      },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         playfair: ['Playfair Display', 'serif'],
       },
     },
+  },
+  corePlugins: {
+    preflight: true,
   },
   plugins: [],
 }

@@ -1,14 +1,14 @@
 import React from 'react';
-import { headerTabsContent } from './data';
+import { headerTabsContent } from '../../../global/data';
 import { useTranslation } from 'react-i18next';
 
 // Constantes otimizadas
 const STYLES = {
   container: "justify-self-start ml-4 transform translate-x-8",
-  wrapper: "p-3 rounded-xl bg-2 shadow-inner min-h-[4rem] flex items-center", // Altura mínima e flex para centralizar
+  wrapper: "p-3 rounded-xl bg-2 shadow-inner min-h-[4rem] flex items-center", 
   tabsContainer: "flex space-x-3",
-  tab: "min-w-[7rem] px-3 py-3 rounded-xl bg-color border border-white/30 transition-all duration-200 hover:bg-[#1A1A1A] hover:scale-105 active:scale-95 cursor-pointer shadow-lg flex flex-col items-center justify-center", // Padding em vez de altura fixa
-  text: "text-white font-semibold tracking-tighter text-center leading-none whitespace-nowrap font-playfair color-[#605C4E]" // Evita quebra de linha
+  tab: "min-w-[7rem] px-3 py-3 rounded-xl bg-color border border-white/30 transition-all duration-200 hover:bg-n-900 hover:dark-text-primary hover:scale-105 active:scale-95 cursor-pointer shadow-lg flex flex-col items-center justify-center", // Padding em vez de altura fixa
+  text: "text-n-900 dark-text-primary font-semibold tracking-tighter text-center leading-none whitespace-nowrap font-playfair " 
 };
 
 function HeaderTabs() {

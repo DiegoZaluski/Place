@@ -11,7 +11,7 @@ export const topCardsDetails = [
 ];
 
 export const bottomCardsDetails = [
-  { title: "Biblioteca", detail: "35 Components. 120 Snippets. Versão: v4.1.2. Recursos Comunitários." },
+  { title: "Llama-3 8b", detail: "35 Components. 120 Snippets. Versão: v4.1.2. Recursos Comunitários." },
   { title: "Integração API", detail: "API Gateway: 5 Endpoints. 3k Requests/min. Monitoramento de Latência em Tempo Real." },
   { title: "Gerenciamento de Memória", detail: "Uso de Heap: 65%. Cache Hit Rate: 88%. Limite de Alocação: 16GB." },
   { title: "Security Audit", detail: "Próximo Agendamento: Sexta-feira. Nível de Risco: Baixo. Relatório disponível em PDF." },

@@ -43,7 +43,7 @@ const useCopyToClipboard = () => {
 const TypingIndicator = memo(() => (
   <div className="flex items-center mt-4 space-x-2 font-playfair">
     {[0, 150, 300].map((delay, idx) => (
-      <span key={idx} className="w-2 h-2 bg-[#F5F5DC] rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }} />
+      <span key={idx} className="w-2 h-2 bg-c-500 rounded-full animate-bounce" style={{ animationDelay: `${delay}ms` }} />
     ))}
   </div>
 ));
@@ -66,7 +66,7 @@ const CodeBlock = memo(({ children, className, ...props }) => {
     <div className="relative group w-full max-w-full overflow-hidden bg-[#0000004D] border border-black rounded-lg p-1">
       <button
         onClick={() => copy(code)}
-        className="absolute top-2 right-2 p-2 bg-[#F5F5DC] hover:bg-[#e0e0d1] active:bg-[#d0d0c1] rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 shadow-sm"
+        className="absolute top-2 right-2 p-2 bg-c-500 hover:bg-c-600 active:bg-c-700 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 shadow-sm"
         type="button"
       >
         {copied ? <Check className="h-4 w-4 text-green-700" /> : <Copy className="h-4 w-4 text-gray-700" />}

@@ -1,18 +1,14 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
+const { COLORS } = require("./utils/ansiColors");
 
-// Import dos módulos separados
+// IMPORT SEPARATED MODULES
 const serverManager = require("./server-manager.cjs");
 const websocketManager = require("./websocket-manager.cjs");
 
-// --- new code ----
-const N8NManager = require('./n8nManager.cjs');
-
-// -----------------------------------------------------------------
 let mainWindow;
-/**
- * Cria a janela principal do Electron
- */
+
+// CREATES THE MAIN ELECTRON WINDOW
 async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -33,9 +29,9 @@ async function createWindow() {
     } else {
       await mainWindow.loadFile(path.join(__dirname, "dist", "index.html"));
     }
-    console.log("✅ Window loaded successfully");
+    console.log(COLORS.GREEN + "WINDOW LOADED SUCCESSFULLY" + COLORS.RESET);
     
-    // Inicia o servidor Python e depois conecta
+    // START PYTHON SERVER AND THEN CONNECT
     setTimeout(async () => {
       const serverStarted = await serverManager.startPythonServer(mainWindow);
       if (serverStarted) {
@@ -44,7 +40,7 @@ async function createWindow() {
     }, 1000);
     
   } catch (err) {
-    console.error("❌ Error loading window:", err);
+    console.error(COLORS.RED + "ERROR LOADING WINDOW:" + COLORS.RESET, err);
   }
 
   mainWindow.on("closed", () => {
@@ -53,7 +49,7 @@ async function createWindow() {
   });
 }
 
-// IPC handlers para controles da janela
+// IPC HANDLERS FOR WINDOW CONTROLS
 ipcMain.handle("window:minimize", () => {
   if (mainWindow) mainWindow.minimize();
 });
@@ -68,26 +64,26 @@ ipcMain.handle("window:close", () => {
   if (mainWindow) mainWindow.close();
 });
 
-// IPC handlers do servidor
+// IPC HANDLERS FOR SERVER OPERATIONS
 ipcMain.handle("server:restart", async () => {
   return await serverManager.restartPythonServer(mainWindow);
 });
 
-// IPC handlers do modelo
+// IPC HANDLERS FOR MODEL OPERATIONS
 ipcMain.handle("model:send-prompt", async (_, prompt) => {
   try {
     if (!prompt?.trim()) {
-      return { success: false, error: "Prompt cannot be empty" };
+      return { success: false, error: "PROMPT CANNOT BE EMPTY" };
     }
     
     const promptId = websocketManager.sendPrompt(prompt.trim());
     if (promptId) {
       return { success: true, promptId };
     } else {
-      return { success: false, error: "Failed to send prompt - not connected" };
+      return { success: false, error: "FAILED TO SEND PROMPT - NOT CONNECTED" };
     }
   } catch (err) {
-    console.error("❌ IPC send-prompt error:", err);
+    console.error(COLORS.RED + "IPC SEND-PROMPT ERROR:" + COLORS.RESET, err);
     return { success: false, error: err.message };
   }
 });
@@ -95,12 +91,12 @@ ipcMain.handle("model:send-prompt", async (_, prompt) => {
 ipcMain.handle("model:stop-prompt", async (_, promptId) => {
   try {
     if (!promptId) {
-      return { success: false, error: "Prompt ID required" };
+      return { success: false, error: "PROMPT ID REQUIRED" };
     }
     websocketManager.cancelPrompt(promptId);
     return { success: true };
   } catch (err) {
-    console.error("❌ IPC stop-prompt error:", err);
+    console.error(COLORS.RED + "IPC STOP-PROMPT ERROR:" + COLORS.RESET, err);
     return { success: false, error: err.message };
   }
 });
@@ -110,17 +106,14 @@ ipcMain.handle("model:clear-memory", async () => {
     websocketManager.clearMemory();
     return { success: true };
   } catch (err) {
-    console.error("❌ IPC clear-memory error:", err);
+    console.error(COLORS.RED + "IPC CLEAR-MEMORY ERROR:" + COLORS.RESET, err);
     return { success: false, error: err.message };
   }
 });
 
-// Event handlers do Electron
+// ELECTRON EVENT HANDLERS
 app.whenReady().then(() => {
   createWindow();
-  // ---- new code ----
-  global.n8nManager = new N8NManager();
-  global.n8nManager.initialize();
 });
 
 app.on("window-all-closed", () => {
@@ -138,7 +131,6 @@ app.on("will-quit", () => {
   serverManager.stopPythonServer();
 });
 
-// Export para uso em outros módulos
 module.exports = {
   connectToPythonServer: websocketManager.connectToPythonServer
 };

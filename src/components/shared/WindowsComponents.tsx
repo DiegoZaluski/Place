@@ -1,7 +1,22 @@
 import { CircleArrowOutUpLeft, Minus, Square, X } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-export function BackBtn({ whiteFixed = false }) {
+// TYPE DEFINITIONS
+interface WindowControlsProps {
+  whiteFixed?: boolean;
+}
+
+// EXTEND WINDOW INTERFACE
+declare global {
+  interface Window {
+    electron?: {
+      invoke: (channel: string, ...args: any[]) => Promise<any>;
+    };
+  }
+}
+
+// BACK BUTTON COMPONENT
+export function BackBtn({ whiteFixed = false }: WindowControlsProps) {
     const navigate = useNavigate();
     
     const handleBack = () => {
@@ -21,44 +36,47 @@ export function BackBtn({ whiteFixed = false }) {
       >
         <CircleArrowOutUpLeft
           size={16} 
-          className={`${whiteFixed ? 'forced-reverse' : 'text-black dark:text-white'} color-black`} 
+          className={`${whiteFixed ? 'filter invert' : 'text-black dark:text-white'}`} 
         />
       </button>
     );
 }
 
-export function MinimizeBtn({ whiteFixed = false }) {
+// MINIMIZE BUTTON COMPONENT
+export function MinimizeBtn({ whiteFixed = false }: WindowControlsProps) {
   return (
     <button
       onClick={() => window.electron?.invoke('window:minimize')}
       className="w-8 h-8 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
       aria-label="Minimizar"
     >
-      <Minus size={16} className={`${whiteFixed ? 'forced-reverse' : 'text-black dark:text-white'} color-black`} />
+      <Minus size={16} className={`${whiteFixed ? 'filter invert' : 'text-black dark:text-white'}`} />
     </button>
   );
 }
 
-export function MaximizeBtn({ whiteFixed = false }) {
+// MAXIMIZE BUTTON COMPONENT
+export function MaximizeBtn({ whiteFixed = false }: WindowControlsProps) {
   return (
     <button
       onClick={() => window.electron?.invoke('window:maximize')}
       className="w-8 h-8 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
       aria-label="Maximizar"
     >
-      <Square size={14} className={`${whiteFixed ? 'forced-reverse' : 'text-black dark:text-white'} color-black`} />
+      <Square size={14} className={`${whiteFixed ? 'filter invert' : 'text-black dark:text-white'}`} />
     </button>
   );
 }
 
-export function CloseBtn({ whiteFixed = false }) {
+// CLOSE BUTTON COMPONENT
+export function CloseBtn({ whiteFixed = false }: WindowControlsProps) {
   return (
     <button
       onClick={() => window.electron?.invoke('window:close')}
       className="w-8 h-8 flex items-center justify-center hover:bg-red-500 dark:hover:bg-red-600 transition-colors rounded group"
       aria-label="Fechar"
     >
-      <X size={16} className={`${whiteFixed ? 'text-white' : 'text-black dark:text-white'} color-black forced-white`} />
+      <X size={16} className={`${whiteFixed ? 'brightness-0 invert' : 'text-black dark:text-white'}`} />
     </button>
   );
 }

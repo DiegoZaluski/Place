@@ -1,6 +1,6 @@
 import React from 'react';
-import { bottomCardsDetails } from './data';
-import BottomCard from './BottomCard';
+import { bottomCardsDetails } from '../../../global/data';
+import BottomCard from '../templateLibrary/BottomCard';
 
 function BottomCardsSection() {
   return (

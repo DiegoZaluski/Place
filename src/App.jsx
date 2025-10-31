@@ -1,18 +1,21 @@
 import { Routes, Route } from 'react-router-dom';
-import '../index.css';
+import { AppProvider } from './global/AppProvider';
+import '../style/styles.css';
+import '../style/colors.css';
+import '../style/theme.css';
 import Chat from './components/layout/Chat/Chat';
 import Home from './components/layout/Home/Home';
-import N8NPage from './components/shared/N8NPage'
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/workflows" element={<N8NPage/>}/>
-      </Routes>
-    </div>
+    <AppProvider>
+      <div className="min-h-screen bg-gray-100">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/chat" element={<Chat />} />
+        </Routes>
+      </div>
+    </AppProvider>
   );
 }
 

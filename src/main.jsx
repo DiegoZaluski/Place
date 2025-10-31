@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 //aqui foi importado o provider que é responsável por fornecer o i18n para toda a aplicação
 import i18n from './i18n/i18n'; //aqui foi importado a configuração do i18n reponsavel por toda a internacionalização da aplicação
-import '../index.css';
+import '../style/styles.css';
+import '../style/colors.css';
+import '../style/theme.css';
 import App from './App.jsx';
 import { HashRouter } from 'react-router-dom';
 

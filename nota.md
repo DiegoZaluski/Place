@@ -10,5 +10,16 @@ remove commit feito
 ./n8n/packages/frontend/n8n/design-system/src/css/_tokens.dark.scss
 
 
+
+# models 
+
+- estudos
+- personalise 
+- api propria 
+
+
+
+
+
 senha 
 p8Syt=KkYmb]uX&
