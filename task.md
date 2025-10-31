@@ -5,6 +5,6 @@
 5. criar integração como o projeto como um guia. 
 6. começar a planejar o workflow do projeto parecido com n8n. 
 7. adicionar um ide a base de vs code. 
-
+8. corrigir bug do troca de theme 
 
 

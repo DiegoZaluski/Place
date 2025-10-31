@@ -1,6 +1,5 @@
 import React from 'react';
-import { Download } from './Download';
-
+import { Download } from '../../shared/Download';
 
 interface BottomCardProps {
   item: {
@@ -19,12 +18,13 @@ function BottomCard({ item, index }: BottomCardProps) {
       className="bg-n-900 dark:bg-c-50 h-92 border border-n-700 dark:border-n-200 rounded-3xl px-4 py-4 shadow-2xl flex flex-col justify-center items-center transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl cursor-pointer relative"
     >
       <div className="w-full h-full bg-b-600 dark:bg-b-100 rounded-2xl p-6 space-y-3 flex flex-col justify-start transition-colors duration-200">
-        <Download/>
+        
+        <Download modelId={item.fullModelName} />
+        
         <h4 className="text-white dark:text-n-900 text-lg font-bold mb-2 border-b border-n-700 pb-1 leading-tight font-playfair">
           {item.modelName}
         </h4>
-
-        {/* DETALHES TÉCNICOS */}
+        
         <div className="space-y-2">
           <p className="text-white/95 dark:text-n-800 text-sm">
             <span className="font-semibold">Uso de Memória:</span> {item.memoryUsage}
@@ -33,10 +33,12 @@ function BottomCard({ item, index }: BottomCardProps) {
             <span className="font-semibold">Nível de Inteligência:</span> {item.intelligenceLevel}
           </p>
         </div>
-
+        
         <div className="flex-grow"></div>
+        
         <div className="w-full h-2 bg-n-700 dark:bg-n-200 rounded-full"></div>
         <div className="w-4/5 h-2 bg-n-700 dark:bg-n-200 rounded-full"></div>
+        
         <p className="text-white/60 dark:text-n-600 text-xs truncate w-full">
           {item.fullModelName}
         </p>

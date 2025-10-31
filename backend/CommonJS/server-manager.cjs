@@ -165,16 +165,17 @@ async function startPythonServer(mainWindow) {
     // Mata servidores existentes que possam estar em estado zumbi
     await killExistingPythonServers();
     
-    // Caminho correto para a pasta backend_py
-    const workingDir = path.join(__dirname, 'backend_py');
+    // Caminho correto para a pasta backend
+    const workingDir = path.join(__dirname, '..');  // Volta um nível para a pasta backend
     console.log(`📁 Working directory: ${workingDir}`);
     
-    // ✅ CORREÇÃO: Encontra o caminho exato do Python no venv
+   
     const pythonPath = getPythonPath(workingDir);
-    const serverPath = path.join(workingDir, 'llama_server.py');
+    const serverPath = path.join(workingDir, 'python', 'Websocket', 'llama_server.py');
+    console.log(`🔍 Procurando servidor em: ${serverPath}`);
     
-    if (!fs.existsSync(serverPath)) {
-      throw new Error(`Servidor Python não encontrado em: ${serverPath}`);
+    if (!fs.existsSync(path.dirname(serverPath))) {
+      throw new Error(`Servidor Python não encontrado em: ${path.dirname(serverPath)}`);
     }
     
     // Environment limpo para evitar erro GTK

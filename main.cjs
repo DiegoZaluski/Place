@@ -3,8 +3,8 @@ const path = require("path");
 const { COLORS } = require("./utils/ansiColors");
 
 // IMPORT SEPARATED MODULES
-const serverManager = require("./server-manager.cjs");
-const websocketManager = require("./websocket-manager.cjs");
+const serverManager = require("./backend/CommonJS/server-manager.cjs");
+const websocketManager = require("./backend/CommonJS/Websocket/websocket-manager.cjs");
 
 let mainWindow;
 
