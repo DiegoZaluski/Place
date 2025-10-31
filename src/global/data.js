@@ -10,10 +10,35 @@ export const topCardsDetails = [
   { title: "IDE", detail: "2 Projetos em Andamento. 48 Commits Pendentes. 1 Sessão Ativa (DevOps).", indicator: "Compilação Sucesso" },
 ];
 
-export const bottomCardsDetails = [
-  { title: "Llama-3 8b", detail: "35 Components. 120 Snippets. Versão: v4.1.2. Recursos Comunitários." },
-  { title: "Integração API", detail: "API Gateway: 5 Endpoints. 3k Requests/min. Monitoramento de Latência em Tempo Real." },
-  { title: "Gerenciamento de Memória", detail: "Uso de Heap: 65%. Cache Hit Rate: 88%. Limite de Alocação: 16GB." },
-  { title: "Security Audit", detail: "Próximo Agendamento: Sexta-feira. Nível de Risco: Baixo. Relatório disponível em PDF." },
-  { title: "Data Flow", detail: "3 Streams de Dados Ativos. 1TB Processado. Último Erro: Nenhum. Pipeline Status: Estável." },
+export const modelCardsDetails = [
+  {
+    modelName: "Mistral 7B",
+    memoryUsage: "4.5 GB RAM",
+    intelligenceLevel: "High",
+    fullModelName: "mistral-7b-instruct-v0.3.Q4_K_M.gguf"
+  },
+  {
+    modelName: "Qwen2.5 7B",
+    memoryUsage: "4.8 GB RAM", 
+    intelligenceLevel: "Very High",
+    fullModelName: "qwen2.5-7b-instruct.Q4_K_M.gguf"
+  },
+  {
+    modelName: "Llama 3.1 8B",
+    memoryUsage: "5.2 GB RAM",
+    intelligenceLevel: "Maximum",
+    fullModelName: "llama-3.1-8b-instruct.Q4_K_M.gguf"
+  },
+  {
+    modelName: "DeepSeek Coder",
+    memoryUsage: "4.2 GB RAM",
+    intelligenceLevel: "Code Specialist",
+    fullModelName: "deepseek-coder-6.7b-instruct.Q4_K_M.gguf"
+  },
+  {
+    modelName: "Phi-3 Mini",
+    memoryUsage: "2.5 GB RAM",
+    intelligenceLevel: "Balanced",
+    fullModelName: "phi-3-mini-4k-instruct.Q4_K_M.gguf"
+  }
 ];

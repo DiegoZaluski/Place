@@ -1,11 +1,11 @@
 import React from 'react';
-import { bottomCardsDetails } from '../../../global/data';
+import { modelCardsDetails } from '../../../global/data';
 import BottomCard from '../templateLibrary/BottomCard';
 
 function BottomCardsSection() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 w-full max-w-7xl mt-10">
-      {bottomCardsDetails.map((item, index) => (
+      {modelCardsDetails.map((item, index) => (
         <BottomCard key={`bottom-card-${index + 5}`} item={item} index={index} />
       ))}
     </div>
