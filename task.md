@@ -1,4 +1,5 @@
-1. criar biblioteca de modelos locais pronto para baixar e instalar com apenas um. click de forma pratica e rapida. 
+1. inicialização de test para o SSE
+2. estruturar o backend 
 2. estruturar backend python
 3. criar controle de temperatura do modelos e memoria.
 4. criar api de facil acesso e conexão com o app. 

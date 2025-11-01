@@ -3,8 +3,41 @@ const path = require("path");
 const { COLORS } = require("./utils/ansiColors");
 
 // IMPORT SEPARATED MODULES
-const serverManager = require("./backend/CommonJS/server-manager.cjs");
+const serverManager = require("./backend/CommonJS/managerWebSocket.cjs");
 const websocketManager = require("./backend/CommonJS/Websocket/websocket-manager.cjs");
+
+// NEW COD -----------------------------------------------------------------
+// SSE Download Server (Apenas para testes - pode ser removido facilmente)
+const { createModelDownloadServer } = require("./backend/CommonJS/SSE/initSSEDownload.cjs");
+let sseServer = null;
+
+const startSSEServer = async () => {
+  try {
+    sseServer = createModelDownloadServer({
+      pythonPath: path.join(__dirname, "backend", "venv", "bin", "python"),
+      port: 8000,
+      logLevel: 'info',
+      autoRestart: true
+    });
+    
+    await sseServer.start();
+    console.log(COLORS.CYAN + '✅ SSE Download Server started' + COLORS.RESET);
+  } catch (error) {
+    console.error(COLORS.RED + '❌ Failed to start SSE Download Server:' + COLORS.RESET, error);
+  }
+};
+
+const stopSSEServer = async () => {
+  if (sseServer) {
+    try {
+      await sseServer.stop();
+      console.log(COLORS.CYAN + '🛑 SSE Download Server stopped' + COLORS.RESET);
+    } catch (error) {
+      console.error(COLORS.RED + '❌ Error stopping SSE Download Server:' + COLORS.RESET, error);
+    }
+  }
+};
+// END NEW COD -------------------------------------------------------------
 
 let mainWindow;
 
@@ -134,3 +167,4 @@ app.on("will-quit", () => {
 module.exports = {
   connectToPythonServer: websocketManager.connectToPythonServer
 };
+

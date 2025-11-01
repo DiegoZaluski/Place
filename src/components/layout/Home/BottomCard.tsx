@@ -1,5 +1,6 @@
 import React from 'react';
 import { Download } from '../../shared/Download';
+import DownloadProgress from '../../shared/DownloadProgress';
 
 interface BottomCardProps {
   item: {
@@ -38,10 +39,12 @@ function BottomCard({ item, index }: BottomCardProps) {
         
         <div className="w-full h-2 bg-n-700 dark:bg-n-200 rounded-full"></div>
         <div className="w-4/5 h-2 bg-n-700 dark:bg-n-200 rounded-full"></div>
+
+        <DownloadProgress 
+          modelId={item.fullModelName} 
+          size="sm" 
+        />
         
-        <p className="text-white/60 dark:text-n-600 text-xs truncate w-full">
-          {item.fullModelName}
-        </p>
       </div>
     </div>
   );
