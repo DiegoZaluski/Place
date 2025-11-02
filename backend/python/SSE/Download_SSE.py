@@ -45,9 +45,20 @@ class SecurityValidator:
     
     @staticmethod
     def validate_model_id(model_id: str) -> bool:
-        logger.debug(f"Validando ID do modelo: {model_id}")
-        return bool(re.match(r'^[a-z0-9\-]+$', model_id)) and len(model_id) < 50
-    
+        logger.debug(f"🔍 [VALIDATION] Validando ID: '{model_id}'")
+        
+        # ⭐⭐ VALIDAÇÃO PERMISSIVA - ACEITA OS IDs REAIS ⭐⭐
+        if not model_id or len(model_id) > 100:
+            logger.debug(f"❌ [VALIDATION] ID vazio ou muito longo: {model_id}")
+            return False
+        
+        # Permite: letras (maiúsculas/minúsculas), números, hífens, pontos, underscores
+        if not re.match(r'^[a-zA-Z0-9\-\._]+$', model_id):
+            logger.debug(f"❌ [VALIDATION] ID contém caracteres inválidos: {model_id}")
+            return False
+        
+        logger.debug(f"✅ [VALIDATION] ID VÁLIDO: {model_id}")
+        return True
     @staticmethod
     def validate_url(url: str, allowed_domains: List[str]) -> bool:
         logger.debug(f"Validando URL: {url}")
@@ -106,31 +117,62 @@ class DownloadManager:
         self.active_downloads = {}
     
     def load_config(self):
-        possile_paths = [
-            "./config/models.json",  # Relativo ao SSE
-            "../config/models.json", # Um nível acima
-            "../../util/models.json", # Dois níveis acima + util
-            "/home/zaluski/Documentos/Place/backend/util/models.json"  # Absoluto
-        ]
-        config_path = None
+        try:
+            logger.info(" TENTANDO CARREGAR CONFIGURAÇÃO...")
+            
+            #  TESTE MULTIPLOS CAMINHOS
+            possible_paths = [
+                "./config/models.json",  # Relativo ao SSE
+                "/home/zaluski/Documentos/Place/backend/python/SSE/config/models.json",  # Absoluto
+                "../../../transformers/llama.cpp/models/config/models.json",  # Outro possível
+                "../config/models.json",  # Um nível acima
+                "../../util/models.json",  # Dois níveis acima + util
+                "/home/zaluski/Documentos/Place/backend/util/models.json"  # Absoluto alternativo
+            ]
+            
+            config_path = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    config_path = path
+                    logger.info(f" Arquivo encontrado em: {path}")
+                    break
+                else:
+                    logger.warning(f" Não encontrado: {path}")
+            
+            if config_path is None:
+                error_msg = " ERRO: models.json não encontrado em nenhum local!"
+                logger.error(error_msg)
+                logger.error(f" Diretório atual: {os.getcwd()}")
+                logger.error(f" Conteúdo do diretório: {os.listdir('.')}")
+                raise FileNotFoundError("models.json não encontrado em nenhum local conhecido")
+            
+            logger.info(f" Lendo arquivo: {config_path}")
+            with open(config_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                logger.debug(f" Conteúdo do arquivo (primeiros 500 chars): {content[:500]}...")
+                
+                self.config = json.loads(content)
+                self.models = {m['id']: m for m in self.config['models']}
+            
+            # Criar diretórios necessários
+            required_dirs = ['download_path', 'temp_path', 'log_path']
+            for dir_key in required_dirs:
+                if dir_key in self.config:
+                    Path(self.config[dir_key]).mkdir(parents=True, exist_ok=True)
+                    logger.info(f" Diretório verificado/criado: {self.config[dir_key]}")
+            
+            logger.info(f" CONFIGURAÇÃO CARREGADA: {len(self.models)} modelos")
+            logger.info(f" IDs disponíveis: {list(self.models.keys())}")
         
-        for path in possile_paths:
-            if os.path.exists(path):
-                config_path = path
-                break
-
-        if config_path is None:
-            raise FileNotFoundError("Arquivo models.json não encontrado em nenhum local")
-
-        with open(config_path, 'r', encoding='utf-8') as f:
-            self.config = json.load(f)
-            self.models = {m['id']: m for m in self.config['models']}
-        
-        Path(self.config['download_path']).mkdir(parents=True, exist_ok=True)
-        Path(self.config['temp_path']).mkdir(parents=True, exist_ok=True)
-        Path(self.config['log_path']).mkdir(parents=True, exist_ok=True)
-        
-        logger.info(f"✅ {len(self.models)} modelos carregados")
+        except json.JSONDecodeError as e:
+            error_msg = f" ERRO: Falha ao decodificar o arquivo JSON: {e}"
+            logger.error(error_msg)
+            raise ValueError(f"Arquivo de configuração inválido: {e}")
+        except Exception as e:
+            error_msg = f" ERRO CRÍTICO ao carregar configuração: {e}"
+            logger.error(error_msg)
+            logger.error(f" Stack trace: {traceback.format_exc()}")
+            raise
     
     def get_models(self) -> List[Dict]:
         result = []
@@ -407,17 +449,42 @@ async def list_models():
 async def model_status(model_id: str):
     """STATUS DE UM MODELO"""
     try:
-        if not SecurityValidator.validate_model_id(model_id):
-            raise HTTPException(status_code=400, detail="ID inválido")
+        logger.info(f"🎯 [PYTHON] STATUS REQUEST - ID recebido: '{model_id}'")
+        logger.info(f"📋 [PYTHON] IDs disponíveis no sistema: {list(manager.models.keys())}")
+        logger.info(f"🔢 [PYTHON] Total de modelos: {len(manager.models)}")
         
+        if not SecurityValidator.validate_model_id(model_id):
+            logger.error(f"❌ [PYTHON] VALIDAÇÃO FALHOU: {model_id}")
+            raise HTTPException(
+                status_code=400, 
+                detail=f"ID inválido: {model_id}. Use apenas letras minúsculas, números e hífens."
+            )
+        
+        if model_id not in manager.models:
+            logger.error(f"❌ [PYTHON] ID NÃO ENCONTRADO: {model_id}")
+            logger.error(f"📋 [PYTHON] IDs esperados: {list(manager.models.keys())}")
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Modelo '{model_id}' não encontrado. Modelos disponíveis: {', '.join(manager.models.keys())}"
+            )
+            
+        logger.info(f"✅ [PYTHON] ID VÁLIDO: {model_id}")
         status = manager.get_model_status(model_id)
         return {"success": True, **status}
     
+    except HTTPException:
+        # Re-raise HTTP exceptions as they are already properly formatted
+        raise
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        logger.error(f"❌ [PYTHON] Erro de valor: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Erro: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"💥 [PYTHON] ERRO em model_status: {e}")
+        logger.error(f"🔍 [PYTHON] Stack trace: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erro interno ao processar a requisição: {str(e)}"
+        )
 
 # IMPORTANTE: MUDAR PARA GET (compatível com EventSource)
 @app.get("/api/models/{model_id}/download")
