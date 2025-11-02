@@ -12,6 +12,12 @@ export const topCardsDetails = [
 
 export const modelCardsDetails = [
   {
+    modelName: "Llama 3.2 3B",
+    memoryUsage: "2.1 GB RAM",
+    intelligenceLevel: "Fast",
+    fullModelName: "Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+  },
+  {
     modelName: "Mistral 7B",
     memoryUsage: "4.5 GB RAM",
     intelligenceLevel: "High",

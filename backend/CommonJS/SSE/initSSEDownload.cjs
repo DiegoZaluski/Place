@@ -16,7 +16,7 @@ class ModelDownloadServerManager {
       scriptPath: options.scriptPath || path.join(__dirname, '..', 'python', 'SSE', 'Download_SSE.py'),
       host: options.host || '127.0.0.1',
       port: options.port || 8000,
-      timeout: options.timeout || 30000,
+      timeout: options.timeout || 90000,
       autoRestart: options.autoRestart ?? true,
       maxRestarts: options.maxRestarts || 3,
       restartDelay: options.restartDelay || 5000,
@@ -32,6 +32,9 @@ class ModelDownloadServerManager {
     this.healthCheckInterval = null;
     this.startupPromise = null;
     this.logger = this._createLogger();
+    // new 
+    this._startCalled = false;
+    this._initializationLock = null;
   }
 
   /**
@@ -251,7 +254,8 @@ class ModelDownloadServerManager {
       // Iniciar processo
       this.process = spawn(this.options.pythonPath, args, {
         cwd: path.dirname(this.options.scriptPath),
-        stdio: ['ignore', 'pipe', 'pipe'],
+        stdio: ['pipe', 'pipe', 'pipe'],  // 🔥 MUDAR 'ignore' para 'pipe'
+
         detached: false
       });
 
@@ -451,38 +455,91 @@ class ModelDownloadServerManager {
 }
 
 /**
- * Instância singleton (opcional)
+ * SINGLETON FORTE - Apenas uma instância permitida
  */
-let defaultInstance = null;
+class ModelDownloadServerSingleton {
+  constructor() {
+    if (ModelDownloadServerSingleton.instance) {
+      return ModelDownloadServerSingleton.instance;
+    }
+    
+    this._manager = null;
+    this._options = null;
+    ModelDownloadServerSingleton.instance = this;
+  }
+
+  /**
+   * Inicializa o singleton com opções (apenas uma vez)
+   */
+  initialize(options = {}) {
+    if (this._manager) {
+      console.warn('[Singleton] Manager já inicializado. Ignorando novas opções.');
+      return this._manager;
+    }
+
+    this._options = options;
+    this._manager = new ModelDownloadServerManager(options);
+    return this._manager;
+  }
+
+  /**
+   * Obtém a instância do manager
+   */
+  getManager() {
+    if (!this._manager) {
+      throw new Error('[Singleton] Manager não inicializado. Chame initialize() primeiro.');
+    }
+    return this._manager;
+  }
+
+  /**
+   * Verifica se está inicializado
+   */
+  isInitialized() {
+    return !!this._manager;
+  }
+
+  /**
+   * Destroi a instância (apenas para testes)
+   */
+  destroy() {
+    if (this._manager) {
+      this._manager.stop().catch(console.error);
+    }
+    this._manager = null;
+    this._options = null;
+    ModelDownloadServerSingleton.instance = null;
+  }
+}
+
+// Instância global única
+const downloadServerSingleton = new ModelDownloadServerSingleton();
 
 /**
- * Factory function para criar/obter instância
- * @param {Object} options - Opções de configuração
- * @returns {ModelDownloadServerManager}
+ * Factory function simplificada - SEMPRE singleton
  */
 function createModelDownloadServer(options = {}) {
-  if (options.singleton !== false) {
-    if (!defaultInstance) {
-      defaultInstance = new ModelDownloadServerManager(options);
-    }
-    return defaultInstance;
-  }
-  return new ModelDownloadServerManager(options);
+  return downloadServerSingleton.initialize(options);
 }
 
 /**
  * Cleanup ao fechar aplicação
  */
 async function cleanupModelDownloadServer() {
-  if (defaultInstance) {
-    await defaultInstance.stop();
-    defaultInstance = null;
-  }
+  downloadServerSingleton.destroy();
 }
 
 // Exportar
 module.exports = {
-  ModelDownloadServerManager,
+  // ⭐ SINGLETON PRINCIPAL - Use este sempre
+  downloadManager: downloadServerSingleton,
+  
+  // ⭐ FACTORY - Para compatibilidade
   createModelDownloadServer,
-  cleanupModelDownloadServer
+  
+  // ⭐ CLEANUP
+  cleanupModelDownloadServer,
+  
+  // ⭐ CLASSE ORIGINAL (apenas para testes avançados)
+  ModelDownloadServerManager
 };

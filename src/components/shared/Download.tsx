@@ -1,4 +1,4 @@
-import { Download as DownloadIcon, X, Check } from 'lucide-react';
+import { Download as DownloadIcon, X, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AppContext } from '../../global/AppProvider';
 
@@ -9,6 +9,19 @@ interface DownloadButtonProps {
 
 type DownloadStatus = 'checking' | 'idle' | 'connecting' | 'downloading' | 'downloaded' | 'error';
 
+// EXTEND WINDOW INTERFACE FOR ELECTRON API
+declare global {
+  interface Window {
+    api?: {
+      downloadServer?: {
+        getStatus: () => Promise<{ success: boolean; status?: any; error?: string }>;
+        start: () => Promise<{ success: boolean; info?: any; error?: string }>;
+        getInfo: () => Promise<{ success: boolean; info?: { url: string; isRunning: boolean } }>;
+      };
+    };
+  }
+}
+
 export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
   const context = useContext(AppContext);
   if (!context) throw new Error('Download must be used within AppProvider');
@@ -16,62 +29,153 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
   const { setDownloadState } = context;
   const [status, setStatus] = useState<DownloadStatus>('checking');
   const [progress, setProgress] = useState(0);
+  const [serverUrl, setServerUrl] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const prevStateRef = useRef({ status, progress });
+  const mountedRef = useRef(true);
 
-  // SYNC WITH CONTEXT - SAFE IMPLEMENTATION
+  // SYNC WITH CONTEXT - UPDATE ONLY WHEN CHANGED
   useEffect(() => {
-    const currentState = { status, progress };
-    
-    // ONLY UPDATE IF STATE ACTUALLY CHANGED
     if (prevStateRef.current.status !== status || prevStateRef.current.progress !== progress) {
       console.log(`[Download] Syncing state for ${modelId}:`, { 
         from: prevStateRef.current, 
-        to: currentState 
+        to: { status, progress }
       });
       
-      setDownloadState(modelId, currentState);
-      prevStateRef.current = currentState;
+      setDownloadState(modelId, { status, progress });
+      prevStateRef.current = { status, progress };
     }
   }, [status, progress, modelId, setDownloadState]);
 
-  // CHECK MODEL STATUS - WITH RACE CONDITION PROTECTION
+  // INITIALIZE: GET SERVER URL AND CHECK MODEL STATUS
   useEffect(() => {
-    let mounted = true;
-    console.log(`[Download] Checking status for model: ${modelId}`);
-    
-    const checkModelStatus = async () => {
+    mountedRef.current = true;
+    let initTimeout: NodeJS.Timeout;
+
+    const initialize = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/models/${modelId}/status`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        
-        const data = await response.json();
-        console.log(`[Download] Status response for ${modelId}:`, data);
-        
-        if (mounted) {
-          const newStatus = data.is_downloaded ? 'downloaded' : data.is_downloading ? 'downloading' : 'idle';
-          console.log(`[Download] Setting status to: ${newStatus}`);
-          
-          setStatus(newStatus);
-          if (data.is_downloaded) setProgress(100);
+        console.log(`[Download] Initializing for model: ${modelId}`);
+
+        // 1. CHECK IF ELECTRON API IS AVAILABLE
+        if (typeof window === 'undefined' || !window.api?.downloadServer) {
+          console.error('[Download] Electron API not available');
+          if (mountedRef.current) {
+            setStatus('error');
+            setDownloadState(modelId, { 
+              status: 'error', 
+              progress: 0,
+              error: 'Electron API not available' 
+            });
+          }
+          return;
         }
+
+        // 2. GET SERVER STATUS OR START IT
+        console.log('[Download] Checking SSE server status...');
+        let url: string | null = null;
+
+        try {
+          const statusResult = await window.api.downloadServer.getStatus();
+          
+          if (statusResult.success && statusResult.status?.healthy && statusResult.status?.url) {
+            url = statusResult.status.url;
+            console.log('[Download] SSE server is healthy:', url);
+          } else {
+            // TRY TO START SERVER
+            console.log('[Download] SSE server not ready, attempting to start...');
+            const startResult = await window.api.downloadServer.start();
+            
+            if (startResult.success) {
+              const infoResult = await window.api.downloadServer.getInfo();
+              if (infoResult.success && infoResult.info?.url) {
+                url = infoResult.info.url;
+                console.log('[Download] SSE server started:', url);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('[Download] Failed to get/start server:', error);
+        }
+
+        if (!url) {
+          console.error('[Download] Could not establish server URL');
+          if (mountedRef.current) {
+            setStatus('error');
+            setDownloadState(modelId, { 
+              status: 'error', 
+              progress: 0,
+              error: 'Server not available' 
+            });
+          }
+          return;
+        }
+
+        setServerUrl(url);
+
+        // 3. CHECK MODEL STATUS
+        await checkModelStatus(url);
+
       } catch (error) {
-        console.error(`[Download] Status check failed for ${modelId}:`, error);
-        if (mounted) {
-          setStatus('idle');
+        console.error('[Download] Initialization failed:', error);
+        if (mountedRef.current) {
+          setStatus('error');
+          setDownloadState(modelId, { 
+            status: 'error', 
+            progress: 0,
+            error: error instanceof Error ? error.message : 'Initialization failed' 
+          });
         }
       }
     };
 
-    checkModelStatus();
+    // DELAY TO ENSURE MAIN PROCESS SERVER IS READY
+    initTimeout = setTimeout(initialize, 1500);
 
     return () => {
-      console.log(`[Download] Cleanup status check for: ${modelId}`);
-      mounted = false;
+      mountedRef.current = false;
+      clearTimeout(initTimeout);
+      console.log(`[Download] Cleanup for: ${modelId}`);
     };
   }, [modelId]);
 
-  // EVENTSOURCE CLEANUP
+  // CHECK MODEL STATUS FROM SERVER
+  const checkModelStatus = async (url: string) => {
+    try {
+      console.log(`[Download] Checking model status for: ${modelId}`);
+      const response = await fetch(`${url}/api/models/${modelId}/status`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`[Download] Status response for ${modelId}:`, data);
+      
+      if (mountedRef.current) {
+        const newStatus: DownloadStatus = data.is_downloaded 
+          ? 'downloaded' 
+          : data.is_downloading 
+          ? 'downloading' 
+          : 'idle';
+        
+        console.log(`[Download] Setting status to: ${newStatus}`);
+        setStatus(newStatus);
+        
+        if (data.is_downloaded) {
+          setProgress(100);
+        } else if (data.is_downloading && typeof data.progress === 'number') {
+          setProgress(data.progress);
+        }
+      }
+    } catch (error) {
+      console.error(`[Download] Model status check failed for ${modelId}:`, error);
+      if (mountedRef.current) {
+        setStatus('idle'); // FALLBACK TO IDLE ON ERROR
+      }
+    }
+  };
+
+  // CLEANUP EVENTSOURCE ON UNMOUNT
   useEffect(() => {
     return () => {
       if (eventSourceRef.current) {
@@ -82,29 +186,53 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     };
   }, [modelId]);
 
+  // HANDLE DOWNLOAD BUTTON CLICK
   const handleDownload = async () => {
-    console.log(`[Download] Handle download clicked for: ${modelId}, current status: ${status}`);
+    console.log(`[Download] Button clicked for: ${modelId}, status: ${status}`);
 
+    if (!serverUrl) {
+      console.error('[Download] Cannot proceed: server URL not available');
+      setStatus('error');
+      setDownloadState(modelId, { 
+        status: 'error', 
+        progress: 0,
+        error: 'Server not available' 
+      });
+      return;
+    }
+
+    // CANCEL DOWNLOAD
     if (status === 'downloading') {
       console.log(`[Download] Cancelling download for: ${modelId}`);
       
-      // CLOSE EVENTSOURCE BEFORE CANCELLING
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
       
-      await fetch(`http://localhost:8000/api/models/${modelId}/download`, { method: 'DELETE' });
-      setStatus('idle');
-      setProgress(0);
+      try {
+        await fetch(`${serverUrl}/api/models/${modelId}/download`, { method: 'DELETE' });
+        setStatus('idle');
+        setProgress(0);
+      } catch (error) {
+        console.error('[Download] Failed to cancel:', error);
+        setStatus('error');
+        setDownloadState(modelId, { 
+          status: 'error', 
+          progress: 0,
+          error: 'Failed to cancel download' 
+        });
+      }
       return;
     }
 
+    // ALREADY DOWNLOADED
     if (status === 'downloaded') {
       console.log(`[Download] Model already downloaded: ${modelId}`);
       return;
     }
 
+    // START DOWNLOAD
     console.log(`[Download] Starting download for: ${modelId}`);
     setStatus('connecting');
     setProgress(0);
@@ -113,39 +241,49 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       console.log(`[Download] Establishing SSE connection for: ${modelId}`);
       setStatus('downloading');
       
-      // USE REF TO CONTROL EVENTSOURCE
-      const eventSource = new EventSource(`http://localhost:8000/api/models/${modelId}/download`);
+      const eventSource = new EventSource(`${serverUrl}/api/models/${modelId}/download`);
       eventSourceRef.current = eventSource;
 
       eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log(`[Download] SSE message for ${modelId}:`, data);
-        
-        // VERIFY THIS IS STILL THE CURRENT EVENTSOURCE
-        if (eventSourceRef.current === eventSource) {
-          if (data.type === 'progress') {
-            setProgress(data.progress);
-          } else if (data.type === 'completed') {
-            console.log(`[Download] Download completed for: ${modelId}`);
-            setStatus('downloaded');
-            setProgress(100);
-            eventSource.close();
-            eventSourceRef.current = null;
-          } else if (data.type === 'error') {
-            console.error(`[Download] Download error for ${modelId}:`, data);
-            setStatus('error');
-            eventSource.close();
-            eventSourceRef.current = null;
+        try {
+          const data = JSON.parse(event.data);
+          console.log(`[Download] SSE message for ${modelId}:`, data);
+          
+          if (eventSourceRef.current === eventSource && mountedRef.current) {
+            if (data.type === 'progress' && typeof data.progress === 'number') {
+              setProgress(data.progress);
+            } else if (data.type === 'completed') {
+              console.log(`[Download] Download completed for: ${modelId}`);
+              setStatus('downloaded');
+              setProgress(100);
+              eventSource.close();
+              eventSourceRef.current = null;
+            } else if (data.type === 'error') {
+              console.error(`[Download] Download error for ${modelId}:`, data);
+              setStatus('error');
+              setDownloadState(modelId, { 
+                status: 'error', 
+                progress: 0,
+                error: data.message || 'Download failed' 
+              });
+              eventSource.close();
+              eventSourceRef.current = null;
+            }
           }
-        } else {
-          console.log(`[Download] Ignoring message from old EventSource for: ${modelId}`);
+        } catch (error) {
+          console.error('[Download] Failed to parse SSE message:', error);
         }
       };
 
       eventSource.onerror = (error) => {
         console.error(`[Download] EventSource error for ${modelId}:`, error);
-        if (eventSourceRef.current === eventSource) {
+        if (eventSourceRef.current === eventSource && mountedRef.current) {
           setStatus('error');
+          setDownloadState(modelId, { 
+            status: 'error', 
+            progress: 0,
+            error: 'Connection lost' 
+          });
           eventSource.close();
           eventSourceRef.current = null;
         }
@@ -155,20 +293,21 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
         console.log(`[Download] EventSource connected for: ${modelId}`);
       };
 
-    }, 1500);
+    }, 500);
   };
 
-  const getIcon = () => {
+  const getIcon = (): JSX.Element => {
     if (status === 'downloaded') return <Check className="w-4 h-4 text-green-400" />;
     if (status === 'downloading' || status === 'connecting') return <X className="w-4 h-4 text-white" />;
-    if (status === 'error') return <DownloadIcon className="w-4 h-4 text-red-400" />;
+    if (status === 'error') return <AlertCircle className="w-4 h-4 text-red-400" />;
+    if (status === 'checking') return <DownloadIcon className="w-4 h-4 text-gray-400 animate-pulse" />;
     return <DownloadIcon className="w-4 h-4 text-white" />;
   };
 
   return (
     <button
       onClick={handleDownload}
-      disabled={status === 'checking'}
+      disabled={status === 'checking' || status === 'downloaded'}
       className={`
         border border-n-700 rounded-full 
         flex items-center justify-center 
@@ -176,14 +315,31 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-n-900 focus:ring-white/50
         transition-colors duration-200
         absolute p-1 top-6 right-6
-        ${status === 'downloaded' ? 'cursor-not-allowed opacity-50' : ''}
+        ${status === 'checking' || status === 'downloaded' ? 'cursor-not-allowed opacity-50' : ''}
+        ${status === 'error' ? 'border-red-500/50' : ''}
         ${className}
       `}
       aria-label={status === 'downloading' ? 'Cancelar' : 'Baixar'}
+      title={
+        status === 'checking' ? 'Verificando...' :
+        status === 'error' ? 'Erro - Clique para tentar novamente' :
+        status === 'connecting' ? 'Conectando...' :
+        status === 'downloading' ? `Baixando: ${Math.round(progress)}%` :
+        status === 'downloaded' ? 'Download concluído' :
+        'Baixar modelo'
+      }
     >
       {(status === 'downloading' || status === 'connecting') && (
         <svg className="absolute inset-0 w-full h-full -rotate-90">
-          <circle cx="50%" cy="50%" r="40%" stroke="currentColor" strokeWidth="2" fill="none" className="text-white/20" />
+          <circle 
+            cx="50%" 
+            cy="50%" 
+            r="40%" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            fill="none" 
+            className="text-white/20" 
+          />
           <circle 
             cx="50%" 
             cy="50%" 
@@ -194,6 +350,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
             strokeDasharray="251.2"
             strokeDashoffset={251.2 * (1 - progress / 100)}
             className="text-white transition-all duration-300"
+            style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
           />
         </svg>
       )}
