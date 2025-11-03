@@ -3,8 +3,10 @@ import { AppProvider } from './global/AppProvider';
 import '../style/styles.css';
 import '../style/colors.css';
 import '../style/theme.css';
+import '../style/fonts.css';
 import Chat from './components/layout/Chat/Chat';
 import Home from './components/layout/Home/Home';
+import ModelCardsGrid from "./components/layout/ModelsUi/ModelCardsGrid";
 
 function App() {
   return (
@@ -13,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/models" element={<ModelCardsGrid />} />
         </Routes>
       </div>
     </AppProvider>

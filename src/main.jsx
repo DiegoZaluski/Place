@@ -6,6 +6,7 @@ import i18n from './i18n/i18n'; //aqui foi importado a configuração do i18n re
 import '../style/styles.css';
 import '../style/colors.css';
 import '../style/theme.css';
+import '../style/fonts.css';
 import App from './App.jsx';
 import { HashRouter } from 'react-router-dom';
 
