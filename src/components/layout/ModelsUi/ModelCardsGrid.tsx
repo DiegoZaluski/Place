@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import ModelCard , {THEME } from './ModelCard';
 import {modelDetails} from './modelDetails';
 import {BackBtn} from '../../shared/WindowsComponents';
+import { AppContext } from '../../../global/AppProvider';
 
 const ModelCardsGrid: React.FC = () => {
+  const { getDownloadState } = useContext(AppContext);
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
-
   return (
+    
     <div className={`min-h-screen ${THEME.cardBg} p-8`}>
       <BackBtn/>
       <div className="max-w-7xl mx-auto">
@@ -15,7 +17,7 @@ const ModelCardsGrid: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap gap-6">
-          {modelDetails.map((model, index) => (
+          {modelDetails.filter((model, index) => getDownloadState(model.fullModelName).status === 'downloaded').map((model, index) => (
             <ModelCard
               key={`model-${index}`}
               model={model}

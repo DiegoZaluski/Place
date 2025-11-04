@@ -13,6 +13,7 @@ type GlobalState = {
   isLoggedIn: boolean;
   cartItems: number;
   downloads: Record<string, DownloadState>;
+  downloadedModels: string[]; 
 }
 
 interface GlobalActions {
@@ -22,6 +23,8 @@ interface GlobalActions {
   setCartItems: (cartItems: number) => void;
   setDownloadState: (modelId: string, state: DownloadState) => void;
   getDownloadState: (modelId: string) => DownloadState;
+  addDownloadedModel: (modelId: string) => void; 
+  removeDownloadedModel: (modelId: string) => void; 
 }
 
 type AppContextType = GlobalState & GlobalActions;
@@ -42,13 +45,32 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [cartItems, setCartItems] = useState<number>(0);
   const [downloads, setDownloads] = useState<Record<string, DownloadState>>({});
+  const [downloadedModels, setDownloadedModels] = useState<string[]>([]); // ✅ ESTADO CRIADO
 
   const setDownloadState = (modelId: string, state: DownloadState) => {
     setDownloads(prev => ({ ...prev, [modelId]: state }));
+    
+    // ✅ ATUALIZA lista de baixados automaticamente
+    if (state.status === 'downloaded') {
+      setDownloadedModels(prev => 
+        prev.includes(modelId) ? prev : [...prev, modelId]
+      );
+    }
   };
 
   const getDownloadState = (modelId: string): DownloadState => {
     return downloads[modelId] || { status: 'idle', progress: 0 };
+  };
+
+  // ✅ NOVAS ACTIONS para gerenciar modelos baixados
+  const addDownloadedModel = (modelId: string) => {
+    setDownloadedModels(prev => 
+      prev.includes(modelId) ? prev : [...prev, modelId]
+    );
+  };
+
+  const removeDownloadedModel = (modelId: string) => {
+    setDownloadedModels(prev => prev.filter(id => id !== modelId));
   };
 
   // CONTEXT VALUE
@@ -58,12 +80,15 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     isLoggedIn,
     cartItems,
     downloads,
+    downloadedModels, // ✅ INCLUÍDO
     setIsDark,
     setUser,
     setIsLoggedIn,
     setCartItems,
     setDownloadState,
-    getDownloadState
+    getDownloadState,
+    addDownloadedModel, // ✅ INCLUÍDO
+    removeDownloadedModel // ✅ INCLUÍDO
   };
 
   return (

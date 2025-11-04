@@ -25,7 +25,7 @@ def setup_logging():
     logger.setLevel(logging.INFO)
     
     handler = RotatingFileHandler(
-        "./logs/download.log",
+        "./logs/download.tmp",
         maxBytes=10*1024*1024,
         backupCount=30
     )
@@ -121,13 +121,14 @@ class DownloadManager:
             logger.info(" TENTANDO CARREGAR CONFIGURAÇÃO...")
             
             #  TESTE MULTIPLOS CAMINHOS
-            possible_paths = [
+            possible_paths = [ # remover caminho absolouto no futuro proximo 
+                "/home/zaluski/Documentos/Place/backend/config/models.json",  # Novo local global
                 "./config/models.json",  # Relativo ao SSE
-                "/home/zaluski/Documentos/Place/backend/python/SSE/config/models.json",  # Absoluto
-                "../../../transformers/llama.cpp/models/config/models.json",  # Outro possível
-                "../config/models.json",  # Um nível acima
-                "../../util/models.json",  # Dois níveis acima + util
-                "/home/zaluski/Documentos/Place/backend/util/models.json"  # Absoluto alternativo
+                "/home/zaluski/Documentos/Place/backend/python/SSE/config/models.json",  # Absoluto antigo
+                "../../../transformers/llama.cpp/models/config/models.json",
+                "../config/models.json",
+                "../../util/models.json",
+                "/home/zaluski/Documentos/Place/backend/util/models.json"
             ]
             
             config_path = None

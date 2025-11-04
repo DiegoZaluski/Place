@@ -22,17 +22,75 @@ declare global {
   }
 }
 
-export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
-  const context = useContext(AppContext);
-  if (!context) throw new Error('Download must be used within AppProvider');
+// CHECK MODEL STATUS FROM SERVER - MOVED TO TOP
+const checkModelStatus = async (
+  url: string,
+  modelId: string,
+  setStatus: (status: DownloadStatus) => void,
+  setProgress: (progress: number) => void,
+  isMounted: () => boolean,
+  addDownloadedModel: (modelId: string) => void
+): Promise<void> => {
+  try {
+    console.log(`[Download] Checking model status for: ${modelId}`);
+    const response = await fetch(`${url}/api/models/${modelId}/status`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log(`[Download] Status response for ${modelId}:`, data);
+    
+    if (isMounted()) {
+      const newStatus: DownloadStatus = data.is_downloaded 
+        ? 'downloaded' 
+        : data.is_downloading 
+        ? 'downloading' 
+        : 'idle';
+      
+      console.log(`[Download] Setting status to: ${newStatus}`);
+      setStatus(newStatus);
+      
+      if (data.is_downloaded) {
+        setProgress(100);
+        addDownloadedModel(modelId);
+      } else if (data.is_downloading && typeof data.progress === 'number') {
+        setProgress(data.progress);
+      }
+    }
+  } catch (error) {
+    console.error(`[Download] Model status check failed for ${modelId}:`, error);
+    if (isMounted()) {
+      setStatus('idle');
+    }
+  }
+};
 
-  const { setDownloadState } = context;
+export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
+  // STATE DECLARATIONS
   const [status, setStatus] = useState<DownloadStatus>('checking');
   const [progress, setProgress] = useState(0);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
+  
+  // REFS
   const eventSourceRef = useRef<EventSource | null>(null);
   const prevStateRef = useRef({ status, progress });
   const mountedRef = useRef(true);
+
+  // CONTEXT
+  const context = useContext(AppContext);
+  if (!context) throw new Error('Download must be used within AppProvider');
+  const { setDownloadState, addDownloadedModel } = context;
+
+  // HELPER FUNCTIONS
+  const getIcon = (): JSX.Element => {
+    if (status === 'downloaded') return <Check className="w-4 h-4 text-green-400" />;
+    if (status === 'downloading' || status === 'connecting') return <X className="w-4 h-4 text-white" />;
+    if (status === 'error') return <AlertCircle className="w-4 h-4 text-red-400" />;
+    if (status === 'checking') return <DownloadIcon className="w-4 h-4 text-gray-400 animate-pulse" />;
+    return <DownloadIcon className="w-4 h-4 text-white" />;
+  };
 
   // SYNC WITH CONTEXT - UPDATE ONLY WHEN CHANGED
   useEffect(() => {
@@ -46,6 +104,17 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       prevStateRef.current = { status, progress };
     }
   }, [status, progress, modelId, setDownloadState]);
+
+  // CLEANUP EVENTSOURCE ON UNMOUNT
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        console.log(`[Download] Cleaning up EventSource for: ${modelId}`);
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+    };
+  }, [modelId]);
 
   // INITIALIZE: GET SERVER URL AND CHECK MODEL STATUS
   useEffect(() => {
@@ -112,8 +181,15 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
 
         setServerUrl(url);
 
-        // 3. CHECK MODEL STATUS
-        await checkModelStatus(url);
+        // 3. CHECK MODEL STATUS USING EXTRACTED FUNCTION
+        await checkModelStatus(
+          url, 
+          modelId, 
+          setStatus, 
+          setProgress, 
+          () => mountedRef.current,
+          addDownloadedModel
+        );
 
       } catch (error) {
         console.error('[Download] Initialization failed:', error);
@@ -135,54 +211,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       mountedRef.current = false;
       clearTimeout(initTimeout);
       console.log(`[Download] Cleanup for: ${modelId}`);
-    };
-  }, [modelId]);
-
-  // CHECK MODEL STATUS FROM SERVER
-  const checkModelStatus = async (url: string) => {
-    try {
-      console.log(`[Download] Checking model status for: ${modelId}`);
-      const response = await fetch(`${url}/api/models/${modelId}/status`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log(`[Download] Status response for ${modelId}:`, data);
-      
-      if (mountedRef.current) {
-        const newStatus: DownloadStatus = data.is_downloaded 
-          ? 'downloaded' 
-          : data.is_downloading 
-          ? 'downloading' 
-          : 'idle';
-        
-        console.log(`[Download] Setting status to: ${newStatus}`);
-        setStatus(newStatus);
-        
-        if (data.is_downloaded) {
-          setProgress(100);
-        } else if (data.is_downloading && typeof data.progress === 'number') {
-          setProgress(data.progress);
-        }
-      }
-    } catch (error) {
-      console.error(`[Download] Model status check failed for ${modelId}:`, error);
-      if (mountedRef.current) {
-        setStatus('idle'); // FALLBACK TO IDLE ON ERROR
-      }
-    }
-  };
-
-  // CLEANUP EVENTSOURCE ON UNMOUNT
-  useEffect(() => {
-    return () => {
-      if (eventSourceRef.current) {
-        console.log(`[Download] Cleaning up EventSource for: ${modelId}`);
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
-      }
     };
   }, [modelId]);
 
@@ -296,14 +324,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     }, 500);
   };
 
-  const getIcon = (): JSX.Element => {
-    if (status === 'downloaded') return <Check className="w-4 h-4 text-green-400" />;
-    if (status === 'downloading' || status === 'connecting') return <X className="w-4 h-4 text-white" />;
-    if (status === 'error') return <AlertCircle className="w-4 h-4 text-red-400" />;
-    if (status === 'checking') return <DownloadIcon className="w-4 h-4 text-gray-400 animate-pulse" />;
-    return <DownloadIcon className="w-4 h-4 text-white" />;
-  };
-
+  // RENDER
   return (
     <button
       onClick={handleDownload}
