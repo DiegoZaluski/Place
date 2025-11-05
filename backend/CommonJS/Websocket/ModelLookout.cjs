@@ -5,7 +5,7 @@ const axios = require('axios');
 
 class ModelLookout {
     constructor() {
-        // Singleton pattern - return existing instance if already created
+        // Singleton simples e funcional
         if (ModelLookout.instance) {
             return ModelLookout.instance;
         }
@@ -24,6 +24,9 @@ class ModelLookout {
             baseURL: 'http://localhost:8001',
             timeout: 30000
         });
+
+        // 🔥 GARANTIR que retorna a instância singleton
+        return this;
     }
 
     start() {
@@ -39,11 +42,12 @@ class ModelLookout {
     }
 
     watchConfigFile() {
-        // Remove previous watcher if exists
+        // Remover watcher anterior se existir
         if (this.watcher) {
             fs.unwatchFile(this.configPath, this.watcher);
         }
 
+        // Usar arrow function para manter o contexto
         this.watcher = (curr, prev) => {
             if (curr.mtime !== prev.mtime) {
                 this.debouncedHandleConfigChange();
@@ -79,8 +83,7 @@ class ModelLookout {
     generateConfigHash(config) {
         return JSON.stringify({
             model_name: config.model_name,
-            operation_id: config.operation_id,
-            timestamp: Date.now()
+            operation_id: config.operation_id
         });
     }
 
@@ -103,8 +106,8 @@ class ModelLookout {
             const operationId = config.operation_id;
             const newHash = this.generateConfigHash(config);
 
-            // Check if model actually changed
-            if (newModel && newModel !== this.lastModel && newHash !== this.lastHash) {
+            // Verificar se o modelo realmente mudou
+            if (newModel && newModel !== this.lastModel) {
                 console.log(`Model changed: ${this.lastModel || 'none'} -> ${newModel}`);
                 
                 const success = await this.restartWithServerManager();
@@ -125,10 +128,13 @@ class ModelLookout {
         } catch (error) {
             console.error('Lookout error:', error.message);
             
+            // Tentar notificar erro
             try {
-                const config = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
-                if (config.operation_id) {
-                    await this.notifyHttpServer(config.operation_id, false, error.message);
+                if (fs.existsSync(this.configPath)) {
+                    const config = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
+                    if (config.operation_id) {
+                        await this.notifyHttpServer(config.operation_id, false, error.message);
+                    }
                 }
             } catch (e) {
                 console.error('Error notifying HTTP server:', e.message);
@@ -141,7 +147,6 @@ class ModelLookout {
     async restartWithServerManager() {
         try {
             console.log('Restarting server via serverManager...');
-            
             const result = await restartPythonServer(null);
             
             if (result.success) {
@@ -151,7 +156,6 @@ class ModelLookout {
                 console.error('Restart failed:', result.error);
                 return false;
             }
-            
         } catch (error) {
             console.error('Server manager error:', error.message);
             return false;
@@ -184,6 +188,7 @@ class ModelLookout {
 
         if (this.changeTimeout) {
             clearTimeout(this.changeTimeout);
+            this.changeTimeout = null;
         }
         
         if (this.watcher) {
@@ -196,7 +201,7 @@ class ModelLookout {
     }
 }
 
-// Singleton instance reference
+// Singleton instance
 ModelLookout.instance = null;
 
 module.exports = ModelLookout;

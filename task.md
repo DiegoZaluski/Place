@@ -13,3 +13,6 @@
 
 # taks simples add o site a documentações do app
 # add models h1 para definir models a baixo 
+
+
+# provavelmente caminho não esta escrevendo no json 

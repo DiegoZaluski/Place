@@ -6,16 +6,23 @@ const { COLORS } = require("./utils/ansiColors");
 const serverManager = require("./backend/CommonJS/managerWebSocket.cjs");
 const websocketManager = require("./backend/CommonJS/Websocket/websocket-manager.cjs");
 
+// ⭐⭐ SERVIDORES ADICIONAIS
+const ModelLookout = require("./backend/CommonJS/Websocket/ModelLookout.cjs");
+const HTTPServer = require("./backend/CommonJS/HTTP/HTTPServer.cjs");
+
 // SSE DOWNLOAD SERVER
 const { downloadManager } = require("./backend/CommonJS/SSE/initSSEDownload.cjs");
 let sseServer = null;
+
+// ⭐⭐ INSTÂNCIAS DOS NOVOS SERVIDORES
+let modelLookout = null;
+let httpServerInstance = null;
 
 /**
  * Inicia o servidor SSE para downloads de modelos
  */
 const startSSEServer = async () => {
   try {
-    // ⭐ VERIFICA SE JÁ ESTÁ INICIALIZADO
     if (downloadManager.isInitialized()) {
       const manager = downloadManager.getManager();
       if (manager.isRunning) {
@@ -29,7 +36,6 @@ const startSSEServer = async () => {
     const scriptPath = path.join(__dirname, "backend", "python", "SSE", "Download_SSE.py");
     const pythonPath = path.join(__dirname, "backend", "venv", "bin", "python");
     
-    // VERIFICAR SE ARQUIVOS EXISTEM
     const fs = require('fs');
     if (!fs.existsSync(scriptPath)) {
       throw new Error(`Script Python não encontrado: ${scriptPath}`);
@@ -38,7 +44,6 @@ const startSSEServer = async () => {
     console.log(COLORS.CYAN + `📄 Script: ${scriptPath}` + COLORS.RESET);
     console.log(COLORS.CYAN + `🐍 Python: ${pythonPath}` + COLORS.RESET);
     
-    // ⭐ USA O SINGLETON - INICIALIZA UMA ÚNICA VEZ
     sseServer = downloadManager.initialize({
       scriptPath: scriptPath,
       pythonPath: fs.existsSync(pythonPath) ? pythonPath : 'python3',
@@ -63,7 +68,6 @@ const startSSEServer = async () => {
  */
 const stopSSEServer = async () => {
   try {
-    // ⭐ USA O SINGLETON PARA VERIFICAR
     if (!downloadManager.isInitialized()) {
       console.log(COLORS.YELLOW + '⚠️  SSE Server não está inicializado' + COLORS.RESET);
       return;
@@ -83,6 +87,33 @@ const stopSSEServer = async () => {
   }
 };
 
+/**
+ * ⭐⭐ INICIA HTTP SERVER
+ */
+const startHTTPServer = async () => {
+  try {
+    console.log(COLORS.CYAN + '🚀 Iniciando HTTP Server...' + COLORS.RESET);
+    httpServerInstance = new HTTPServer();
+    await httpServerInstance.startHTTP();
+    console.log(COLORS.GREEN + '✅ HTTP Server iniciado na porta 8001' + COLORS.RESET);
+    return true;
+  } catch (error) {
+    console.error(COLORS.RED + '❌ Falha ao iniciar HTTP Server:' + COLORS.RESET, error);
+    return false;
+  }
+};
+
+/**
+ * ⭐⭐ PARA HTTP SERVER
+ */
+const stopHTTPServer = () => {
+  if (httpServerInstance) {
+    console.log(COLORS.CYAN + '🛑 Parando HTTP Server...' + COLORS.RESET);
+    httpServerInstance.stopHTTP();
+    httpServerInstance = null;
+    console.log(COLORS.GREEN + '✅ HTTP Server parado' + COLORS.RESET);
+  }
+};
 
 // ELECTRON WINDOW
 let mainWindow;
@@ -112,11 +143,20 @@ async function createWindow() {
     }
     console.log(COLORS.GREEN + "✅ WINDOW LOADED SUCCESSFULLY" + COLORS.RESET);
     
-    // INICIAR PYTHON SERVER (WebSocket para modelo LLM)
+    // ⭐⭐ INICIAR TODOS OS SERVIDORES
     setTimeout(async () => {
+      // 1. Servidor Python Principal (WebSocket)
       const serverStarted = await serverManager.startPythonServer(mainWindow);
       if (serverStarted) {
         websocketManager.connectToPythonServer(mainWindow);
+        
+        // 2. Model Lookout (Monitor de mudanças de modelo)
+        modelLookout = new ModelLookout();
+        modelLookout.start();
+        console.log(COLORS.GREEN + "✅ MODEL LOOKOUT STARTED" + COLORS.RESET);
+        
+        // 3. HTTP Server (API REST)
+        await startHTTPServer();
       }
     }, 1000);
     
@@ -127,9 +167,14 @@ async function createWindow() {
   mainWindow.on("closed", () => {
     mainWindow = null;
     websocketManager.closeWebSocket();
+    
+    // ⭐⭐ PARAR SERVIDORES AO FECHAR JANELA
+    if (modelLookout) {
+      modelLookout.stop();
+    }
+    stopHTTPServer();
   });
 }
-
 
 // IPC HANDLERS - WINDOW CONTROLS
 ipcMain.handle("window:minimize", () => {
@@ -146,12 +191,10 @@ ipcMain.handle("window:close", () => {
   if (mainWindow) mainWindow.close();
 });
 
-
 // IPC HANDLERS - SERVER OPERATIONS
 ipcMain.handle("server:restart", async () => {
   return await serverManager.restartPythonServer(mainWindow);
 });
-
 
 // IPC HANDLERS - MODEL OPERATIONS
 ipcMain.handle("model:send-prompt", async (_, prompt) => {
@@ -195,11 +238,7 @@ ipcMain.handle("model:clear-memory", async () => {
   }
 });
 
-
 // IPC HANDLERS - SSE DOWNLOAD SERVER
-/**
- * Obtém status detalhado do servidor SSE
- */
 ipcMain.handle("downloadServer:getStatus", async () => {
   try {
     if (!sseServer) {
@@ -218,9 +257,6 @@ ipcMain.handle("downloadServer:getStatus", async () => {
   }
 });
 
-/**
- * Inicia o servidor SSE
- */
 ipcMain.handle("downloadServer:start", async () => {
   try {
     if (sseServer && sseServer.isRunning) {
@@ -236,9 +272,6 @@ ipcMain.handle("downloadServer:start", async () => {
   }
 });
 
-/**
- * Obtém informações do servidor (URL, porta, etc)
- */
 ipcMain.handle("downloadServer:getInfo", async () => {
   try {
     if (!sseServer) {
@@ -256,9 +289,6 @@ ipcMain.handle("downloadServer:getInfo", async () => {
   }
 });
 
-/**
- * Para o servidor SSE
- */
 ipcMain.handle("downloadServer:stop", async () => {
   try {
     await stopSSEServer();
@@ -279,15 +309,14 @@ ipcMain.handle("downloadServer:stop", async () => {
 app.whenReady().then(async () => {
   await createWindow();
   
-  // INICIAR SSE SERVER APÓS JANELA (não bloqueia)
+  // INICIAR SSE SERVER APÓS JANELA
   setTimeout(async () => {
     try {
       await startSSEServer();
     } catch (error) {
       console.error(COLORS.RED + '❌ SSE Server failed on startup:' + COLORS.RESET, error);
-      // App continua funcionando mesmo se SSE falhar
     }
-  }, 2000); // 2s para garantir estabilidade
+  }, 2000);
 });
 
 /**
@@ -297,6 +326,12 @@ app.on("window-all-closed", async () => {
   websocketManager.closeWebSocket();
   serverManager.stopPythonServer();
   await stopSSEServer();
+  
+  // ⭐⭐ PARAR TODOS OS SERVIDORES
+  if (modelLookout) {
+    modelLookout.stop();
+  }
+  stopHTTPServer();
   
   if (process.platform !== "darwin") {
     app.quit();
@@ -311,6 +346,12 @@ app.on("before-quit", async () => {
   websocketManager.closeWebSocket();
   serverManager.stopPythonServer();
   await stopSSEServer();
+  
+  // ⭐⭐ PARAR TODOS OS SERVIDORES
+  if (modelLookout) {
+    modelLookout.stop();
+  }
+  stopHTTPServer();
 });
 
 /**
@@ -319,6 +360,12 @@ app.on("before-quit", async () => {
 app.on("will-quit", async () => {
   serverManager.stopPythonServer();
   await stopSSEServer();
+  
+  // ⭐⭐ PARAR TODOS OS SERVIDORES
+  if (modelLookout) {
+    modelLookout.stop();
+  }
+  stopHTTPServer();
 });
 
 module.exports = {

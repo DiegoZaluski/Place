@@ -35,7 +35,7 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
         return;
       }
 
-      const response = await fetch('http://localhost:8000/switch-model', {
+      const response = await fetch('http://localhost:8001/switch-model', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
