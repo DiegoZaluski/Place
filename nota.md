@@ -26,3 +26,9 @@ p8Syt=KkYmb]uX&
 
 
 #contexto 
+
+# COMANDO PARA MATAR PROCESSOS PYTHON 
+
+ps aux | grep python
+pkill -f "python.*llama_server"
+

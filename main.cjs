@@ -6,9 +6,7 @@ const { COLORS } = require("./utils/ansiColors");
 const serverManager = require("./backend/CommonJS/managerWebSocket.cjs");
 const websocketManager = require("./backend/CommonJS/Websocket/websocket-manager.cjs");
 
-// ============================================
 // SSE DOWNLOAD SERVER
-// ============================================
 const { downloadManager } = require("./backend/CommonJS/SSE/initSSEDownload.cjs");
 let sseServer = null;
 
@@ -44,7 +42,7 @@ const startSSEServer = async () => {
     sseServer = downloadManager.initialize({
       scriptPath: scriptPath,
       pythonPath: fs.existsSync(pythonPath) ? pythonPath : 'python3',
-      port: 8000,
+      port: 8080,
       logLevel: 'info',
       autoRestart: true,
       maxRestarts: 3,
@@ -85,9 +83,8 @@ const stopSSEServer = async () => {
   }
 };
 
-// ============================================
+
 // ELECTRON WINDOW
-// ============================================
 let mainWindow;
 
 /**
@@ -133,9 +130,8 @@ async function createWindow() {
   });
 }
 
-// ============================================
+
 // IPC HANDLERS - WINDOW CONTROLS
-// ============================================
 ipcMain.handle("window:minimize", () => {
   if (mainWindow) mainWindow.minimize();
 });
@@ -150,16 +146,14 @@ ipcMain.handle("window:close", () => {
   if (mainWindow) mainWindow.close();
 });
 
-// ============================================
+
 // IPC HANDLERS - SERVER OPERATIONS
-// ============================================
 ipcMain.handle("server:restart", async () => {
   return await serverManager.restartPythonServer(mainWindow);
 });
 
-// ============================================
+
 // IPC HANDLERS - MODEL OPERATIONS
-// ============================================
 ipcMain.handle("model:send-prompt", async (_, prompt) => {
   try {
     if (!prompt?.trim()) {
@@ -201,10 +195,8 @@ ipcMain.handle("model:clear-memory", async () => {
   }
 });
 
-// ============================================
-// IPC HANDLERS - SSE DOWNLOAD SERVER
-// ============================================
 
+// IPC HANDLERS - SSE DOWNLOAD SERVER
 /**
  * Obtém status detalhado do servidor SSE
  */
@@ -329,9 +321,6 @@ app.on("will-quit", async () => {
   await stopSSEServer();
 });
 
-// ============================================
-// EXPORTS
-// ============================================
 module.exports = {
   connectToPythonServer: websocketManager.connectToPythonServer
 };

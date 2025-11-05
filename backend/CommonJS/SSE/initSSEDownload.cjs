@@ -15,7 +15,7 @@ class ModelDownloadServerManager {
       pythonPath: options.pythonPath || 'python',
       scriptPath: options.scriptPath || path.join(__dirname, '..', 'python', 'SSE', 'Download_SSE.py'),
       host: options.host || '127.0.0.1',
-      port: options.port || 8000,
+      port: options.port || 8080,
       timeout: options.timeout || 90000,
       autoRestart: options.autoRestart ?? true,
       maxRestarts: options.maxRestarts || 3,
