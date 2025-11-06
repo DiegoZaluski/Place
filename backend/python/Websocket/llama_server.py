@@ -14,7 +14,8 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.CRITICAL)
+logger.addHandler(logging.NullHandler())
 # --- Global Configuration ---
 CONTEXT_SIZE = 4096 
 MODEL_PATH = "../transformers/llama.cpp/models/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"

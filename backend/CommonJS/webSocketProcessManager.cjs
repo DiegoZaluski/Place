@@ -7,6 +7,17 @@ let pythonServerProcess = null;
 let serverRestartCount = 0;
 const MAX_SERVER_RESTARTS = 3;
 
+// VARIÁVEL PARA CALLBACK DE RECONEXÃO
+let reconnectCallback = null;
+
+/**
+ * Configura o callback para reconexão do WebSocket
+ */
+function setReconnectCallback(callback) {
+  reconnectCallback = callback;
+  console.log('WebSocket reconnect callback configured:', !!callback);
+}
+
 /**
  * Verifica se o servidor Python já está rodando na porta 8765
  */
@@ -39,46 +50,59 @@ async function isPythonServerRunning() {
  */
 async function killExistingPythonServers() {
   return new Promise((resolve) => {
+    console.log('Killing existing Python servers...');
+    
     const platform = process.platform;
     let command = '';
     
     if (platform === 'win32') {
-      command = `netstat -ano | findstr :8765 | findstr LISTENING`;
+      command = `tasklist | findstr python`;
     } else {
-      command = `lsof -ti:8765`;
+      command = `ps aux | grep -i "llama_server\\|python.*llama" | grep -v grep`;
     }
     
     exec(command, (error, stdout) => {
       if (error || !stdout) {
+        console.log('No existing Python servers found');
         resolve();
         return;
       }
       
+      console.log('Found existing Python processes:', stdout);
+      
       if (platform === 'win32') {
+        // Windows - matar processos Python
         const pids = stdout.split('\n')
-          .filter(line => line.trim())
-          .map(line => line.split(/\s+/).pop())
+          .filter(line => line.includes('python'))
+          .map(line => line.split(/\s+/)[1])
           .filter(pid => pid);
         
         pids.forEach(pid => {
           try {
-            process.kill(parseInt(pid));
+            console.log('Killing Python process PID:', pid);
+            process.kill(parseInt(pid), 'SIGTERM');
           } catch (e) {
-            // Processo já finalizado
+            console.log('Process already terminated:', pid);
           }
         });
       } else {
-        const pids = stdout.trim().split('\n');
+        // Linux/Mac - matar processos específicos
+        const pids = stdout.split('\n')
+          .filter(line => line.trim())
+          .map(line => line.split(/\s+/)[1])
+          .filter(pid => pid);
+        
         pids.forEach(pid => {
           try {
-            process.kill(parseInt(pid));
+            console.log('Killing Python server process PID:', pid);
+            process.kill(parseInt(pid), 'SIGTERM');
           } catch (e) {
-            // Processo já finalizado
+            console.log('Process already terminated:', pid);
           }
         });
       }
       
-      setTimeout(resolve, 500);
+      setTimeout(resolve, 1000);
     });
   });
 }
@@ -86,39 +110,44 @@ async function killExistingPythonServers() {
 /**
  * Aguarda o servidor Python iniciar
  */
-async function waitForServerStart(timeout = 10000) {
+async function waitForServerStart(timeout = 15000) {
   const startTime = Date.now();
+  console.log('Waiting for Python server to start...');
   
   while (Date.now() - startTime < timeout) {
     const isRunning = await isPythonServerRunning();
     if (isRunning) {
+      console.log('Python server is now running');
       return true;
     }
     await new Promise(resolve => setTimeout(resolve, 500));
   }
   
+  console.log('Python server failed to start within timeout');
   return false;
 }
 
 /**
  * Manipula crash do servidor com restart automático
  */
-function handleServerCrash(mainWindow, connectToPythonServer) {
+function handleServerCrash(mainWindow) {
   serverRestartCount++;
   
   if (serverRestartCount <= MAX_SERVER_RESTARTS) {
-    console.log(`🔄 Restarting Python server (attempt ${serverRestartCount}/${MAX_SERVER_RESTARTS})...`);
+    console.log(`Restarting Python server (attempt ${serverRestartCount}/${MAX_SERVER_RESTARTS})...`);
     
     setTimeout(async () => {
       const success = await startPythonServer(mainWindow);
-      if (success) {
-        connectToPythonServer();
+      if (success && reconnectCallback) {
+        console.log('Triggering WebSocket reconnection...');
+        reconnectCallback();
+      } else if (success) {
+        console.log('Server restarted but no reconnect callback configured');
       }
-    }, 2000);
+    }, 3000);
   } else {
-    console.error(`💥 Python server failed to start after ${MAX_SERVER_RESTARTS} attempts`);
+    console.error(`Python server failed to start after ${MAX_SERVER_RESTARTS} attempts`);
     
-    // Notifica a UI sobre o erro crítico
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('server:critical-error', {
         message: `Python server failed to start after ${MAX_SERVER_RESTARTS} attempts. Please check the server logs.`
@@ -140,12 +169,12 @@ function getPythonPath(workingDir) {
   
   for (const pythonPath of possiblePaths) {
     if (fs.existsSync(pythonPath)) {
-      console.log(`✅ Python encontrado: ${pythonPath}`);
+      console.log('Python found:', pythonPath);
       return pythonPath;
     }
   }
   
-  throw new Error('Python não encontrado no virtual environment');
+  throw new Error('Python not found in virtual environment');
 }
 
 /**
@@ -153,46 +182,46 @@ function getPythonPath(workingDir) {
  */
 async function startPythonServer(mainWindow) {
   try {
-    console.log("🚀 Starting Python server...");
+    console.log("Starting Python server...");
     
     // Verifica se já está rodando
     const isRunning = await isPythonServerRunning();
     if (isRunning) {
-      console.log("✅ Python server is already running");
-      return true;
+      console.log("Python server is already running - killing existing process");
+      await killExistingPythonServers();
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
-    // Mata servidores existentes que possam estar em estado zumbi
+    // Mata servidores existentes
     await killExistingPythonServers();
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Caminho correto para a pasta backend
-    const workingDir = path.join(__dirname, '..');  // Volta um nível para a pasta backend
-    console.log(`📁 Working directory: ${workingDir}`);
+    const workingDir = path.join(__dirname, '..');
+    console.log('Working directory:', workingDir);
     
-   
     const pythonPath = getPythonPath(workingDir);
     const serverPath = path.join(workingDir, 'python', 'Websocket', 'llama_server.py');
-    console.log(`🔍 Procurando servidor em: ${serverPath}`);
+    console.log('Server path:', serverPath);
     
-    if (!fs.existsSync(path.dirname(serverPath))) {
-      throw new Error(`Servidor Python não encontrado em: ${path.dirname(serverPath)}`);
+    if (!fs.existsSync(serverPath)) {
+      throw new Error(`Server not found: ${serverPath}`);
     }
     
-    // Environment limpo para evitar erro GTK
+    // Environment limpo
     const cleanEnv = {
       ...process.env,
       DISPLAY: ':0',
       ELECTRON_RUN_AS_NODE: '1',
-      // Mantém o PATH original para encontrar dependências
       PATH: process.env.PATH
     };
     
-    console.log(`🎯 Usando Python: ${pythonPath}`);
-    console.log(`🎯 Servidor: ${serverPath}`);
+    console.log('Using Python:', pythonPath);
+    console.log('Starting server:', serverPath);
     
-    // ✅ CORREÇÃO: Usa o caminho absoluto do Python do venv
+    // Inicia o processo
     pythonServerProcess = spawn(pythonPath, [serverPath], {
-      cwd: workingDir, // Define o diretório de trabalho
+      cwd: workingDir,
       stdio: ['pipe', 'pipe', 'pipe'],
       shell: false,
       env: cleanEnv
@@ -202,16 +231,15 @@ async function startPythonServer(mainWindow) {
     pythonServerProcess.stdout.on('data', (data) => {
       const output = data.toString().trim();
       if (output) {
-        console.log(`🐍 Server: ${output}`);
+        console.log('Server stdout:', output);
       }
     });
     
     pythonServerProcess.stderr.on('data', (data) => {
       const output = data.toString().trim();
       if (output) {
-        console.error(`🐍 Server Error: ${output}`);
+        console.error('Server stderr:', output);
         
-        // Envia erros para a UI se a janela estiver pronta
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('server:error', output);
         }
@@ -219,33 +247,39 @@ async function startPythonServer(mainWindow) {
     });
     
     pythonServerProcess.on('close', (code) => {
-      console.log(`🐍 Python server process exited with code ${code}`);
+      console.log(`Python server process exited with code ${code}`);
       pythonServerProcess = null;
       
       if (code !== 0 && code !== null) {
-        handleServerCrash(mainWindow, require('./main').connectToPythonServer);
+        console.log('Server crashed, handling restart...');
+        handleServerCrash(mainWindow);
       }
     });
     
     pythonServerProcess.on('error', (error) => {
-      console.error('❌ Failed to start Python server:', error);
+      console.error('Failed to start Python server:', error);
       pythonServerProcess = null;
-      handleServerCrash(mainWindow, require('./main').connectToPythonServer);
+      handleServerCrash(mainWindow);
     });
     
     // Aguarda o servidor ficar disponível
     const serverStarted = await waitForServerStart();
     if (serverStarted) {
-      console.log("✅ Python server started successfully");
+      console.log("Python server started successfully");
       serverRestartCount = 0;
       return true;
     } else {
+      // Se não iniciou, mata o processo
+      if (pythonServerProcess) {
+        pythonServerProcess.kill('SIGTERM');
+        pythonServerProcess = null;
+      }
       throw new Error('Server failed to start within timeout');
     }
     
   } catch (error) {
-    console.error('❌ Error starting Python server:', error);
-    handleServerCrash(mainWindow, require('./main').connectToPythonServer);
+    console.error('Error starting Python server:', error);
+    handleServerCrash(mainWindow);
     return false;
   }
 }
@@ -255,7 +289,7 @@ async function startPythonServer(mainWindow) {
  */
 function stopPythonServer() {
   if (pythonServerProcess) {
-    console.log("🛑 Stopping Python server...");
+    console.log("Stopping Python server...");
     pythonServerProcess.kill('SIGTERM');
     pythonServerProcess = null;
   }
@@ -267,14 +301,25 @@ function stopPythonServer() {
  */
 async function restartPythonServer(mainWindow) {
   try {
-    console.log("🔄 Manual server restart requested");
+    console.log("Manual server restart requested");
+    console.log("Reconnect callback available:", !!reconnectCallback);
+    
     serverRestartCount = 0;
     stopPythonServer();
     
+    // Aguarda um pouco antes de reiniciar
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
     const success = await startPythonServer(mainWindow);
+    
+    if (success && reconnectCallback) {
+      console.log('Calling reconnect callback after manual restart');
+      reconnectCallback();
+    }
+    
     return { success };
   } catch (error) {
-    console.error("❌ Manual server restart failed:", error);
+    console.error("Manual server restart failed:", error);
     return { success: false, error: error.message };
   }
 }
@@ -283,5 +328,6 @@ module.exports = {
   startPythonServer,
   stopPythonServer,
   restartPythonServer,
-  isPythonServerRunning
+  isPythonServerRunning,
+  setReconnectCallback
 };
