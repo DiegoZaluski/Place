@@ -103,7 +103,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
 
         {/* COMPONENTE MOUNTMODEL - COMUNICA COM BACKEND */}
         <MountModel 
-          modelName={model.modelName}
+          modelName={model.fullModelName}
           className="w-full py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2"
         />
       </div>

@@ -16,3 +16,78 @@
 
 
 # provavelmente caminho não esta escrevendo no json 
+
+
+ARQUIVOS MODIFICADOS:
+
+    /home/zaluski/Documentos/Place/backend/python/HTTP/http_server.py
+
+Corrigido caminho dos modelos: /home/zaluski/Documentos/Place/transformers/llama.cpp/models
+
+Função model_exists() funcionando corretamente
+
+JSON configuration salvando sem erros
+
+Endpoint /switch-model respondendo 200 OK
+
+    /home/zaluski/Documentos/Place/src/modelLookout.js
+
+Debounce aumentado para 5 segundos
+
+Timeout aumentado para 60 segundos
+
+Verificação de porta WebSocket sem interferência
+
+Sistema de retry implementado
+
+PROBLEMA ATUAL:
+
+WebSocket Client não reconecta automaticamente após restart do servidor
+SITUAÇÃO:
+
+HTTP Server reinicia e fica pronto
+
+WebSocket Server reinicia e porta 8765 fica ouvindo
+
+Model Lookout detecta mudança e executa restart corretamente
+
+WebSocket Client principal do Electron permanece desconectado
+
+ARQUIVOS A AJUSTAR:
+
+/home/zaluski/Documentos/Place/backend/node/managerWebSocket.cjs
+
+    Adicionar lógica de reconexão automática
+
+    Implementar scheduleReconnect() method
+
+    Configurar retry com backoff exponential
+
+    Notificar frontend sobre mudanças de conexão
+
+AÇÕES NECESSÁRIAS:
+
+No managerWebSocket.cjs:
+
+Implementar callback onConnectionChange
+
+Adicionar scheduleReconnect() no event onClose
+
+Configurar máximo de tentativas de reconexão
+Usar delay progressivo entre tentativas
+
+Garantir que:
+ WebSocket client tenta reconectar automaticamente
+
+Frontend é notificado sobre status da conexão
+
+Reconexão para após máximo de tentativas
+
+Estado "connecting" é mostrado para usuário
+
+POSSÍVEL CAUSA RAIZ:
+
+O WebSocket client foi projetado para conexão inicial, mas não tem mecanismo de recuperação quando o servidor reinicia. Quando o Python server é killed e restarted, a conexão WebSocket é perdida permanentemente.
+SOLUÇÃO:
+
+Implementar pattern de "reconnection manager" no WebSocket client que monitora a conexão e automaticamente reconecta quando detecta que o servidor está disponível novamente.

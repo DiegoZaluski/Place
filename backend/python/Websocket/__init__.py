@@ -50,3 +50,6 @@ try:
 except Exception as e:
     print(f"[INIT] FATAL ERROR loading config: {e}")
     raise
+
+print(f"[INIT] Model path: {MODEL_PATH}")
+print(f"[INIT] Chat format: {CHAT_FORMAT}")
