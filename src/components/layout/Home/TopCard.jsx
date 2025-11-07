@@ -30,7 +30,6 @@ function TopCard({ item, index }) {
                 dark-border-primary
                 bg-c-100
                 dark-bg-primary
-                dark:bg-c-50
                 rounded-3xl
                 px-10
                 py-8
@@ -68,7 +67,7 @@ function TopCard({ item, index }) {
 
                 <div className="
                 flex-grow
-                bg-b-600
+                bg-b-900
                 rounded-2xl
                 mb-4
                 p-5
@@ -105,7 +104,7 @@ function TopCard({ item, index }) {
                 <div className="
                 w-full
                 h-4
-                bg-b-400
+                bg-b-800
                 dark:bg-n-200
                 rounded-full"></div>
             </div>

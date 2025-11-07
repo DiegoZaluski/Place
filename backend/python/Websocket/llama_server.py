@@ -3,12 +3,21 @@ import asyncio
 import json
 import uuid
 import logging
-from typing import Dict, Set, Optional, List, Any
+import os
+import sys
+from typing import List, Dict, Optional, Any, Set
+# ADD PROJECT ROOT TO PYTHONPATH
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from __init__ import MODEL_PATH, CHAT_FORMAT
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
+from python import COLORS
 
-# Configure logging
+# CONFIGURE LOGGING
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -16,7 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.CRITICAL)
 logger.addHandler(logging.NullHandler())
-# --- Global Configuration ---
+# GLOBAL CONFIGURATION 
 CONTEXT_SIZE = 4096 
 MODEL_PATH = "../transformers/llama.cpp/models/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
 
@@ -24,7 +33,7 @@ class LlamaChatServer:
     """WebSocket server for LLaMA model chat with native context optimization and async interruption support."""
     
     def __init__(self, model_path: str):
-        # --- Model Initialization ---
+        # MODEL INITIALIZATION
         self.llm = Llama(
             model_path=model_path, 
             n_ctx=CONTEXT_SIZE,
@@ -79,7 +88,7 @@ class LlamaChatServer:
         
         loop = asyncio.get_event_loop()
         
-        # --- Synchronous LLM Call Wrapper ---
+        # SYNCHRONOUS LLM CALL WRAPPER
         def get_stream_sync(): 
             return self.llm.create_chat_completion(
                 history, 
@@ -91,16 +100,16 @@ class LlamaChatServer:
             )
 
         try:
-            # --- Execute LLM call in thread pool ---
+            # Execute LLM call in thread pool
             stream = await loop.run_in_executor(None, get_stream_sync)
             
             response_tokens = []
             
             for chunk in stream:
-                # --- Async context switch point ---
+                # ASYNC CONTEXT SWITCH POINT
                 await asyncio.sleep(0)
                 
-                # --- Cancellation Check ---
+            # CANCELLATION CHECK
                 if prompt_id not in self.active_prompts:
                     logger.info(f"Prompt {prompt_id} canceled by user request")
                     await websocket.send(json.dumps({
@@ -120,13 +129,13 @@ class LlamaChatServer:
                         "type": "token"
                     }))
 
-            # --- Completion Handler ---
+            # COMPLETION HANDLER
             if prompt_id in self.active_prompts:
                 self.active_prompts.remove(prompt_id)
                 
                 assistant_response = "".join(response_tokens)
                 
-                # --- Update session history ---
+                # UPDATE SESSION HISTORY
                 self.get_session_history(session_id).append({"role": "user", "content": prompt_text})
                 if assistant_response:
                     self.get_session_history(session_id).append({"role": "assistant", "content": assistant_response})
@@ -147,15 +156,15 @@ class LlamaChatServer:
             await self._send_error(websocket, prompt_id, f"Server Error: {e}")
             self.active_prompts.discard(prompt_id)
     
-# --- Métodos Auxiliares de Gerenciamento de Cliente ---
-    # PARADA 
+# CLIENT MANAGEMENT METHODS
+    # SHUTDOWN
     async def handle_client(self, websocket: websockets.WebSocketServerProtocol, path: Optional[str] = None) -> None:
-        """Gerencia a conexão do cliente e processa mensagens."""
+        """Manages client connection and processes messages."""
         session_id = str(uuid.uuid4())[:8]
-        print(f"[SERVER] New client connected: {websocket.remote_address} - Session: {session_id}")
+        logger.info(f"New client connected: {websocket.remote_address} - Session: {session_id}")
         
         try:
-            # Envia status de 'ready' e a nova sessionId.
+            # Sends 'ready' status and the new sessionId
             await websocket.send(json.dumps({
                 "type": "ready",
                 "message": "Model is ready",
@@ -166,15 +175,15 @@ class LlamaChatServer:
                 await self._process_client_message(websocket, message, session_id)
                 
         except ConnectionClosedOK:
-            print(f"[SERVER] Client disconnected gracefully - Session: {session_id}")
+            logger.info(f"Client disconnected gracefully - Session: {session_id}")
         except Exception as e:
-            print(f"[SERVER] Client handler error: {e}")
+            logger.error(f"Client handler error: {e}")
             await self._send_error(websocket, None, f"Connection failure: {e}")
         finally:
             self.cleanup_session(session_id)
     
     async def _process_client_message(self, websocket: websockets.WebSocketServerProtocol, message: str, session_id: str) -> None:
-        """Processa uma mensagem individual do cliente."""
+        """Processes an individual client message."""
         try:
             data = json.loads(message)
             action = data.get("action")
@@ -194,7 +203,7 @@ class LlamaChatServer:
             await self._send_error(websocket, None, f"Error processing message: {e}")
     
     async def _handle_prompt_action(self, websocket: websockets.WebSocketServerProtocol, data: dict, session_id: str) -> None:
-        """Processa ação de prompt."""
+        """Handles the 'prompt' action."""
         prompt_text = data.get("prompt", "").strip()
         if not prompt_text:
             await self._send_error(websocket, None, "Empty prompt")
@@ -208,7 +217,7 @@ class LlamaChatServer:
 
         self.active_prompts.add(prompt_id)
         
-        # Inicia processamento assíncrono em segundo plano
+        # Starts processing asynchronously in the background
         asyncio.create_task(self.handle_prompt(prompt_id, prompt_text, session_id, websocket))
         
         await websocket.send(json.dumps({
@@ -219,10 +228,10 @@ class LlamaChatServer:
         }))
     
     async def _handle_cancel_action(self, websocket: websockets.WebSocketServerProtocol, data: dict) -> None:
-        """Processa ação de cancelamento."""
+        """Processes a cancel action."""
         prompt_id = data.get("promptId")
         if prompt_id and prompt_id in self.active_prompts:
-            self.active_prompts.discard(prompt_id) # Sinaliza a parada no loop do LLM
+            self.active_prompts.discard(prompt_id) # Signals the stop of the LLM loop
             await websocket.send(json.dumps({
                 "promptId": prompt_id,
                 "status": "canceled", 
@@ -233,7 +242,7 @@ class LlamaChatServer:
     async def _handle_clear_history_action(self, websocket: websockets.WebSocketServerProtocol, session_id: str) -> None:
         """Processa ação de limpar histórico."""
         self.session_history[session_id] = [
-            {"role": "system", "content": "Você é um assistente prestativo e amigável. Responda sempre em português do Brasil."}
+            {"role": "system", "content": "You are a helpful and polite assistant. Always respond in the user's language."}
         ]
         
         await websocket.send(json.dumps({
@@ -241,38 +250,38 @@ class LlamaChatServer:
             "status": "history_cleared", 
             "type": "memory_cleared"
         }))
-        print(f"[SERVER] Session history reset for {session_id}")
+        logger.info(f"[SERVER] Session history reset for {session_id}")
     
     async def _send_error(self, websocket: websockets.WebSocketServerProtocol, prompt_id: Optional[str], error_msg: str) -> None:
-        """Envia mensagem de erro para o cliente."""
+        """Sends an error message to the client."""
         error_data = {"error": error_msg, "type": "error"}
         if prompt_id:
             error_data["promptId"] = prompt_id
         try:
             await websocket.send(json.dumps(error_data))
         except Exception as e:
-            print(f"[SERVER] Could not send error message: {e}")
+            logger.error(f"[SERVER] Could not send error message: {e}")
 
 
 async def main() -> None:
-    """Função principal do servidor."""
-    print("Initializing LLaMA model...")
+    """Main function of the server."""
+    logger.info("Initializing LLaMA model...")
     try:
         server = LlamaChatServer(MODEL_PATH)
     except Exception as e:
-        print(f"❌ FATAL: Failed to load LLaMA model at {MODEL_PATH}. Check path and dependencies.")
-        print(f"Error: {e}")
+        logger.error(f"{COLORS['RED']}FATAL: Failed to load LLaMA model at {MODEL_PATH}. Check path and dependencies.{COLORS['RESET']}")
+        logger.error(f"Error: {e}")
         return
     
     ws_server = await websockets.serve(server.handle_client, "0.0.0.0", 8765) 
     
-    print("🚀 WebSocket LLaMA server running on ws://0.0.0.0:8765")
-    print("✅ Interrupção de geração otimizada via Thread Pool Executor e troca de contexto assíncrona.")
+    logger.info(f"{COLORS['GREEN']}WebSocket LLaMA server running on ws://0.0.0.0:8765{COLORS['RESET']}")
+    logger.info(f"{COLORS['GREEN']}Optimized generation with Thread Pool Executor and async context switching.{COLORS['RESET']}")
     
     try:
         await asyncio.Future()
     except KeyboardInterrupt:
-        print("\n🛑 Server shutting down...")
+        logger.info(f"\n {COLORS['YELLOW']}Server shutting down...{COLORS['RESET']}")
         ws_server.close()
         await ws_server.wait_closed()
 

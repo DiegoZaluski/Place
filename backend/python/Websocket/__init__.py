@@ -1,8 +1,17 @@
-# __init__.py
 """Model settings for the Websocket package"""
-import json
 import os
+import sys
+import json
 from pathlib import Path
+
+# ADD PROJECT ROOT TO PYTHONPATH
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from python import COLORS
+from logging import getLogger
+logger = getLogger(__name__)
 
 # FORMAT MAPPING
 MODEL_FORMATS = {
@@ -17,7 +26,7 @@ MODEL_FORMATS = {
 def load_config():
     """Loads JSON configuration"""
     
-    # Caminho relativo: saindo de python/Websocket para ../config/
+    # PATH IS SIMILAR TO YOUR EXAMPLE
     current_file = Path(__file__).resolve()
     config_path = current_file.parent.parent.parent / "config" / "current_model.json"
     
@@ -31,7 +40,7 @@ def load_config():
     if not model_name:
         raise ValueError("model_name not found in JSON")
     
-    # Caminho relativo igual ao seu exemplo
+    # PATH IS SIMILAR TO YOUR EXAMPLE
     model_path = f"../transformers/llama.cpp/models/{model_name}"
     
     # GET THE CORRECT FORMAT
@@ -48,8 +57,5 @@ try:
     MODEL_PATH = CONFIG["model_path"]
     CHAT_FORMAT = CONFIG["chat_format"]
 except Exception as e:
-    print(f"[INIT] FATAL ERROR loading config: {e}")
+    logger.error(f"{COLORS['RED']}[INIT] FATAL ERROR loading config: {e}{COLORS['RESET']}")
     raise
-
-print(f"[INIT] Model path: {MODEL_PATH}")
-print(f"[INIT] Chat format: {CHAT_FORMAT}")

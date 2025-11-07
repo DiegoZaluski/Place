@@ -34,7 +34,7 @@ export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // PROVIDER COMPONENT
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  // STATE MANAGEMENT - COM INICIALIZAÇÃO DO TEMA SALVO
+  // STATE MANAGEMENT - WITH THEME INITIALIZATION
   const [isDark, setIsDark] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     const saved = localStorage.getItem('data-theme');
@@ -45,12 +45,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [cartItems, setCartItems] = useState<number>(0);
   const [downloads, setDownloads] = useState<Record<string, DownloadState>>({});
-  const [downloadedModels, setDownloadedModels] = useState<string[]>([]); // ✅ ESTADO CRIADO
+  const [downloadedModels, setDownloadedModels] = useState<string[]>([]); 
 
   const setDownloadState = (modelId: string, state: DownloadState) => {
     setDownloads(prev => ({ ...prev, [modelId]: state }));
     
-    // ✅ ATUALIZA lista de baixados automaticamente
+    //UPDATE downloaded list automatically
     if (state.status === 'downloaded') {
       setDownloadedModels(prev => 
         prev.includes(modelId) ? prev : [...prev, modelId]
@@ -62,7 +62,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     return downloads[modelId] || { status: 'idle', progress: 0 };
   };
 
-  // ✅ NOVAS ACTIONS para gerenciar modelos baixados
+  //NEW ACTIONS to manage downloaded models
   const addDownloadedModel = (modelId: string) => {
     setDownloadedModels(prev => 
       prev.includes(modelId) ? prev : [...prev, modelId]
@@ -80,15 +80,15 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     isLoggedIn,
     cartItems,
     downloads,
-    downloadedModels, // ✅ INCLUÍDO
+    downloadedModels, 
     setIsDark,
     setUser,
     setIsLoggedIn,
     setCartItems,
     setDownloadState,
     getDownloadState,
-    addDownloadedModel, // ✅ INCLUÍDO
-    removeDownloadedModel // ✅ INCLUÍDO
+    addDownloadedModel, 
+    removeDownloadedModel
   };
 
   return (

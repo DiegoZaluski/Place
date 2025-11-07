@@ -1,13 +1,13 @@
 /**
  * SSE Download Server Initializer
- * Inicializa servidor FastAPI com SSE para downloads de modelos LLM
+ * Initializes FastAPI server for model downloads with SSE
  * @module initSSEDownload
  */
-
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const net = require('net');
+const colors = require('../../../utils/ansiColors');
 
 class ModelDownloadServerManager {
   constructor(options = {}) {
@@ -32,13 +32,12 @@ class ModelDownloadServerManager {
     this.healthCheckInterval = null;
     this.startupPromise = null;
     this.logger = this._createLogger();
-    // new 
     this._startCalled = false;
     this._initializationLock = null;
   }
 
   /**
-   * Logger interno
+   * Internal logger
    * @private
    */
   _createLogger() {
@@ -46,42 +45,42 @@ class ModelDownloadServerManager {
     const currentLevel = levels[this.options.logLevel] || 2;
 
     return {
-      error: (...args) => currentLevel >= 0 && console.error('[SSEDownload:ERROR]', ...args),
-      warn: (...args) => currentLevel >= 1 && console.warn('[SSEDownload:WARN]', ...args),
-      info: (...args) => currentLevel >= 2 && console.log('[SSEDownload:INFO]', ...args),
-      debug: (...args) => currentLevel >= 3 && console.log('[SSEDownload:DEBUG]', ...args)
+      error: (...args) => currentLevel >= 0 && console.error(`${colors.COLORS.RED}[SSEDownload:ERROR]${colors.COLORS.RESET}`, ...args),
+      warn: (...args) => currentLevel >= 1 && console.warn(`${colors.COLORS.YELLOW}[SSEDownload:WARN]${colors.COLORS.RESET}`, ...args),
+      info: (...args) => currentLevel >= 2 && console.log(`${colors.COLORS.GREEN}[SSEDownload:INFO]${colors.COLORS.RESET}`, ...args),
+      debug: (...args) => currentLevel >= 3 && console.log(`${colors.COLORS.CYAN}[SSEDownload:DEBUG]${colors.COLORS.RESET}`, ...args)
     };
   }
 
   /**
-   * Valida configurações e dependências
+   * Validates environment and dependencies
    * @private
    */
   async _validateEnvironment() {
-    // Verificar se o script Python existe
+    // Check if the Python script exists
     if (!fs.existsSync(this.options.scriptPath)) {
-      throw new Error(`Script não encontrado: ${this.options.scriptPath}`);
+      throw new Error(`${colors.COLORS.RED}Script not found: ${this.options.scriptPath}${colors.COLORS.RESET}`);
     }
 
-    // Verificar se Python está disponível
+    // Check if Python is available
     try {
       await this._execCommand(this.options.pythonPath, ['--version']);
-      this.logger.debug('Python encontrado');
+      this.logger.debug('Python found');
     } catch (error) {
-      throw new Error('Python não encontrado no PATH. Instale Python 3.8+ ou configure pythonPath');
+      throw new Error(`${colors.COLORS.RED}Python not found in PATH. Install Python 3.8+ or configure pythonPath${colors.COLORS.RESET}`);
     }
 
     // Verificar porta disponível
     const portAvailable = await this._isPortAvailable(this.options.port);
     if (!portAvailable) {
-      throw new Error(`Porta ${this.options.port} já está em uso`);
+      throw new Error(`${colors.COLORS.RED}Port ${this.options.port} is already in use${colors.COLORS.RESET}`);
     }
 
-    this.logger.debug('Ambiente validado com sucesso');
+    this.logger.debug('Environment validated successfully');
   }
 
   /**
-   * Verifica se porta está disponível
+   * Checks if the port is available
    * @private
    */
   _isPortAvailable(port) {
@@ -106,7 +105,7 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Executa comando e retorna Promise
+   * Executes a command and returns a Promise
    * @private
    */
   _execCommand(command, args) {
@@ -123,7 +122,8 @@ class ModelDownloadServerManager {
         if (code === 0) {
           resolve(stdout);
         } else {
-          reject(new Error(stderr || `Comando falhou com código ${code}`));
+          // Command failed with exit code
+          reject(new Error(stderr || `Command failed with exit code ${code}`));
         }
       });
 
@@ -132,7 +132,7 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Aguarda servidor ficar pronto
+   * Waits for server to be ready
    * @private
    */
   async _waitForServer() {
@@ -142,7 +142,8 @@ class ModelDownloadServerManager {
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (this.isShuttingDown) {
-        throw new Error('Inicialização cancelada: servidor em shutdown');
+        // Server initialization canceled: server is shutting down
+        throw new Error(`${colors.COLORS.RED}Initialization canceled: server is shutting down${colors.COLORS.RESET}`);
       }
 
       try {
@@ -150,21 +151,21 @@ class ModelDownloadServerManager {
         
         if (response && response.status === 'ok') {
           const elapsed = Date.now() - startTime;
-          this.logger.info(`Servidor pronto em ${elapsed}ms`);
+          this.logger.info(`Server ready in ${elapsed}ms`);
           return true;
         }
       } catch (error) {
-        // Servidor ainda não está pronto
+        // Server not ready yet
       }
 
       await this._sleep(checkInterval);
     }
 
-    throw new Error(`Timeout: servidor não respondeu em ${this.options.timeout}ms`);
+    throw new Error(`Timeout: server did not respond in ${this.options.timeout}ms`);
   }
 
   /**
-   * HTTP GET simples (sem dependências externas)
+   * Simple HTTP GET (no external dependencies)
    * @private
    */
   _httpGet(url) {
@@ -206,17 +207,17 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Inicia o servidor FastAPI
-   * @returns {Promise<Object>} Informações do servidor
+   * Starts the FastAPI server
+   * @returns {Promise<Object>} Server information
    */
   async start() {
     if (this.isRunning) {
-      this.logger.warn('Servidor já está rodando');
+      this.logger.warn('Server is already running');
       return this.getServerInfo();
     }
 
     if (this.startupPromise) {
-      this.logger.debug('Aguardando inicialização em andamento');
+      this.logger.debug('Waiting for startup in progress');
       return this.startupPromise;
     }
 
@@ -231,17 +232,17 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Lógica interna de inicialização
+   * Internal initialization logic
    * @private
    */
   async _doStart() {
     try {
-      this.logger.info('Iniciando servidor de downloads de modelos...');
+      this.logger.info('Starting model download server...');
 
-      // Validar ambiente
+      // Validate environment
       await this._validateEnvironment();
 
-      // Comando uvicorn (extrai nome do script dinamicamente)
+      // Uvicorn command (dynamically extracts script name)
       const scriptName = path.basename(this.options.scriptPath, '.py');
       const args = [
         '-m', 'uvicorn',
@@ -251,17 +252,17 @@ class ModelDownloadServerManager {
         '--log-level', 'warning'
       ];
 
-      // Iniciar processo
+      // Start process
       this.process = spawn(this.options.pythonPath, args, {
         cwd: path.dirname(this.options.scriptPath),
-        stdio: ['pipe', 'pipe', 'pipe'],  // 🔥 MUDAR 'ignore' para 'pipe'
+        stdio: ['pipe', 'pipe', 'pipe'], 
 
         detached: false
       });
 
       this.lastStartTime = Date.now();
 
-      // Handlers de eventos
+      // Event handlers
       this.process.stdout.on('data', (data) => {
         this.logger.debug(`STDOUT: ${data.toString().trim()}`);
       });
@@ -274,7 +275,7 @@ class ModelDownloadServerManager {
       });
 
       this.process.on('exit', (code, signal) => {
-        this.logger.warn(`Processo encerrado: código=${code} sinal=${signal}`);
+        this.logger.warn(`Process terminated: code=${code} signal=${signal}`);
         this.isRunning = false;
 
         if (!this.isShuttingDown && this.options.autoRestart) {
@@ -283,26 +284,26 @@ class ModelDownloadServerManager {
       });
 
       this.process.on('error', (error) => {
-        this.logger.error('Erro no processo:', error);
+        this.logger.error('Process error:', error);
         this.isRunning = false;
       });
 
-      // Aguardar servidor ficar pronto
+      // Wait for server to be ready
       await this._waitForServer();
 
       this.isRunning = true;
       this.restartCount = 0;
 
-      // Iniciar health check
+      // Start health check
       this._startHealthCheck();
 
       const info = this.getServerInfo();
-      this.logger.info(`✅ Servidor de downloads iniciado: ${info.url}`);
+      this.logger.info(`Download server started: ${info.url}`);
 
       return info;
 
     } catch (error) {
-      this.logger.error('Falha ao iniciar servidor:', error.message);
+      this.logger.error('Failed to start server:', error.message);
       
       if (this.process) {
         this.process.kill();
@@ -314,29 +315,29 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Auto-restart após falha
+   * Auto-restart after failure
    * @private
    */
   async _handleAutoRestart() {
     if (this.restartCount >= this.options.maxRestarts) {
-      this.logger.error(`Máximo de restarts atingido (${this.options.maxRestarts})`);
+      this.logger.error(`Maximum restarts reached (${this.options.maxRestarts})`);
       return;
     }
 
     this.restartCount++;
-    this.logger.info(`Auto-restart ${this.restartCount}/${this.options.maxRestarts} em ${this.options.restartDelay}ms`);
+    this.logger.info(`Auto-restart ${this.restartCount}/${this.options.maxRestarts} in ${this.options.restartDelay}ms`);
 
     await this._sleep(this.options.restartDelay);
 
     try {
       await this.start();
     } catch (error) {
-      this.logger.error('Falha no auto-restart:', error.message);
+      this.logger.error('Auto-restart failed:', error.message);
     }
   }
 
   /**
-   * Health check periódico
+   * Health check periodically
    * @private
    */
   _startHealthCheck() {
@@ -352,23 +353,23 @@ class ModelDownloadServerManager {
       } catch (error) {
         this.logger.warn('Health check falhou');
       }
-    }, 30000); // 30s
+    }, 30000);
   }
 
   /**
-   * Para o servidor
+   * Stops the server
    * @returns {Promise<void>}
    */
   async stop() {
     if (!this.isRunning || !this.process) {
-      this.logger.debug('Servidor já está parado');
+      this.logger.debug('Server is already stopped');
       return;
     }
 
-    this.logger.info('Parando servidor de downloads...');
+    this.logger.info('Stopping model download server...');
     this.isShuttingDown = true;
 
-    // Parar health check
+    // Stop health check
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
       this.healthCheckInterval = null;
@@ -376,7 +377,7 @@ class ModelDownloadServerManager {
 
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
-        this.logger.warn('Timeout: forçando encerramento');
+        this.logger.warn('Timeout: forcing termination');
         if (this.process) {
           this.process.kill('SIGKILL');
         }
@@ -389,11 +390,11 @@ class ModelDownloadServerManager {
           this.process = null;
           this.isRunning = false;
           this.isShuttingDown = false;
-          this.logger.info('✅ Servidor de downloads parado');
+          this.logger.info('Server stopped');
           resolve();
         });
 
-        // Tentar graceful shutdown (compatível com Windows)
+        // Try graceful shutdown (compatible with Windows)
         const signal = process.platform === 'win32' ? 'SIGINT' : 'SIGTERM';
         this.process.kill(signal);
       } else {
@@ -404,18 +405,18 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Reinicia o servidor
+   * Restart the server
    * @returns {Promise<Object>}
    */
   async restart() {
-    this.logger.info('Reiniciando servidor de downloads...');
+    this.logger.info('Restarting model download server...');
     await this.stop();
     await this._sleep(1000);
     return this.start();
   }
 
   /**
-   * Retorna informações do servidor
+   * Returns server information
    * @returns {Object}
    */
   getServerInfo() {
@@ -431,7 +432,7 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Verifica status do servidor
+   * Checks the server status
    * @returns {Promise<Object>}
    */
   async getStatus() {
@@ -454,9 +455,7 @@ class ModelDownloadServerManager {
   }
 }
 
-/**
- * SINGLETON FORTE - Apenas uma instância permitida
- */
+// STRONG SINGLETON - Only one instance allowed
 class ModelDownloadServerSingleton {
   constructor() {
     if (ModelDownloadServerSingleton.instance) {
@@ -468,12 +467,10 @@ class ModelDownloadServerSingleton {
     ModelDownloadServerSingleton.instance = this;
   }
 
-  /**
-   * Inicializa o singleton com opções (apenas uma vez)
-   */
+// Initializes the singleton with options (only once)
   initialize(options = {}) {
     if (this._manager) {
-      console.warn('[Singleton] Manager já inicializado. Ignorando novas opções.');
+      console.warn('[Singleton] Manager already initialized. Ignoring new options.');
       return this._manager;
     }
 
@@ -482,26 +479,20 @@ class ModelDownloadServerSingleton {
     return this._manager;
   }
 
-  /**
-   * Obtém a instância do manager
-   */
+// Gets the manager instance
   getManager() {
     if (!this._manager) {
-      throw new Error('[Singleton] Manager não inicializado. Chame initialize() primeiro.');
+      throw new Error('[Singleton] Manager not initialized. Call initialize() first.');
     }
     return this._manager;
   }
 
-  /**
-   * Verifica se está inicializado
-   */
+// Checks if it is initialized
   isInitialized() {
     return !!this._manager;
   }
 
-  /**
-   * Destroi a instância (apenas para testes)
-   */
+// Destroys the instance (only for tests)
   destroy() {
     if (this._manager) {
       this._manager.stop().catch(console.error);
@@ -512,34 +503,25 @@ class ModelDownloadServerSingleton {
   }
 }
 
-// Instância global única
+// Global unique instance
 const downloadServerSingleton = new ModelDownloadServerSingleton();
 
-/**
- * Factory function simplificada - SEMPRE singleton
- */
+// Factory function
 function createModelDownloadServer(options = {}) {
   return downloadServerSingleton.initialize(options);
 }
 
-/**
- * Cleanup ao fechar aplicação
- */
+// Cleanup on app close
 async function cleanupModelDownloadServer() {
   downloadServerSingleton.destroy();
 }
-
-// Exportar
 module.exports = {
-  // ⭐ SINGLETON PRINCIPAL - Use este sempre
+  // MAIN SINGLETON - Always use this
   downloadManager: downloadServerSingleton,
-  
-  // ⭐ FACTORY - Para compatibilidade
+  // FACTORY - For compatibility
   createModelDownloadServer,
-  
-  // ⭐ CLEANUP
+  // CLEANUP
   cleanupModelDownloadServer,
-  
-  // ⭐ CLASSE ORIGINAL (apenas para testes avançados)
+  // ORIGINAL CLASS (only for advanced testing)
   ModelDownloadServerManager
 };

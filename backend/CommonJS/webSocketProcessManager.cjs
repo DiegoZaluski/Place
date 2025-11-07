@@ -2,25 +2,22 @@ const { spawn, exec } = require('child_process');
 const net = require('net');
 const path = require('path');
 const fs = require('fs');
+const colors = require('../../utils/ansiColors');
 
 let pythonServerProcess = null;
 let serverRestartCount = 0;
 const MAX_SERVER_RESTARTS = 3;
 
-// VARIÁVEL PARA CALLBACK DE RECONEXÃO
+// VARIABLE FOR RECONNECTION CALLBACK
 let reconnectCallback = null;
 
-/**
- * Configura o callback para reconexão do WebSocket
- */
+// SET THE CALLBACK FOR WEBSOCKET RECONNECTION
 function setReconnectCallback(callback) {
   reconnectCallback = callback;
   console.log('WebSocket reconnect callback configured:', !!callback);
 }
 
-/**
- * Verifica se o servidor Python já está rodando na porta 8765
- */
+// CHECKS IF PYTHON SERVER IS ALREADY RUNNING ON PORT 8765
 async function isPythonServerRunning() {
   return new Promise((resolve) => {
     const client = new net.Socket();
@@ -45,9 +42,7 @@ async function isPythonServerRunning() {
   });
 }
 
-/**
- * Mata qualquer processo Python relacionado ao nosso servidor
- */
+// KILLS ANY PYTHON PROCESSES RELATED TO OUR SERVER
 async function killExistingPythonServers() {
   return new Promise((resolve) => {
     console.log('Killing existing Python servers...');
@@ -71,7 +66,7 @@ async function killExistingPythonServers() {
       console.log('Found existing Python processes:', stdout);
       
       if (platform === 'win32') {
-        // Windows - matar processos Python
+        // WINDOWS - kill Python processes
         const pids = stdout.split('\n')
           .filter(line => line.includes('python'))
           .map(line => line.split(/\s+/)[1])
@@ -86,7 +81,7 @@ async function killExistingPythonServers() {
           }
         });
       } else {
-        // Linux/Mac - matar processos específicos
+        // LINUX/MAC - kill specific processes
         const pids = stdout.split('\n')
           .filter(line => line.trim())
           .map(line => line.split(/\s+/)[1])
@@ -107,9 +102,7 @@ async function killExistingPythonServers() {
   });
 }
 
-/**
- * Aguarda o servidor Python iniciar
- */
+// WAITS FOR PYTHON SERVER TO START
 async function waitForServerStart(timeout = 15000) {
   const startTime = Date.now();
   console.log('Waiting for Python server to start...');
@@ -123,18 +116,16 @@ async function waitForServerStart(timeout = 15000) {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
   
-  console.log('Python server failed to start within timeout');
+  console.log(`${colors.COLORS.RED}Python server failed to start within timeout${colors.COLORS.RESET}`);
   return false;
 }
 
-/**
- * Manipula crash do servidor com restart automático
- */
+// HANDLES SERVER CRASH WITH AUTOMATIC RESTART
 function handleServerCrash(mainWindow) {
   serverRestartCount++;
   
   if (serverRestartCount <= MAX_SERVER_RESTARTS) {
-    console.log(`Restarting Python server (attempt ${serverRestartCount}/${MAX_SERVER_RESTARTS})...`);
+    console.log(`${colors.COLORS.YELLOW}Restarting Python server (attempt ${serverRestartCount}/${MAX_SERVER_RESTARTS})...${colors.COLORS.RESET}`);
     
     setTimeout(async () => {
       const success = await startPythonServer(mainWindow);
@@ -146,7 +137,7 @@ function handleServerCrash(mainWindow) {
       }
     }, 3000);
   } else {
-    console.error(`Python server failed to start after ${MAX_SERVER_RESTARTS} attempts`);
+    console.error(`${colors.COLORS.RED}Python server failed to start after ${MAX_SERVER_RESTARTS} attempts${colors.COLORS.RESET}`);
     
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('server:critical-error', {
@@ -156,9 +147,7 @@ function handleServerCrash(mainWindow) {
   }
 }
 
-/**
- * Encontra o caminho do Python dentro do venv
- */
+// FINDS THE PYTHON PATH INSIDE THE VENV
 function getPythonPath(workingDir) {
   const possiblePaths = [
     path.join(workingDir, 'venv', 'bin', 'python'),
@@ -174,17 +163,15 @@ function getPythonPath(workingDir) {
     }
   }
   
-  throw new Error('Python not found in virtual environment');
+  throw new Error(`${colors.COLORS.RED}Python not found in virtual environment${colors.COLORS.RESET}`);
 }
 
-/**
- * Inicia o servidor Python de forma segura
- */
+// STARTS THE PYTHON SERVER SAFELY
 async function startPythonServer(mainWindow) {
   try {
     console.log("Starting Python server...");
     
-    // Verifica se já está rodando
+    // CHECK IF IT'S ALREADY RUNNING
     const isRunning = await isPythonServerRunning();
     if (isRunning) {
       console.log("Python server is already running - killing existing process");
@@ -192,11 +179,11 @@ async function startPythonServer(mainWindow) {
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
-    // Mata servidores existentes
+    // KILL EXISTING SERVERS
     await killExistingPythonServers();
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Caminho correto para a pasta backend
+    // CORRECT PATH TO BACKEND FOLDER
     const workingDir = path.join(__dirname, '..');
     console.log('Working directory:', workingDir);
     
@@ -205,10 +192,10 @@ async function startPythonServer(mainWindow) {
     console.log('Server path:', serverPath);
     
     if (!fs.existsSync(serverPath)) {
-      throw new Error(`Server not found: ${serverPath}`);
+      throw new Error(`${colors.COLORS.RED}Server not found: ${serverPath}${colors.COLORS.RESET}`);
     }
     
-    // Environment limpo
+    // CLEAN ENVIRONMENT
     const cleanEnv = {
       ...process.env,
       DISPLAY: ':0',
@@ -219,7 +206,7 @@ async function startPythonServer(mainWindow) {
     console.log('Using Python:', pythonPath);
     console.log('Starting server:', serverPath);
     
-    // Inicia o processo
+    // START THE PROCESS
     pythonServerProcess = spawn(pythonPath, [serverPath], {
       cwd: workingDir,
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -227,7 +214,7 @@ async function startPythonServer(mainWindow) {
       env: cleanEnv
     });
     
-    // Configura handlers para o processo
+    // CONFIGURE PROCESS HANDLERS
     pythonServerProcess.stdout.on('data', (data) => {
       const output = data.toString().trim();
       if (output) {
@@ -247,29 +234,29 @@ async function startPythonServer(mainWindow) {
     });
     
     pythonServerProcess.on('close', (code) => {
-      console.log(`Python server process exited with code ${code}`);
+      console.log(`${colors.COLORS.YELLOW}Python server process exited with code ${code}${colors.COLORS.RESET}`);
       pythonServerProcess = null;
       
       if (code !== 0 && code !== null) {
-        console.log('Server crashed, handling restart...');
+        console.log(`${colors.COLORS.YELLOW}Server crashed, handling restart...${colors.COLORS.RESET}`);
         handleServerCrash(mainWindow);
       }
     });
     
     pythonServerProcess.on('error', (error) => {
-      console.error('Failed to start Python server:', error);
+      console.error(`${colors.COLORS.RED}Failed to start Python server:${colors.COLORS.RESET}`, error);
       pythonServerProcess = null;
       handleServerCrash(mainWindow);
     });
     
-    // Aguarda o servidor ficar disponível
+    // WAIT FOR SERVER TO BECOME AVAILABLE
     const serverStarted = await waitForServerStart();
     if (serverStarted) {
-      console.log("Python server started successfully");
+      console.log(`${colors.COLORS.GREEN}Python server started successfully${colors.COLORS.RESET}`);
       serverRestartCount = 0;
       return true;
     } else {
-      // Se não iniciou, mata o processo
+      // If it didn't start, kill the process
       if (pythonServerProcess) {
         pythonServerProcess.kill('SIGTERM');
         pythonServerProcess = null;
@@ -278,15 +265,13 @@ async function startPythonServer(mainWindow) {
     }
     
   } catch (error) {
-    console.error('Error starting Python server:', error);
+    console.error(`${colors.COLORS.RED}Error starting Python server:${colors.COLORS.RESET}`, error);
     handleServerCrash(mainWindow);
     return false;
   }
 }
 
-/**
- * Para o servidor Python de forma limpa
- */
+// STOPS THE PYTHON SERVER CLEANLY
 function stopPythonServer() {
   if (pythonServerProcess) {
     console.log("Stopping Python server...");
@@ -296,9 +281,7 @@ function stopPythonServer() {
   serverRestartCount = 0;
 }
 
-/**
- * Restarta o servidor manualmente
- */
+// MANUALLY RESTARTS THE SERVER
 async function restartPythonServer(mainWindow) {
   try {
     console.log("Manual server restart requested");
@@ -307,7 +290,7 @@ async function restartPythonServer(mainWindow) {
     serverRestartCount = 0;
     stopPythonServer();
     
-    // Aguarda um pouco antes de reiniciar
+    // WAIT A BIT BEFORE RESTARTING
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     const success = await startPythonServer(mainWindow);
@@ -319,7 +302,7 @@ async function restartPythonServer(mainWindow) {
     
     return { success };
   } catch (error) {
-    console.error("Manual server restart failed:", error);
+    console.error(`${colors.COLORS.RED}Manual server restart failed:${colors.COLORS.RESET}`, error);
     return { success: false, error: error.message };
   }
 }

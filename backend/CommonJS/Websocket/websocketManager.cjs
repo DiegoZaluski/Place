@@ -1,13 +1,11 @@
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
-
+const { COLORS } = require('../../../utils/ansiColors');
 let wsClient = null;
 let isConnecting = false;
 let reconnectTimeout = null;
 
-/**
- * Conecta ao servidor Python WebSocket
- */
+// Connects to the Python WebSocket server
 function connectToPythonServer(mainWindow) {
   if (isConnecting) return;
   
@@ -19,12 +17,12 @@ function connectToPythonServer(mainWindow) {
   }
 
   isConnecting = true;
-  console.log("🔗 Connecting to Python WebSocket server...");
+  console.log("Connecting to Python WebSocket server..."); //test here!
 
   wsClient = new WebSocket("ws://localhost:8765");
 
   wsClient.on("open", () => {
-    console.log("✅ Connected to Python WebSocket server");
+    console.log("Connected to Python WebSocket server");
     isConnecting = false;
     mainWindow?.webContents.send("model:ready", { status: "connected" });
     
@@ -37,7 +35,7 @@ function connectToPythonServer(mainWindow) {
   wsClient.on("message", (message) => {
     try {
       const data = JSON.parse(message.toString());
-      console.log("📨 Received WS message:", data.type || "unknown");
+      console.log(`${COLORS.BLUE}Received WS message:${COLORS.RESET}`, data.type || "unknown");
       
       const { promptId, token, complete, error, type, status, sessionId } = data;
 
@@ -58,25 +56,25 @@ function connectToPythonServer(mainWindow) {
       }
 
     } catch (e) {
-      console.error("❌ Failed to parse WS message:", e);
+      console.error(`${COLORS.RED}Failed to parse WS message:${COLORS.RESET}`, e);
     }
   });
 
   wsClient.on("close", (code, reason) => {
-    console.log(`🔌 WebSocket connection closed: ${code} - ${reason}`);
+    console.log(`${COLORS.RED}WebSocket connection closed: ${code} - ${reason}${COLORS.RESET}`);
     isConnecting = false;
     mainWindow?.webContents.send("model:disconnected");
     
     if (!reconnectTimeout) {
       reconnectTimeout = setTimeout(() => {
-        console.log("🔄 Attempting to reconnect...");
+        console.log(`${COLORS.YELLOW}Attempting to reconnect...${COLORS.RESET}`);
         connectToPythonServer(mainWindow);
       }, 3000);
     }
   });
 
   wsClient.on("error", (err) => {
-    console.error("❌ WebSocket error:", err.message);
+    console.error(`${COLORS.RED}WebSocket error:${COLORS.RESET}`, err.message);
     isConnecting = false;
     mainWindow?.webContents.send("model:error", { 
       promptId: null, 
@@ -85,12 +83,10 @@ function connectToPythonServer(mainWindow) {
   });
 }
 
-/**
- * Envia prompt para o servidor
- */
+// SENDS PROMPT TO THE SERVER
 function sendPrompt(userMessage) {
   if (!wsClient || wsClient.readyState !== WebSocket.OPEN) {
-    console.log("⚠️ WebSocket not connected, attempting connection...");
+    console.log(`${COLORS.YELLOW}WebSocket not connected, attempting connection...${COLORS.RESET}`);
     return null;
   }
 
@@ -102,45 +98,39 @@ function sendPrompt(userMessage) {
       promptId 
     });
     wsClient.send(message);
-    console.log("📤 Sent prompt:", promptId);
+    console.log(`${COLORS.BLUE}📤 Sent prompt:${COLORS.RESET}`, promptId);
     return promptId;
   } catch (err) {
-    console.error("❌ Error sending prompt:", err);
+    console.error(`${COLORS.RED}Error sending prompt:${COLORS.RESET}`, err);
     return null;
   }
 }
 
-/**
- * Cancela um prompt em andamento
- */
+// CANCELA UM PROMPT EM ANDAMENTO
 function cancelPrompt(promptId) {
   if (wsClient && wsClient.readyState === WebSocket.OPEN && promptId) {
     try {
       wsClient.send(JSON.stringify({ action: "cancel", promptId }));
-      console.log("🛑 Sent cancel for prompt:", promptId);
+      console.log(`Sent cancel for prompt: ${promptId}`);
     } catch (err) {
-      console.error("❌ Error canceling prompt:", err);
+      console.error(`${COLORS.RED}Error canceling prompt:${COLORS.RESET}`, err);
     }
   }
 }
 
-/**
- * Limpa a memória do modelo
- */
+// CLEARS THE MODEL'S MEMORY
 function clearMemory() {
   if (wsClient && wsClient.readyState === WebSocket.OPEN) {
     try {
       wsClient.send(JSON.stringify({ action: "clear_memory" }));
-      console.log("🧹 Sent clear memory request");
+      console.log(`${COLORS.BLUE}---Sent clear memory request---${COLORS.RESET}`);
     } catch (err) {
-      console.error("❌ Error clearing memory:", err);
+      console.error(`${COLORS.RED}Error clearing memory:${COLORS.RESET}`, err);
     }
   }
 }
 
-/**
- * Fecha a conexão WebSocket
- */
+// CLOSES THE WEBSOCKET CONNECTION
 function closeWebSocket() {
   if (wsClient) {
     wsClient.close();

@@ -1,21 +1,20 @@
-// HTTPServer.cjs
-
 const { spawn } = require('child_process');
 const path = require('path');
+const colors = require('../../../utils/ansiColors');
 
 class HTTPServer {
     constructor() {
         this.httpProcess = null; 
     }
 
-    // INICIALIZAÇÃO DO SERVIDOR HTTP
+    // HTTP SERVER INITIALIZATION
     async startHTTP() {
         return new Promise((resolve, reject) => {
             const pathHTTP = path.join(__dirname, '..', '..', 'python', 'HTTP', 'http_server.py');
             const pythonPath = path.join(__dirname, '..', '..', 'venv', 'bin', 'python3');
             
-            console.log('🐍 Python Path:', pythonPath);
-            console.log('📁 HTTP Script Path:', pathHTTP);
+            console.log('Python Path:', pythonPath);
+            console.log('HTTP Script Path:', pathHTTP);
 
             this.httpProcess = spawn(pythonPath, [
                 '-c', 
@@ -29,17 +28,17 @@ class HTTPServer {
                 const output = data.toString().trim();
                 console.log('HTTP Server:', output);
                 
-                // DETECTA QUANDO ESTÁ PRONTO
+                // DETECTS WHEN SERVER IS READY
                 if (output.includes('Uvicorn running on')) {
                     resolve(true);
                 }
             });
 
             this.httpProcess.stderr.on('data', (data) => {
-                console.error('❌ HTTP Server ERR:', data.toString().trim());
+                console.error('HTTP Server ERR:', data.toString().trim());
             });
 
-            this.httpProcess.on('error', (error) => {  // ADICIONA handler de erro
+            this.httpProcess.on('error', (error) => {  // Adds error handler
                 reject(error);
             });
 
@@ -56,20 +55,20 @@ class HTTPServer {
         });
     }
 
-    // PARADA DO SERVIDOR HTTP
+    // STOPPING HTTP SERVER
     stopHTTP() {
         if (this.httpProcess) {
-            this.httpProcess.kill('SIGTERM');  // SIGTERM primeiro (mais seguro)
+            this.httpProcess.kill('SIGTERM');  // SIGTERM first (more secure)
             this.httpProcess = null;
         }
     }
 
-    // MÉTODO DE REINICIALIZAÇÃO (FUTURO)
+    // RESTART HTTP SERVER
     async restartHTTP() {
-        console.log(' Reiniciando HTTP Server...');
+        console.log(`${colors.COLORS.BLUE}Restarting HTTP Server...${colors.COLORS.RESET}`);
         this.stopHTTP();
         
-        // Pequena pausa para garantir parada completa
+        // Small pause to ensure complete stop
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         return await this.startHTTP();

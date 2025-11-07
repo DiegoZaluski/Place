@@ -1,10 +1,11 @@
 const path = require('path');
 const fs = require('fs');
+const colors = require('../../../utils/ansiColors');
 const { restartPythonServer } = require('../webSocketProcessManager.cjs');
 const axios = require('axios');
 
 class ModelLookout {
-    constructor(mainWindow) { // ✅ RECEBE mainWindow NO CONSTRUTOR
+    constructor(mainWindow) { // RECEIVES mainWindow IN CONSTRUCTOR
         if (ModelLookout.instance) {
             return ModelLookout.instance;
         }
@@ -20,7 +21,7 @@ class ModelLookout {
         this.watcher = null;
         this.retryCount = 0;
         this.maxRetries = 3;
-        this.mainWindow = mainWindow; // ✅ ARMAZENA mainWindow
+        this.mainWindow = mainWindow; // STORES mainWindow
         
         this.httpClient = axios.create({
             baseURL: 'http://localhost:8001',
@@ -55,12 +56,12 @@ class ModelLookout {
             });
 
             this.watcher.on('error', (error) => {
-                console.error('Watcher error:', error.message);
+                console.error(`${colors.COLORS.RED}Watcher error:${colors.COLORS.RESET}`, error.message);
                 setTimeout(() => this.watchConfigFile(), 5000);
             });
 
         } catch (error) {
-            console.error('Error setting up watcher:', error.message);
+            console.error(`${colors.COLORS.RED}Error setting up watcher:${colors.COLORS.RESET}`, error.message);
             this.watcher = fs.watchFile(this.configPath, { interval: 1000 }, () => {
                 this.debouncedHandleConfigChange();
             });
@@ -92,7 +93,7 @@ class ModelLookout {
                 console.log(`Current model: ${this.lastModel || 'None'}`);
             }
         } catch (error) {
-            console.error('Error checking config:', error.message);
+            console.error(`${colors.COLORS.RED}Error checking config:${colors.COLORS.RESET}`, error.message);
         }
     }
 
@@ -115,7 +116,7 @@ class ModelLookout {
         try {
             await this.attemptConfigUpdate();
         } catch (error) {
-            console.error('Lookout error:', error.message);
+            console.error(`${colors.COLORS.RED}Lookout error:${colors.COLORS.RESET}`, error.message);
         } finally {
             this.isProcessing = false;
         }
@@ -161,7 +162,7 @@ class ModelLookout {
                     return;
                 }
             } catch (error) {
-                console.error(`Attempt ${this.retryCount + 1} failed:`, error.message);
+                console.error(`${colors.COLORS.RED}Attempt ${this.retryCount + 1} failed:${colors.COLORS.RESET}`, error.message);
             }
 
             this.retryCount++;
@@ -171,7 +172,7 @@ class ModelLookout {
             }
         }
 
-        console.error('All retry attempts failed');
+        console.error(`${colors.COLORS.RED}All retry attempts failed${colors.COLORS.RESET}`);
         try {
             if (fs.existsSync(this.configPath)) {
                 const config = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
@@ -180,7 +181,7 @@ class ModelLookout {
                 }
             }
         } catch (e) {
-            console.error('Error notifying HTTP server:', e.message);
+            console.error(`${colors.COLORS.RED}Error notifying HTTP server:${colors.COLORS.RESET}`, e.message);
         }
     }
 
@@ -198,7 +199,7 @@ class ModelLookout {
                     break;
                 }
             } catch (error) {
-                // Servidor ainda não está pronto
+                // Server is not ready yet
             }
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
@@ -253,7 +254,7 @@ class ModelLookout {
     async restartWithServerManager() {
         try {
             console.log('Restarting server via serverManager...');
-            // ✅ AGORA PASSA mainWindow CORRETAMENTE
+            // NOW PASS mainWindow CORRECTLY
             const result = await restartPythonServer(this.mainWindow);
             
             if (result && result.success) {
@@ -312,7 +313,5 @@ class ModelLookout {
     }
 }
 
-// Singleton instance
 ModelLookout.instance = null;
-
 module.exports = ModelLookout;

@@ -85,11 +85,11 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
 
   // HELPER FUNCTIONS
   const getIcon = (): JSX.Element => {
-    if (status === 'downloaded') return <Check className="w-4 h-4 text-green-400" />;
-    if (status === 'downloading' || status === 'connecting') return <X className="w-4 h-4 text-white" />;
-    if (status === 'error') return <AlertCircle className="w-4 h-4 text-red-400" />;
-    if (status === 'checking') return <DownloadIcon className="w-4 h-4 text-gray-400 animate-pulse" />;
-    return <DownloadIcon className="w-4 h-4 text-white" />;
+    if (status === 'downloaded') return <Check className="w-4 h-4 text-current" />;
+    if (status === 'downloading' || status === 'connecting') return <X className="w-4 h-4" />;
+    if (status === 'error') return <AlertCircle className="w-4 h-4" />;
+    if (status === 'checking') return <DownloadIcon className="w-4 h-4 animate-pulse" />;
+    return <DownloadIcon className="w-4 h-4 text-current" />;
   };
 
   // SYNC WITH CONTEXT - UPDATE ONLY WHEN CHANGED
@@ -330,7 +330,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       onClick={handleDownload}
       disabled={status === 'checking' || status === 'downloaded'}
       className={`
-        border border-n-700 rounded-full 
+        border border-n-1000 rounded-full 
         flex items-center justify-center 
         hover:bg-white/20
         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-n-900 focus:ring-white/50

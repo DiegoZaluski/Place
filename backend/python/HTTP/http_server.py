@@ -1,3 +1,11 @@
+import os
+import sys
+
+# ADD PROJECT ROOT TO PYTHONPATH
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,35 +18,36 @@ import asyncio
 from itertools import chain
 from datetime import datetime
 import os
+from python import COLORS, BG_COLORS
 
-# CONFIGURAÇÃO DE LOGGING
+# LOGGING CONFIGURATION
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# CONFIGURAÇÃO - CAMINHOS CORRETOS
+# CONFIGURATION - CORRECT PATHS
 def get_project_root() -> Path:
-    """Encontra a raiz do projeto de forma confiável"""
+    """Finds the project root reliably"""
     current_file = Path(__file__).resolve()
-    # Sobe até encontrar a pasta 'backend'
+    # Goes up until it finds the 'backend' folder
     for parent in current_file.parents:
         if parent.name == 'backend':
             return parent
-    # Fallback: assume que estamos na raiz do backend
+    # Fallback: assumes we're at the backend root
     return current_file.parent
 
 PROJECT_ROOT = get_project_root()
 CONFIG_FILE = PROJECT_ROOT / "config" / "current_model.json"
-# DIRETÓRIO CORRETO DOS MODELOS (descoberto pelo find)
+# CORRECT MODELS DIRECTORY (found by find)
 READONLY_MODELS_DIR = Path("/home/zaluski/Documentos/Place/transformers/llama.cpp/models")
 
-logger.info(f"Raiz do projeto: {PROJECT_ROOT}")
-logger.info(f"Arquivo de configuração: {CONFIG_FILE}")
-logger.info(f"Diretório de modelos (somente leitura): {READONLY_MODELS_DIR}")
+logger.info(f"Project root: {PROJECT_ROOT}")
+logger.info(f"Configuration file: {CONFIG_FILE}")
+logger.info(f"Models directory (readonly): {READONLY_MODELS_DIR}")
 
-# MODELOS DE DADOS
+# DATA MODELS
 class ModelSwitchRequest(BaseModel):
     model_name: str
 
@@ -48,17 +57,17 @@ class ModelSwitchResponse(BaseModel):
     message: str
     needs_restart: bool
 
-# LIFESPAN MODERNO
+# MODERN LIFESPAN
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("LLM Model Manager HTTP API iniciando...")
-    logger.info(f"Raiz do projeto: {PROJECT_ROOT}")
+    logger.info("LLM Model Manager HTTP API starting...")
+    logger.info(f"Project root: {PROJECT_ROOT}")
     logger.info(f"Config: {CONFIG_FILE}")
     logger.info(f"Models (readonly): {READONLY_MODELS_DIR}")
     yield
-    logger.info("LLM Model Manager HTTP API encerrando...")
+    logger.info("LLM Model Manager HTTP API ending...")
 
-# APLICAÇÃO
+# APPLICATION
 app = FastAPI(
     title="Model Download API",
     description="API for downloading LLM models",
@@ -75,9 +84,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# FUNÇÕES PRINCIPAIS
+# MAIN FUNCTIONS
 async def get_current_model() -> str:
-    """Lê o modelo atual do arquivo de configuração"""
+    """Reads the current model from the configuration file"""
     try:
         if CONFIG_FILE.exists():
             async with aiofiles.open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -87,62 +96,62 @@ async def get_current_model() -> str:
                     return config_data.get("model_name", "")
         return ""
     except Exception as e:
-        logger.error(f"Erro ao ler configuração: {e}")
+        logger.error(f"Error reading configuration: {e}")
         return ""
 
 async def save_current_model_config(model_name: str) -> bool:
-    """Salva configuração do modelo atual apenas se for diferente - APENAS NO JSON"""
+    """Saves current model configuration only if different - JSON ONLY"""
     try:
         current_model = await get_current_model()
         
-        # SE O MODELO JÁ É O MESMO, NÃO FAZ NADA
+        # IF THE MODEL IS THE SAME, DO NOTHING
         if current_model == model_name:
-            logger.info(f"Modelo já está ativo: {model_name}")
+            logger.info(f"Model already active: {model_name}")
             return True
         
-        # SALVA O NOVO MODELO NO JSON (ÚNICA ESCRITA PERMITIDA)
+        # SAVES THE NEW MODEL TO JSON (ONLY ALLOWED WRITE OPERATION)
         config_data = {
             "model_name": model_name,
             "last_updated": datetime.now().isoformat(),
             "status": "active"
         }
 
-        # Garante que o diretório config existe
+        # Ensures the config directory exists
         CONFIG_FILE.parent.mkdir(exist_ok=True)
         
-        # Usa json.dumps diretamente para evitar problemas com Pydantic
+        # Uses json.dumps directly to avoid Pydantic issues
         async with aiofiles.open(CONFIG_FILE, "w", encoding="utf-8") as f:
             await f.write(json.dumps(config_data, indent=2))
 
-        logger.info(f"✅ Configuração atualizada no JSON: {model_name}")
+        logger.info(f"Configuration updated in JSON: {model_name}")
         return True
     except Exception as e:
-        logger.error(f"❌ Erro ao salvar configuração: {e}")
+        logger.error(f"{COLORS['RED']}Error saving configuration: {e}{COLORS['RESET']}")
         return False
 
 async def model_exists(model_name: str) -> bool:
-    """Verifica se modelo existe no diretório de modelos (APENAS LEITURA)"""
+    """Checks if model exists in models directory (READ ONLY)"""
     try:
         if not READONLY_MODELS_DIR.exists():
-            logger.error(f"❌ Diretório de modelos não existe: {READONLY_MODELS_DIR}")
+            logger.error(f"{COLORS['RED']}Directory of models does not exist: {READONLY_MODELS_DIR}{COLORS['RESET']}")
             return False
 
-        logger.info(f"✅ Diretório de modelos encontrado: {READONLY_MODELS_DIR}")
+        logger.info(f"{COLORS['GREEN']}Directory of models found: {READONLY_MODELS_DIR}{COLORS['RESET']}")
 
-        # Verifica como arquivo direto
+        # CHECKS AS DIRECT FILE
         model_path = READONLY_MODELS_DIR / model_name
         if model_path.exists() and model_path.is_file():
-            logger.info(f"✅ Modelo encontrado como arquivo: {model_path}")
+            logger.info(f"{COLORS['GREEN']}Model found as file: {model_path}{COLORS['RESET']}")
             return True
 
-        # Verifica se existe com extensões comuns
+        # CHECKS WITH COMMON EXTENSIONS
         for ext in ['.gguf', '.bin', '.ggml']:
             model_path_with_ext = READONLY_MODELS_DIR / f"{model_name}{ext}"
             if model_path_with_ext.exists() and model_path_with_ext.is_file():
-                logger.info(f"✅ Modelo encontrado com extensão: {model_path_with_ext}")
+                logger.info(f"{COLORS['GREEN']}Model found with extension: {model_path_with_ext}{COLORS['RESET']}")
                 return True
 
-        # Verifica como diretório com arquivos dentro
+        # CHECKS AS DIRECTORY WITH FILES INSIDE
         if model_path.exists() and model_path.is_dir():
             model_files = list(chain(
                 model_path.glob("*.gguf"), 
@@ -150,87 +159,87 @@ async def model_exists(model_name: str) -> bool:
                 model_path.glob("*.ggml")
             ))
             if model_files:
-                logger.info(f"✅ Modelo encontrado como diretório: {model_path} com {len(model_files)} arquivos")
+                logger.info(f"{COLORS['GREEN']}Model found as directory: {model_path} with {len(model_files)} files{COLORS['RESET']}")
                 return True
 
-        # Log detalhado para debug
-        logger.warning(f"❌ Modelo não encontrado: {model_name}")
+        # DETAILED LOG FOR DEBUGGING
+        logger.warning(f"{COLORS['RED']}Model not found: {model_name}{COLORS['RESET']}")
         
-        # Lista arquivos disponíveis para ajudar no debug
+        # LISTS AVAILABLE FILES TO HELP WITH DEBUGGING
         try:
             available_files = list(READONLY_MODELS_DIR.glob("*"))
             model_files = [f.name for f in available_files if f.is_file() and f.suffix.lower() in ['.gguf', '.bin', '.ggml']]
             if model_files:
-                logger.warning(f"📋 Arquivos disponíveis: {model_files}")
+                logger.warning(f"{COLORS['YELLOW']}Available files: {model_files}{COLORS['RESET']}")
             else:
-                logger.warning("📋 Nenhum arquivo de modelo encontrado no diretório")
+                logger.warning("{COLORS['YELLOW']}No model files found in directory{COLORS['RESET']}")
         except Exception as e:
-            logger.warning(f"📋 Erro ao listar arquivos: {e}")
+            logger.warning(f"{COLORS['YELLOW']}Error listing files: {e}{COLORS['RESET']}")
 
         return False
     except Exception as e:
-        logger.error(f"❌ Erro ao verificar modelo: {e}")
+        logger.error(f"{COLORS['RED']}Error verifying model: {e}{COLORS['RESET']}")
         return False
 
 async def wait_for_websocket_confirmation(model_name: str, timeout: int = 60) -> bool:
-    """Aguarda confirmação WebSocket"""
+    """Waits for WebSocket confirmation"""
     try:
-        logger.info(f"Aguardando confirmação WebSocket: {model_name}")
+        logger.info(f"{COLORS['GREEN']}Waiting for WebSocket confirmation: {model_name}{COLORS['RESET']}")
         await asyncio.sleep(2)
-        logger.info("Confirmação WebSocket recebida")
+        logger.info("{COLORS['GREEN']}WebSocket confirmation received{COLORS['RESET']}")
         return True
     except Exception as e:
-        logger.error(f"Erro WebSocket: {e}")
+        logger.error(f"{COLORS['RED']}WebSocket error: {e}{COLORS['RESET']}")
         return False
 
 # ENDPOINTS
 @app.post("/switch-model", response_model=ModelSwitchResponse)
 async def switch_model(request: ModelSwitchRequest):
-    """Troca de modelos - apenas leitura dos modelos, escrita apenas no JSON"""
-    logger.info(f"🔄 Solicitação de troca para: {request.model_name}")
+    """Switches models - read-only for models, write only to JSON"""
+    logger.info(f"{COLORS['BLUE']}Switch request for: {request.model_name}{COLORS['RESET']}")
 
-    # Verifica se o modelo já está ativo
+    # CHECKS IF MODEL IS ALREADY ACTIVE
     current_model = await get_current_model()
     if current_model == request.model_name:
-        logger.info(f"✅ Modelo já está ativo: {request.model_name}")
+        logger.info(f"{COLORS['GREEN']}Model already active: {request.model_name}{COLORS['RESET']}")
         return ModelSwitchResponse(
             status="already_active",
             current_model=request.model_name,
-            message=f"Modelo {request.model_name} já está ativo",
+            message=f"Model {request.model_name} already active",
             needs_restart=False
         )
     
-    # Verifica se modelo existe (APENAS LEITURA)
+    # CHECKS IF MODEL EXISTS (READ ONLY)
     if not await model_exists(request.model_name):
-        logger.error(f"❌ Modelo não encontrado: {request.model_name}")
-        raise HTTPException(status_code=404, detail="Modelo não encontrado no diretório de modelos")
+        logger.error(f"{COLORS['RED']}Model not found: {request.model_name}{COLORS['RESET']}")
+        raise HTTPException(status_code=404, detail="Model not found in models directory")
 
-    # Salva nova configuração (APENAS NO JSON)
+    # SAVES NEW CONFIGURATION (ONLY IN JSON)
     if not await save_current_model_config(request.model_name):
-        logger.error(f"❌ Erro ao salvar configuração para: {request.model_name}")
-        raise HTTPException(status_code=500, detail="Erro ao salvar configuração")
+        logger.error(f"{COLORS['RED']}Error saving configuration for: {request.model_name}{COLORS['RESET']}")
+        raise HTTPException(status_code=500, detail="Error saving configuration")
 
-    # Aguarda confirmação
+    # WAITS FOR CONFIRMATION
     websocket_ok = await wait_for_websocket_confirmation(request.model_name, 60)
 
     if websocket_ok:
         return ModelSwitchResponse(
             status="success",
             current_model=request.model_name,
-            message=f"Modelo alterado para {request.model_name} com sucesso",
+            message=f"Model changed to {request.model_name} successfully",
             needs_restart=False
         )
     else:
         return ModelSwitchResponse(
             status="pending",
             current_model=request.model_name,
-            message="Troca iniciada. Aguardando confirmação...",
+            message="Switch started. Waiting for confirmation...",
             needs_restart=True
         )
 
 @app.get("/models/available")
 async def list_available_models():
-    """Lista modelos disponíveis (APENAS LEITURA)"""
+    """Lists available models (READ ONLY)"""
     try:
         models = []
         if READONLY_MODELS_DIR.exists():
@@ -245,8 +254,8 @@ async def list_available_models():
             "readonly": True
         }
     except Exception as e:
-        logger.error(f"❌ Erro ao listar modelos: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno ao listar modelos")
+        logger.error(f"{COLORS['RED']}Error listing models: {e}{COLORS['RESET']}")
+        raise HTTPException(status_code=500, detail="Internal error listing models")
 
 @app.get("/health")
 async def health_check():

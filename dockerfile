@@ -1,16 +1,16 @@
-# Estágio de construção
+# Build stage
 FROM node:lts AS builder
 
 WORKDIR /app
 
-# Copia os arquivos de dependência
+# Copy dependency files
 COPY package*.json ./
 
-# Instala as dependências
+# Install dependencies
 RUN npm install
 
-# Copia o restante dos arquivos
+# Copy the rest of the files
 COPY . .
 
-# Comando para iniciar o aplicativo em desenvolvimento
+# Command to start the development application
 CMD ["npm", "run", "dev"]

@@ -2,12 +2,10 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 if (typeof window !== 'undefined') {
   
-  // ============================================
-  // API PRINCIPAL DO MODELO
-  // ============================================
+  // MODEL API
   contextBridge.exposeInMainWorld('api', {
     
-    // --- Operações de Prompt ---
+    // --- Prompt Operations ---
     sendPrompt: (prompt) => {
       if (!prompt || typeof prompt !== 'string') {
         return Promise.reject(new Error('Prompt must be a non-empty string'));
@@ -26,7 +24,7 @@ if (typeof window !== 'undefined') {
       return ipcRenderer.invoke('model:clear-memory');
     },
     
-    // --- Event Listeners do Modelo ---
+    // --- Model Event Listeners ---
     onNewToken: (callback) => {
       const listener = (event, data) => {
         if (data && typeof data.promptId === 'string' && typeof data.token === 'string') {
@@ -93,17 +91,15 @@ if (typeof window !== 'undefined') {
       return () => ipcRenderer.removeListener('model:memory-cleared', listener);
     },
     
-    // --- N8N Window ---
+    // --- N8N Window --- 
     openN8NWindow: () => ipcRenderer.invoke('n8n-window:open'),
     closeN8NWindow: () => ipcRenderer.invoke('n8n-window:close'),
     getN8NStatus: () => ipcRenderer.invoke('n8n-window:status'),
     
-    // ============================================
-    // NOVA API: DOWNLOAD SERVER (SSE)
-    // ============================================
+    // DOWNLOAD SERVER (SSE) API:
     downloadServer: {
       /**
-       * Obtém status do servidor SSE
+       * Retrieves the status of the SSE server
        * @returns {Promise<{success: boolean, status?: object, error?: string}>}
        */
       getStatus: () => {
@@ -136,12 +132,10 @@ if (typeof window !== 'undefined') {
     }
   });
 
-  // ============================================
-  // CONTROLE DE JANELA (não remover)
-  // ============================================
+  // WINDOW CONTROL (do not remove)
   contextBridge.exposeInMainWorld('electron', {
     invoke: (channel, data) => ipcRenderer.invoke(channel, data)
   });
 
-  console.log('✅ Preload script executed successfully');
+  console.log('✓ Preload script executed successfully');
 }

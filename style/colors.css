@@ -11,6 +11,7 @@
   --n-700: #343a40;
   --n-800: #212529;
   --n-900: #151517;
+  --n-1000: #000000;
 
   /* CREAM COLORS - Base: #f5f5dc */
   --c-50: #fefefe;
@@ -24,15 +25,15 @@
   --c-800: #e0e0d0;
 
   /* BRAND COLORS - Base: #324376 */
-  --b-100: #e6e9f5;
-  --b-200: #ccd4eb;
-  --b-300: #99a9d7;
-  --b-400: #667fc4;
-  --b-500: #4d69a8;
-  --b-600: #324376;
-  --b-700: #283561;
-  --b-800: #1e274b;
-  --b-900: #141a36;
+--b-100: #e6e9f5;
+--b-200: #ccd4eb;
+--b-300: #f9f9e2;
+--b-400: #f7f7db;
+--b-500: #f5f5dc;
+--b-600: #d9d9c6;
+--b-700: #b8b8ab;
+--b-800: #8f8f86;
+--b-900: #666661;
 
   /* STATUS COLORS */
   --ok: #22c55e;
@@ -100,10 +101,13 @@
 .border-n-300 { border-color: var(--n-300); }
 .border-n-400 { border-color: var(--n-400); }
 .border-n-500 { border-color: var(--n-500); }
+.border-n-1000 { border-color: var(--n-1000); }
 
 .border-b-300 { border-color: var(--b-300); }
 .border-b-400 { border-color: var(--b-400); }
 .border-b-500 { border-color: var(--b-500); }
+
+
 
 /* STATUS CLASSES */
 .bg-ok { background-color: var(--ok); }

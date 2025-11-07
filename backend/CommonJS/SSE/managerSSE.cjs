@@ -2,10 +2,11 @@
 const { ipcMain, app } = require('electron');
 const { createModelDownloadServer } = require('./initSSEDownload.cjs');
 const path = require('path');
-const { COLORS } = require('../../utils/ansiColors');
+const colors = require('../../../utils/ansiColors');
+
 /**
- * 🚀 Professional SSE Server Manager
- * Gerencia múltiplos servidores SSE de forma elegante e escalável
+ * SSE Server Manager
+ * Manages multiple SSE servers elegantly and scalably
  */
 class SSEServerManager {
   constructor() {
@@ -21,12 +22,10 @@ class SSEServerManager {
     };
   }
 
-  /**
-   * Inicializa o gerenciador e configura handlers IPC
-   */
+  //Initializes the manager and configures IPC handlers
   async initialize() {
     if (this.isInitialized) {
-      console.log(COLORS.YELLOW + '⚠️ SSEServerManager já está inicializado' + COLORS.RESET);
+      console.log(colors.COLORS.YELLOW + 'SSEServerManager is already initialized' + colors.COLORS.RESET);
       return true;
     }
 
@@ -35,27 +34,25 @@ class SSEServerManager {
       this.setupAppLifecycleHandlers();
       this.isInitialized = true;
       
-      console.log(COLORS.GREEN + '✅ SSEServerManager inicializado com sucesso' + COLORS.RESET);
+      console.log(colors.COLORS.GREEN + 'SSEServerManager initialized successfully' + colors.COLORS.RESET);
       return true;
     } catch (error) {
-      console.error(COLORS.RED + '❌ Falha na inicialização do SSEServerManager:' + COLORS.RESET, error);
+      console.error(colors.COLORS.RED + 'Failed to initialize SSEServerManager:' + colors.COLORS.RESET, error);
       throw error;
     }
   }
 
-  /**
-   * Cria e inicia um servidor SSE
-   */
+  //Creates and starts an SSE server
   async createServer(serverId, config = {}) {
     if (this.servers.has(serverId)) {
-      console.log(COLORS.YELLOW + `⚠️ Servidor ${serverId} já existe` + COLORS.RESET);
+      console.log(colors.COLORS.YELLOW + `Server ${serverId} already exists` + colors.COLORS.RESET);
       return this.getServerInfo(serverId);
     }
 
     try {
       const serverConfig = { ...this.defaultConfig, ...config, serverId };
       
-      console.log(COLORS.CYAN + `🚀 Iniciando servidor SSE: ${serverId}` + COLORS.RESET);
+      console.log(colors.COLORS.CYAN + `Starting SSE server: ${serverId}` + colors.COLORS.RESET);
       
       const server = createModelDownloadServer(serverConfig);
       await server.start();
@@ -74,11 +71,11 @@ class SSEServerManager {
       // Configurar event listeners para o servidor
       this.setupServerEventListeners(serverId, server);
       
-      console.log(COLORS.GREEN + `✅ Servidor SSE ${serverId} iniciado na porta ${serverConfig.port}` + COLORS.RESET);
+      console.log(colors.COLORS.GREEN + `SSE server ${serverId} started on port ${serverConfig.port}` + colors.COLORS.RESET);
       
       return serverInfo;
     } catch (error) {
-      console.error(COLORS.RED + `❌ Falha ao iniciar servidor ${serverId}:` + COLORS.RESET, error);
+      console.error(colors.COLORS.RED + `Failed to start server ${serverId}:` + colors.COLORS.RESET, error);
       
       // Tentativa de retry automático se configurado
       if (config.autoRestart && (!config.maxRetries || this.servers.get(serverId)?.retryCount < config.maxRetries)) {
@@ -89,41 +86,37 @@ class SSEServerManager {
     }
   }
 
-  /**
-   * Para e remove um servidor SSE
-   */
+//Stops and removes an SSE server
   async stopServer(serverId) {
     if (!this.servers.has(serverId)) {
-      console.log(COLORS.YELLOW + `⚠️ Servidor ${serverId} não encontrado` + COLORS.RESET);
+      console.log(colors.COLORS.YELLOW + `Server ${serverId} not found` + colors.COLORS.RESET);
       return false;
     }
 
     try {
       const serverInfo = this.servers.get(serverId);
-      console.log(COLORS.CYAN + `🛑 Parando servidor SSE: ${serverId}` + COLORS.RESET);
+      console.log(colors.COLORS.CYAN + `Stopping SSE server: ${serverId}` + colors.COLORS.RESET);
       
       await serverInfo.instance.stop();
       this.servers.delete(serverId);
       
-      console.log(COLORS.GREEN + `✅ Servidor SSE ${serverId} parado com sucesso` + COLORS.RESET);
+      console.log(colors.COLORS.GREEN + `SSE server ${serverId} stopped successfully` + colors.COLORS.RESET);
       return true;
     } catch (error) {
-      console.error(COLORS.RED + `❌ Erro ao parar servidor ${serverId}:` + COLORS.RESET, error);
+      console.error(colors.COLORS.RED + `Error stopping server ${serverId}:` + colors.COLORS.RESET, error);
       throw error;
     }
   }
 
-  /**
-   * Reinicia um servidor SSE
-   */
+  //Restarts an SSE server
   async restartServer(serverId) {
     if (!this.servers.has(serverId)) {
-      throw new Error(`Servidor ${serverId} não encontrado`);
+      throw new Error(`Server ${serverId} not found`);
     }
 
     try {
       const serverInfo = this.servers.get(serverId);
-      console.log(COLORS.CYAN + `🔄 Reiniciando servidor SSE: ${serverId}` + COLORS.RESET);
+      console.log(colors.COLORS.CYAN + `Restarting SSE server: ${serverId}` + colors.COLORS.RESET);
       
       await serverInfo.instance.stop();
       await new Promise(resolve => setTimeout(resolve, 1000)); // Delay para limpeza
@@ -132,18 +125,16 @@ class SSEServerManager {
       serverInfo.status = 'running';
       serverInfo.startTime = new Date();
       
-      console.log(COLORS.GREEN + `✅ Servidor SSE ${serverId} reiniciado com sucesso` + COLORS.RESET);
+      console.log(colors.COLORS.GREEN + `SSE server ${serverId} restarted successfully` + colors.COLORS.RESET);
       return serverInfo;
     } catch (error) {
-      console.error(COLORS.RED + `❌ Erro ao reiniciar servidor ${serverId}:` + COLORS.RESET, error);
+      console.error(colors.COLORS.RED + `Error restarting server ${serverId}:` + colors.COLORS.RESET, error);
       serverInfo.status = 'error';
       throw error;
     }
   }
 
-  /**
-   * Obtém informações de um servidor específico
-   */
+// GETS INFORMATION ABOUT A SPECIFIC SERVER
   getServerInfo(serverId) {
     if (!this.servers.has(serverId)) {
       return null;
@@ -156,15 +147,13 @@ class SSEServerManager {
       id: serverInfo.id,
       status: serverInfo.status,
       config: serverInfo.config,
-      uptime: Math.floor(uptime / 1000), // em segundos
+      uptime: Math.floor(uptime / 1000),
       startTime: serverInfo.startTime,
       retryCount: serverInfo.retryCount
     };
   }
 
-  /**
-   * Lista todos os servidores gerenciados
-   */
+// LISTS ALL MANAGED SERVERS
   getAllServers() {
     const servers = [];
     for (const [serverId, serverInfo] of this.servers) {
@@ -173,38 +162,34 @@ class SSEServerManager {
     return servers;
   }
 
-  /**
-   * Para todos os servidores gerenciados
-   */
+// STOPS ALL MANAGED SERVERS
   async stopAllServers() {
-    console.log(COLORS.CYAN + '🛑 Parando todos os servidores SSE...' + COLORS.RESET);
+    console.log(colors.COLORS.CYAN + 'Stopping all SSE servers...' + colors.COLORS.RESET);
     
     const stopPromises = [];
     for (const [serverId] of this.servers) {
       stopPromises.push(this.stopServer(serverId).catch(error => {
-        console.error(COLORS.RED + `❌ Erro ao parar ${serverId}:` + COLORS.RESET, error);
+        console.error(colors.COLORS.RED + `Erro ao parar ${serverId}:` + colors.COLORS.RESET, error);
       }));
     }
 
     await Promise.allSettled(stopPromises);
-    console.log(COLORS.GREEN + '✅ Todos os servidores SSE foram parados' + COLORS.RESET);
+    console.log(colors.COLORS.GREEN + 'All SSE servers have been stopped' + colors.COLORS.RESET);
   }
 
-  /**
-   * Configura handlers IPC para comunicação com o frontend
-   */
+// SETS UP IPC HANDLERS FOR FRONTEND COMMUNICATION
   setupIpcHandlers() {
-    // Obter status de todos os servidores
+    // Gets status of all servers
     ipcMain.handle('sse:get-all-servers', () => {
       return this.getAllServers();
     });
 
-    // Obter informações de um servidor específico
+    // Gets information of a specific server
     ipcMain.handle('sse:get-server-info', (_, serverId) => {
       return this.getServerInfo(serverId);
     });
 
-    // Criar novo servidor
+    // Creates a new server
     ipcMain.handle('sse:create-server', async (_, serverId, config = {}) => {
       try {
         const serverInfo = await this.createServer(serverId, config);
@@ -214,7 +199,7 @@ class SSEServerManager {
       }
     });
 
-    // Parar servidor
+    // Stops a server
     ipcMain.handle('sse:stop-server', async (_, serverId) => {
       try {
         await this.stopServer(serverId);
@@ -224,7 +209,7 @@ class SSEServerManager {
       }
     });
 
-    // Reiniciar servidor
+    // Restarts a server
     ipcMain.handle('sse:restart-server', async (_, serverId) => {
       try {
         const serverInfo = await this.restartServer(serverId);
@@ -234,46 +219,42 @@ class SSEServerManager {
       }
     });
 
-    console.log(COLORS.GREEN + '✅ Handlers IPC configurados para SSEServerManager' + COLORS.RESET);
+    console.log(colors.COLORS.GREEN + 'IPC handlers configured for SSEServerManager' + colors.COLORS.RESET);
   }
 
-  /**
-   * Configura event listeners para o ciclo de vida do app
-   */
+// SETS UP EVENT LISTENERS FOR APP LIFECYCLE
   setupAppLifecycleHandlers() {
     app.on('before-quit', async () => {
-      console.log(COLORS.CYAN + '📱 App está fechando, parando servidores SSE...' + COLORS.RESET);
+      console.log(colors.COLORS.CYAN + 'App is closing, stopping SSE servers...' + colors.COLORS.RESET);
       await this.stopAllServers();
     });
 
     process.on('SIGINT', async () => {
-      console.log(COLORS.CYAN + '🔄 Recebido SIGINT, parando servidores SSE...' + COLORS.RESET);
+      console.log(colors.COLORS.CYAN + 'Received SIGINT, stopping SSE servers...' + colors.COLORS.RESET);
       await this.stopAllServers();
       process.exit(0);
     });
 
     process.on('SIGTERM', async () => {
-      console.log(COLORS.CYAN + '🔄 Recebido SIGTERM, parando servidores SSE...' + COLORS.RESET);
+      console.log(colors.COLORS.CYAN + 'Received SIGTERM, stopping SSE servers...' + colors.COLORS.RESET);
       await this.stopAllServers();
       process.exit(0);
     });
   }
 
-  /**
-   * Configura event listeners específicos para cada servidor
-   */
+// Configures event listeners for each server
   setupServerEventListeners(serverId, serverInstance) {
-    // Aqui você pode adicionar listeners específicos para eventos do servidor
-    // Por exemplo: logs, eventos de erro, mudanças de status, etc.
+    // Here you can add specific listeners for server events
+    // For example: logs, error events, status changes, etc.
     
     serverInstance.on('error', (error) => {
-      console.error(COLORS.RED + `❌ Erro no servidor ${serverId}:` + COLORS.RESET, error);
+      console.error(colors.COLORS.RED + `Error in server ${serverId}:` + colors.COLORS.RESET, error);
       
       const serverInfo = this.servers.get(serverId);
       if (serverInfo) {
         serverInfo.status = 'error';
         
-        // Auto-restart se configurado
+        // Auto-restart if configured
         if (serverInfo.config.autoRestart) {
           this.handleServerRestart(serverId, serverInfo.config, error);
         }
@@ -281,7 +262,7 @@ class SSEServerManager {
     });
 
     serverInstance.on('started', () => {
-      console.log(COLORS.GREEN + `✅ Servidor ${serverId} iniciado com sucesso` + COLORS.RESET);
+      console.log(colors.COLORS.GREEN + `Servidor ${serverId} iniciado com sucesso` + colors.COLORS.RESET);
       
       const serverInfo = this.servers.get(serverId);
       if (serverInfo) {
@@ -291,7 +272,7 @@ class SSEServerManager {
     });
 
     serverInstance.on('stopped', () => {
-      console.log(COLORS.YELLOW + `⚠️ Servidor ${serverId} parado` + COLORS.RESET);
+      console.log(colors.COLORS.YELLOW + `Servidor ${serverId} parado` + colors.COLORS.RESET);
       
       const serverInfo = this.servers.get(serverId);
       if (serverInfo) {
@@ -300,9 +281,7 @@ class SSEServerManager {
     });
   }
 
-  /**
-   * Manipula o restart automático de servidores com backoff
-   */
+// HANDLES AUTOMATIC SERVER RESTART WITH BACKOFF
   async handleServerRestart(serverId, config, originalError) {
     const serverInfo = this.servers.get(serverId);
     if (!serverInfo) return;
@@ -310,28 +289,26 @@ class SSEServerManager {
     serverInfo.retryCount++;
     
     if (serverInfo.retryCount > (config.maxRetries || this.defaultConfig.maxRetries)) {
-      console.error(COLORS.RED + `❌ Número máximo de tentativas excedido para ${serverId}` + COLORS.RESET);
+      console.error(colors.COLORS.RED + `Maximum number of attempts exceeded for ${serverId}` + colors.COLORS.RESET);
       serverInfo.status = 'failed';
       return;
     }
 
     const retryDelay = (config.retryDelay || this.defaultConfig.retryDelay) * serverInfo.retryCount;
     
-    console.log(COLORS.YELLOW + `🔄 Tentativa ${serverInfo.retryCount} para servidor ${serverId} em ${retryDelay}ms` + COLORS.RESET);
+    console.log(colors.COLORS.YELLOW + `Attempt ${serverInfo.retryCount} for server ${serverId} in ${retryDelay}ms` + colors.COLORS.RESET);
     
     setTimeout(async () => {
       try {
         await this.restartServer(serverId);
-        serverInfo.retryCount = 0; // Reset no contador após sucesso
+        serverInfo.retryCount = 0; 
       } catch (error) {
-        console.error(COLORS.RED + `❌ Falha na tentativa ${serverInfo.retryCount} para ${serverId}:` + COLORS.RESET, error);
+        console.error(colors.COLORS.RED + `Failure in attempt ${serverInfo.retryCount} for ${serverId}:` + colors.COLORS.RESET, error);
       }
     }, retryDelay);
   }
 
-  /**
-   * Verifica a saúde de todos os servidores
-   */
+// CHECKS HEALTH OF ALL SERVERS
   async healthCheck() {
     const health = {
       timestamp: new Date(),
@@ -359,7 +336,5 @@ class SSEServerManager {
   }
 }
 
-// Singleton pattern para garantir uma única instância global
 const sseManager = new SSEServerManager();
-
 module.exports = sseManager;
