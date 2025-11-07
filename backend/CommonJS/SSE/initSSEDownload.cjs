@@ -7,7 +7,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const net = require('net');
-const colors = require('../../../utils/ansiColors');
+const { COLORS } = require('../../../utils/ansiColors');
 
 class ModelDownloadServerManager {
   constructor(options = {}) {
@@ -45,10 +45,10 @@ class ModelDownloadServerManager {
     const currentLevel = levels[this.options.logLevel] || 2;
 
     return {
-      error: (...args) => currentLevel >= 0 && console.error(`${colors.COLORS.RED}[SSEDownload:ERROR]${colors.COLORS.RESET}`, ...args),
-      warn: (...args) => currentLevel >= 1 && console.warn(`${colors.COLORS.YELLOW}[SSEDownload:WARN]${colors.COLORS.RESET}`, ...args),
-      info: (...args) => currentLevel >= 2 && console.log(`${colors.COLORS.GREEN}[SSEDownload:INFO]${colors.COLORS.RESET}`, ...args),
-      debug: (...args) => currentLevel >= 3 && console.log(`${colors.COLORS.CYAN}[SSEDownload:DEBUG]${colors.COLORS.RESET}`, ...args)
+      error: (...args) => currentLevel >= 0 && console.error(`${COLORS.RED}[SSEDownload:ERROR]${COLORS.RESET}`, ...args),
+      warn: (...args) => currentLevel >= 1 && console.warn(`${COLORS.YELLOW}[SSEDownload:WARN]${COLORS.RESET}`, ...args),
+      info: (...args) => currentLevel >= 2 && console.log(`${COLORS.GREEN}[SSEDownload:INFO]${COLORS.RESET}`, ...args),
+      debug: (...args) => currentLevel >= 3 && console.log(`${COLORS.CYAN}[SSEDownload:DEBUG]${COLORS.RESET}`, ...args)
     };
   }
 
@@ -59,7 +59,7 @@ class ModelDownloadServerManager {
   async _validateEnvironment() {
     // Check if the Python script exists
     if (!fs.existsSync(this.options.scriptPath)) {
-      throw new Error(`${colors.COLORS.RED}Script not found: ${this.options.scriptPath}${colors.COLORS.RESET}`);
+      throw new Error(`${COLORS.RED}Script not found: ${this.options.scriptPath}${COLORS.RESET}`);
     }
 
     // Check if Python is available
@@ -67,13 +67,13 @@ class ModelDownloadServerManager {
       await this._execCommand(this.options.pythonPath, ['--version']);
       this.logger.debug('Python found');
     } catch (error) {
-      throw new Error(`${colors.COLORS.RED}Python not found in PATH. Install Python 3.8+ or configure pythonPath${colors.COLORS.RESET}`);
+      throw new Error(`${COLORS.RED}Python not found in PATH. Install Python 3.8+ or configure pythonPath${COLORS.RESET}`);
     }
 
     // Verificar porta disponível
     const portAvailable = await this._isPortAvailable(this.options.port);
     if (!portAvailable) {
-      throw new Error(`${colors.COLORS.RED}Port ${this.options.port} is already in use${colors.COLORS.RESET}`);
+      throw new Error(`${COLORS.RED}Port ${this.options.port} is already in use${COLORS.RESET}`);
     }
 
     this.logger.debug('Environment validated successfully');
@@ -143,7 +143,7 @@ class ModelDownloadServerManager {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (this.isShuttingDown) {
         // Server initialization canceled: server is shutting down
-        throw new Error(`${colors.COLORS.RED}Initialization canceled: server is shutting down${colors.COLORS.RESET}`);
+        throw new Error(`${COLORS.RED}Initialization canceled: server is shutting down${COLORS.RESET}`);
       }
 
       try {
@@ -255,7 +255,7 @@ class ModelDownloadServerManager {
       // Start process
       this.process = spawn(this.options.pythonPath, args, {
         cwd: path.dirname(this.options.scriptPath),
-        stdio: ['pipe', 'pipe', 'pipe'], 
+        stdio: ['pipe', 'pipe', 'pipe'],
 
         detached: false
       });
@@ -353,7 +353,7 @@ class ModelDownloadServerManager {
       } catch (error) {
         this.logger.warn('Health check falhou');
       }
-    }, 30000);
+    }, 30000); // 30s
   }
 
   /**
@@ -377,7 +377,7 @@ class ModelDownloadServerManager {
 
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
-        this.logger.warn('Timeout: forcing termination');
+        this.logger.warn('Timeout: forcing shutdown');
         if (this.process) {
           this.process.kill('SIGKILL');
         }

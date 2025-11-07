@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const colors = require('../../../utils/ansiColors');
+const { COLORS } = require('../../../utils/ansiColors');
 const { restartPythonServer } = require('../webSocketProcessManager.cjs');
 const axios = require('axios');
 
@@ -56,12 +56,12 @@ class ModelLookout {
             });
 
             this.watcher.on('error', (error) => {
-                console.error(`${colors.COLORS.RED}Watcher error:${colors.COLORS.RESET}`, error.message);
+                console.error(`${COLORS.RED}Watcher error:${COLORS.RESET}`, error.message);
                 setTimeout(() => this.watchConfigFile(), 5000);
             });
 
         } catch (error) {
-            console.error(`${colors.COLORS.RED}Error setting up watcher:${colors.COLORS.RESET}`, error.message);
+            console.error(`${COLORS.RED}Error setting up watcher:${COLORS.RESET}`, error.message);
             this.watcher = fs.watchFile(this.configPath, { interval: 1000 }, () => {
                 this.debouncedHandleConfigChange();
             });
@@ -93,7 +93,7 @@ class ModelLookout {
                 console.log(`Current model: ${this.lastModel || 'None'}`);
             }
         } catch (error) {
-            console.error(`${colors.COLORS.RED}Error checking config:${colors.COLORS.RESET}`, error.message);
+            console.error(`${COLORS.RED}Error checking config:${COLORS.RESET}`, error.message);
         }
     }
 
@@ -116,7 +116,7 @@ class ModelLookout {
         try {
             await this.attemptConfigUpdate();
         } catch (error) {
-            console.error(`${colors.COLORS.RED}Lookout error:${colors.COLORS.RESET}`, error.message);
+            console.error(`${COLORS.RED}Lookout error:${COLORS.RESET}`, error.message);
         } finally {
             this.isProcessing = false;
         }
@@ -162,7 +162,7 @@ class ModelLookout {
                     return;
                 }
             } catch (error) {
-                console.error(`${colors.COLORS.RED}Attempt ${this.retryCount + 1} failed:${colors.COLORS.RESET}`, error.message);
+                console.error(`${COLORS.RED}Attempt ${this.retryCount + 1} failed:${COLORS.RESET}`, error.message);
             }
 
             this.retryCount++;
@@ -172,7 +172,7 @@ class ModelLookout {
             }
         }
 
-        console.error(`${colors.COLORS.RED}All retry attempts failed${colors.COLORS.RESET}`);
+        console.error(`${COLORS.RED}All retry attempts failed${COLORS.RESET}`);
         try {
             if (fs.existsSync(this.configPath)) {
                 const config = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
@@ -181,7 +181,7 @@ class ModelLookout {
                 }
             }
         } catch (e) {
-            console.error(`${colors.COLORS.RED}Error notifying HTTP server:${colors.COLORS.RESET}`, e.message);
+            console.error(`${COLORS.RED}Error notifying HTTP server:${COLORS.RESET}`, e.message);
         }
     }
 

@@ -1,6 +1,5 @@
 const { spawn } = require('child_process');
 const path = require('path');
-const colors = require('../../../utils/ansiColors');
 
 class HTTPServer {
     constructor() {
@@ -65,7 +64,7 @@ class HTTPServer {
 
     // RESTART HTTP SERVER
     async restartHTTP() {
-        console.log(`${colors.COLORS.BLUE}Restarting HTTP Server...${colors.COLORS.RESET}`);
+        console.log('Restarting HTTP Server...');
         this.stopHTTP();
         
         // Small pause to ensure complete stop

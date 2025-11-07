@@ -7,7 +7,7 @@ interface MountModelProps {
   testMode?: boolean;
 }
 
-// Cores customizadas - podem ser definidas no root do CSS
+// CUSTOM COLORS - CAN BE DEFINED IN THE CSS ROOT
 const colors = {
   primary: 'transparent border border-gray-400',
   success: 'bg-green-600 hover:bg-green-700',
@@ -27,10 +27,10 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
     setShowTooltip(false);
 
     try {
-      // Modo teste - espera 10 segundos para ver animação
+      // TEST MODE - WAITS 10 SECONDS TO SEE THE ANIMATION
       if (testMode) {
         await new Promise(resolve => setTimeout(resolve, 10000));
-        // Simula sucesso após 10s no modo teste
+        // SIMULATES SUCCESS AFTER 10S IN TEST MODE
         setStatus('success');
         return;
       }
@@ -43,7 +43,7 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
         body: JSON.stringify({ model_name: modelName }),
       });
 
-      // Verifica se a resposta HTTP é ok (status 200-299)
+      // CHECKS IF THE HTTP RESPONSE IS OK (STATUS 200-299)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.detail || `Erro HTTP: ${response.status}`);
@@ -51,26 +51,26 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
 
       const data = await response.json();
 
-      // Verifica se a operação foi bem sucedida no backend
+      // CHECKS IF THE OPERATION WAS SUCCESSFUL ON THE BACKEND
       if (data.status === 'success') {
         setStatus('success');
       } else {
         setStatus('error');
-        setErrorMessage(data.message || 'Operação não foi completada com sucesso');
+        setErrorMessage(data.message || 'Operation was not completed successfully');
       }
     } catch (error) {
       setStatus('error');
       setErrorMessage(
         error instanceof Error 
           ? error.message 
-          : 'Falha na comunicação com o servidor'
+          : 'Failed to communicate with the server'
       );
     }
   };
 
   return (
     <div className="relative flex items-center justify-center">
-      {/* Tooltip de erro - LADO ESQUERDO */}
+      {/* ERROR TOOLTIP - LEFT SIDE */}
       {status === 'error' && showTooltip && errorMessage && (
         <div className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 z-50">
           <div className="bg-red-600 text-white text-xs px-2 py-1 rounded shadow-lg max-w-xs border border-red-700">
@@ -80,7 +80,7 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
         </div>
       )}
 
-      {/* BOTÃO NORMAL - APARECE EM IDLE, SUCCESS E ERROR */}
+      {/* NORMAL BUTTON - APPEARS IN IDLE, SUCCESS AND ERROR STATES */}
       {status !== 'loading' && (
         <button
           onClick={handleMount}
@@ -101,11 +101,11 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
         >
           {status === 'success' && <Check className="w-4 h-4" />}
           {status === 'error' && <X className="w-4 h-4" />}
-          {status === 'success' ? 'Montado': status === 'error' ? 'Montagem falhou' : 'Montar'}
+          {status === 'success' ? 'Mounted' : status === 'error' ? 'Mount failed' : 'Mount'}
         </button>
       )}
 
-      {/* APENAS A ENGRENAGEM - SEM BOTÃO DURANTE LOADING */}
+      {/* ONLY THE GEAR - NO BUTTON DURING LOADING */}
       {status === 'loading' && (
         <div className="flex items-center justify-center">
           <Settings className="w-8 h-8 text-gray-600 animate-spin" />

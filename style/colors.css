@@ -85,6 +85,7 @@
 .text-n-700 { color: var(--n-700); }
 .text-n-800 { color: var(--n-800); }
 .text-n-900 { color: var(--n-900); }
+.text-n-1000 { color: var(--n-1000); }
 
 .text-c-50 { color: var(--c-50); }
 .text-c-100 { color: var(--c-100); }

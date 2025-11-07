@@ -98,7 +98,7 @@ function sendPrompt(userMessage) {
       promptId 
     });
     wsClient.send(message);
-    console.log(`${COLORS.BLUE}📤 Sent prompt:${COLORS.RESET}`, promptId);
+    console.log(`${COLORS.BLUE}SEND PROMPT:${COLORS.RESET}`, promptId);
     return promptId;
   } catch (err) {
     console.error(`${COLORS.RED}Error sending prompt:${COLORS.RESET}`, err);
@@ -111,7 +111,7 @@ function cancelPrompt(promptId) {
   if (wsClient && wsClient.readyState === WebSocket.OPEN && promptId) {
     try {
       wsClient.send(JSON.stringify({ action: "cancel", promptId }));
-      console.log(`Sent cancel for prompt: ${promptId}`);
+      console.log(`${COLORS.MAGENTA}Sent cancel for prompt: ${promptId}${COLORS.RESET}`);
     } catch (err) {
       console.error(`${COLORS.RED}Error canceling prompt:${COLORS.RESET}`, err);
     }
@@ -123,7 +123,7 @@ function clearMemory() {
   if (wsClient && wsClient.readyState === WebSocket.OPEN) {
     try {
       wsClient.send(JSON.stringify({ action: "clear_memory" }));
-      console.log(`${COLORS.BLUE}---Sent clear memory request---${COLORS.RESET}`);
+      console.log(`${COLORS.BLUE}Sent clear memory request${COLORS.RESET}`);
     } catch (err) {
       console.error(`${COLORS.RED}Error clearing memory:${COLORS.RESET}`, err);
     }

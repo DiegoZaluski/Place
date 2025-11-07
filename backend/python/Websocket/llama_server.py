@@ -157,6 +157,7 @@ class LlamaChatServer:
             self.active_prompts.discard(prompt_id)
     
 # CLIENT MANAGEMENT METHODS
+
     # SHUTDOWN
     async def handle_client(self, websocket: websockets.WebSocketServerProtocol, path: Optional[str] = None) -> None:
         """Manages client connection and processes messages."""

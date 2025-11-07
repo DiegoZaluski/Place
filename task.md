@@ -1,21 +1,22 @@
 # kanban
 
 ## Tasks Simples 
-1. estruturar o backend - padronizar codigo e logs - (prioridade media)✖️
+1. estruturar o backend - padronizar codigo e logs - (prioridade media)-(✅ +- ) 
 2. montar workflows de divulagação e propagação de projeto para divilgar o projeto e gerar conteudo nas redes para o marketing - (baixa prioriadade no momento) 
 3. corrigir bug do troca de theme - (prioridade alta)
 4. corrigir falso possitivo do arquivo (./Place/backend/CommonJS/HTTP/HTTPServer.cjs) - (prioridade medio)
 5. usar bibliotecas ou frameworks para ler comentarios e tranformar em documentação evitando trabalho manual - (baixa quando o projeto lançar)
 6. add titulos ao app ex: models .. - (prioridade alta)
 7. remover gambiarra do front feitas em - (./Place/src/components/layout/ModelsUi)
-8. ajustar cores - (urgente) ✖️
+8. ajustar cores - (urgente) ✅
 9. organizar cores dos componente react como se fossem root css - (urgente)
 10. organizar classNames dos componentes em colunas para facilitar leitura - (urgente)
 11. ajustar o time circle do arquivo downloads para se ajusta como a barra de carregamento
 12. ajustar bug do mudaça de cores dark (/home/zaluski/Documentos/Place/src/components/shared/WindowsComponents.tsx) - (baixa prioridade)
 13. add: header no models 
 14. testar se as cores do (/home/zaluski/Documentos/Place/utils/ansiColors.js) estão funcionando corretamente e corrigir nos demias arquivos fora o mais caus estejam corretos - (alta prioridade)
-15. mudar a cor dos carragamentos de dowlods o circulo quando esta baixando para preto 
+15. mudar a cor dos carragamentos de dowlods o circulo quando esta baixando para preto ✅
+16. ir add: corres de logs aos poucos ✅
 
 ## Tasks Media dificuldade
 1. criar controle de temperatura do modelos e memoria.

@@ -22,13 +22,13 @@ const Loading = ({ size = 64, speed = 1 }) => {
   return (
     <div className={`relative flex items-center justify-center w-${size} h-${size}`}>
       
-      {/* Ponto central */}
+      {/* Central point */}
       <div className="absolute w-6 h-6 rounded-full bg-black border-2 border-[#324376]/60 z-10" />
       
-      {/* Brilho central */}
+      {/* Central light */}
       <div className="absolute w-8 h-8 rounded-full bg-[#324376]/30 animate-pulse" />
       
-      {/* Partículas */}
+      {/* Particles */}
       {particles.map((particle) => (
         <div
           key={particle.id}

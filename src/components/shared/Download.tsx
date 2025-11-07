@@ -125,7 +125,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       try {
         console.log(`[Download] Initializing for model: ${modelId}`);
 
-        // 1. CHECK IF ELECTRON API IS AVAILABLE
+        // CHECK IF ELECTRON API IS AVAILABLE
         if (typeof window === 'undefined' || !window.api?.downloadServer) {
           console.error('[Download] Electron API not available');
           if (mountedRef.current) {
@@ -139,7 +139,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
           return;
         }
 
-        // 2. GET SERVER STATUS OR START IT
+        // GET SERVER STATUS OR START IT
         console.log('[Download] Checking SSE server status...');
         let url: string | null = null;
 
@@ -181,7 +181,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
 
         setServerUrl(url);
 
-        // 3. CHECK MODEL STATUS USING EXTRACTED FUNCTION
+        // CHECK MODEL STATUS USING EXTRACTED FUNCTION
         await checkModelStatus(
           url, 
           modelId, 
@@ -340,14 +340,14 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
         ${status === 'error' ? 'border-red-500/50' : ''}
         ${className}
       `}
-      aria-label={status === 'downloading' ? 'Cancelar' : 'Baixar'}
+      aria-label={status === 'downloading' ? 'Cancel' : 'Download'}
       title={
-        status === 'checking' ? 'Verificando...' :
-        status === 'error' ? 'Erro - Clique para tentar novamente' :
-        status === 'connecting' ? 'Conectando...' :
-        status === 'downloading' ? `Baixando: ${Math.round(progress)}%` :
-        status === 'downloaded' ? 'Download concluído' :
-        'Baixar modelo'
+        status === 'checking' ? 'Checking...' :
+        status === 'error' ? 'Error - Click to try again' :
+        status === 'connecting' ? 'Connecting...' :
+        status === 'downloading' ? `Downloading: ${Math.round(progress)}%` :
+        status === 'downloaded' ? 'Download completed' :
+        'Download model'
       }
     >
       {(status === 'downloading' || status === 'connecting') && (
@@ -359,7 +359,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
             stroke="currentColor" 
             strokeWidth="2" 
             fill="none" 
-            className="text-white/20" 
+            className="text-n-1000/20" 
           />
           <circle 
             cx="50%" 

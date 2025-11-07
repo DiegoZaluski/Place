@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { AppContext } from '../../global/AppProvider';
 
-// VARIÁVEIS DE CORES (ROOT CSS)
+// COLORS (ROOT CSS)
 const COLORS = {
   spinnerPrimary: '#3b82f6',
   progressBackground: '#e5e7eb',
@@ -61,7 +61,7 @@ const DownloadProgress: React.FC<DownloadProgressProps> = ({
             style={{ color: COLORS.spinnerPrimary }}
           />
           <p className={`${currentSize.fontSize} font-medium`} style={{ color: COLORS.textSecondary }}>
-            Conectando ao servidor...
+            Connecting to server...
           </p>
         </div>
       )}
@@ -70,7 +70,7 @@ const DownloadProgress: React.FC<DownloadProgressProps> = ({
         <div className="w-full space-y-2">
           <div className="flex justify-between items-center">
             <p className={`${currentSize.fontSize} font-medium`} style={{ color: COLORS.textPrimary }}>
-              Baixando...
+              Downloading...
             </p>
             <p className={`${currentSize.fontSize} font-semibold`} style={{ color: COLORS.textPrimary }}>
               {Math.round(progress)}%
@@ -101,7 +101,7 @@ const DownloadProgress: React.FC<DownloadProgressProps> = ({
             style={{ color: COLORS.progressFill }}
           />
           <p className={`${currentSize.fontSize} font-medium`} style={{ color: COLORS.textPrimary }}>
-            Download concluído!
+            Download completed!
           </p>
         </div>
       )}
@@ -113,7 +113,7 @@ const DownloadProgress: React.FC<DownloadProgressProps> = ({
             style={{ color: '#ef4444' }}
           />
           <p className={`${currentSize.fontSize} font-medium text-red-600`}>
-            Erro: {error || 'Erro desconhecido'}
+            Error: {error || 'Unknown error'}
           </p>
         </div>
       )}

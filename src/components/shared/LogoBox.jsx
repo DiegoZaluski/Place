@@ -1,17 +1,17 @@
 import React from 'react';
 
-// --- Variáveis de Configuração (Baseado no seu :root) ---
+// CONFIGURATION VARIABLES (Based on your :root)
 const RED_PRIMARY = 'tomato';
 const RED_TRANSPARENT = 'rgba(255, 99, 71, 0.75)';
 const OUTLINE_COLOR = '#000';
 
-// --- Componente Principal Renomeado para LogoBox ---
+// MAIN COMPONENT RENAMED TO LOGOBOX
 const LogoBox = ({ size = 40 }) => {
-  // Define o tamanho base e metade do tamanho baseado na prop
+  // Define the base size and half size based on the prop
   const cubeSize = size;
   const halfSize = size / 2;
 
-  // Estilos CSS complexos (Keyframes e Base das Faces)
+  // CSS STYLES (KEYFRAMES AND FACE BASE)
   const customStyles = `
     @media (max-width: 800px) {
       .isometric-cube-base {
@@ -39,7 +39,7 @@ const LogoBox = ({ size = 40 }) => {
     }
   `;
 
-  // Estilo do Cubo Principal (transform-style: preserve-3d)
+  // MAIN CUBE STYLE (transform-style: preserve-3d)
   const cubeStyle = {
     width: cubeSize,
     height: cubeSize,
@@ -49,20 +49,20 @@ const LogoBox = ({ size = 40 }) => {
   };
 
   return (
-    // Fundo removido - apenas o container necessário para centralizar
+    // BACKGROUND REMOVED - ONLY THE NEEDED CONTAINER TO CENTER
     <div className="flex items-center justify-center w-full p-4">
-      {/* Bloco de estilo necessário para Keyframes e classes base */}
+      {/* Style block needed for Keyframes and base classes */}
       <style>{customStyles}</style>
 
-      {/* Container de Perspectiva */}
+      {/* PERSPECTIVE CONTAINER */}
       <div id="cube-container" style={{ perspective: '1000px' }} className="m-0">
         
-        {/* Elemento 3D Principal */}
+        {/* MAIN 3D ELEMENT */}
         <div
           className="animated-cube isometric-cube-base"
           style={cubeStyle}
         >
-          {/* FACE FRONTAL (Clip-Path) */}
+          {/* FRONT FACE (Clip-Path) */}
           <div
             className="cube-face-base"
             style={{
@@ -72,13 +72,13 @@ const LogoBox = ({ size = 40 }) => {
             }}
           />
 
-          {/* FACE TRASEIRA */}
+          {/* BACK FACE */}
           <div
             className="cube-face-base"
             style={{ transform: `rotateY(180deg) translateZ(${halfSize}px)` }}
           />
 
-          {/* FACE SUPERIOR (Vermelho Transparente) */}
+          {/* TOP FACE (Transparent Red) */}
           <div
             className="cube-face-base"
             style={{
@@ -87,19 +87,19 @@ const LogoBox = ({ size = 40 }) => {
             }}
           />
 
-          {/* FACE INFERIOR */}
+          {/* BOTTOM FACE */}
           <div
             className="cube-face-base"
             style={{ transform: `rotateX(-90deg) translateZ(${halfSize}px)` }}
           />
 
-          {/* FACE ESQUERDA */}
+          {/* LEFT FACE */}
           <div
             className="cube-face-base"
             style={{ transform: `rotateY(-90deg) translateZ(${halfSize}px)` }}
           />
 
-          {/* FACE DIREITA (Vermelho Primário) */}
+          {/* RIGHT FACE (Primary Red) */}
           <div
             className="cube-face-base"
             style={{

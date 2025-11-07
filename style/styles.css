@@ -4,7 +4,6 @@
   box-sizing: border-box;
 }
 
-/* Estilos globais do Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

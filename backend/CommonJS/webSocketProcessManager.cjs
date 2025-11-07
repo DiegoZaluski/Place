@@ -2,7 +2,7 @@ const { spawn, exec } = require('child_process');
 const net = require('net');
 const path = require('path');
 const fs = require('fs');
-const colors = require('../../utils/ansiColors');
+const {COLORS} = require('../../utils/ansiColors');
 
 let pythonServerProcess = null;
 let serverRestartCount = 0;
@@ -116,7 +116,7 @@ async function waitForServerStart(timeout = 15000) {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
   
-  console.log(`${colors.COLORS.RED}Python server failed to start within timeout${colors.COLORS.RESET}`);
+  console.log(`${COLORS.RED}Python server failed to start within timeout${COLORS.RESET}`);
   return false;
 }
 
@@ -125,7 +125,7 @@ function handleServerCrash(mainWindow) {
   serverRestartCount++;
   
   if (serverRestartCount <= MAX_SERVER_RESTARTS) {
-    console.log(`${colors.COLORS.YELLOW}Restarting Python server (attempt ${serverRestartCount}/${MAX_SERVER_RESTARTS})...${colors.COLORS.RESET}`);
+    console.log(`${COLORS.YELLOW}Restarting Python server (attempt ${serverRestartCount}/${MAX_SERVER_RESTARTS})...${COLORS.RESET}`);
     
     setTimeout(async () => {
       const success = await startPythonServer(mainWindow);
@@ -137,7 +137,7 @@ function handleServerCrash(mainWindow) {
       }
     }, 3000);
   } else {
-    console.error(`${colors.COLORS.RED}Python server failed to start after ${MAX_SERVER_RESTARTS} attempts${colors.COLORS.RESET}`);
+    console.error(`${COLORS.RED}Python server failed to start after ${MAX_SERVER_RESTARTS} attempts${COLORS.RESET}`);
     
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('server:critical-error', {
@@ -163,7 +163,7 @@ function getPythonPath(workingDir) {
     }
   }
   
-  throw new Error(`${colors.COLORS.RED}Python not found in virtual environment${colors.COLORS.RESET}`);
+  throw new Error(`${COLORS.RED}Python not found in virtual environment${COLORS.RESET}`);
 }
 
 // STARTS THE PYTHON SERVER SAFELY
@@ -192,7 +192,7 @@ async function startPythonServer(mainWindow) {
     console.log('Server path:', serverPath);
     
     if (!fs.existsSync(serverPath)) {
-      throw new Error(`${colors.COLORS.RED}Server not found: ${serverPath}${colors.COLORS.RESET}`);
+      throw new Error(`${COLORS.RED}Server not found: ${serverPath}${COLORS.RESET}`);
     }
     
     // CLEAN ENVIRONMENT
@@ -234,17 +234,17 @@ async function startPythonServer(mainWindow) {
     });
     
     pythonServerProcess.on('close', (code) => {
-      console.log(`${colors.COLORS.YELLOW}Python server process exited with code ${code}${colors.COLORS.RESET}`);
+      console.log(`${COLORS.YELLOW}Python server process exited with code ${code}${COLORS.RESET}`);
       pythonServerProcess = null;
       
       if (code !== 0 && code !== null) {
-        console.log(`${colors.COLORS.YELLOW}Server crashed, handling restart...${colors.COLORS.RESET}`);
+        console.log(`${COLORS.YELLOW}Server crashed, handling restart...${COLORS.RESET}`);
         handleServerCrash(mainWindow);
       }
     });
     
     pythonServerProcess.on('error', (error) => {
-      console.error(`${colors.COLORS.RED}Failed to start Python server:${colors.COLORS.RESET}`, error);
+      console.error(`${COLORS.RED}Failed to start Python server:${COLORS.RESET}`, error);
       pythonServerProcess = null;
       handleServerCrash(mainWindow);
     });
@@ -252,7 +252,7 @@ async function startPythonServer(mainWindow) {
     // WAIT FOR SERVER TO BECOME AVAILABLE
     const serverStarted = await waitForServerStart();
     if (serverStarted) {
-      console.log(`${colors.COLORS.GREEN}Python server started successfully${colors.COLORS.RESET}`);
+      console.log(`${COLORS.GREEN}Python server started successfully${COLORS.RESET}`);
       serverRestartCount = 0;
       return true;
     } else {
@@ -265,7 +265,7 @@ async function startPythonServer(mainWindow) {
     }
     
   } catch (error) {
-    console.error(`${colors.COLORS.RED}Error starting Python server:${colors.COLORS.RESET}`, error);
+    console.error(`${COLORS.RED}Error starting Python server:${COLORS.RESET}`, error);
     handleServerCrash(mainWindow);
     return false;
   }
@@ -302,7 +302,7 @@ async function restartPythonServer(mainWindow) {
     
     return { success };
   } catch (error) {
-    console.error(`${colors.COLORS.RED}Manual server restart failed:${colors.COLORS.RESET}`, error);
+    console.error(`${COLORS.RED}Manual server restart failed:${COLORS.RESET}`, error);
     return { success: false, error: error.message };
   }
 }
