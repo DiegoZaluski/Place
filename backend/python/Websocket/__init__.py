@@ -9,9 +9,9 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from python import COLORS
-from logging import getLogger
-logger = getLogger(__name__)
+from python import COLORS, setup_logging
+# LOGGER CONFIGURATION
+logger = setup_logging('WEBSOCKET_Server')
 
 # FORMAT MAPPING
 MODEL_FORMATS = {
@@ -57,5 +57,6 @@ try:
     MODEL_PATH = CONFIG["model_path"]
     CHAT_FORMAT = CONFIG["chat_format"]
 except Exception as e:
-    logger.error(f"{COLORS['RED']}[INIT] FATAL ERROR loading config: {e}{COLORS['RESET']}")
+    logger.error(f"[INIT] FATAL ERROR loading config: {e}")
     raise
+

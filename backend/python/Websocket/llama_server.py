@@ -11,7 +11,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from __init__ import MODEL_PATH, CHAT_FORMAT
+from __init__ import MODEL_PATH, CHAT_FORMAT, logger 
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
@@ -27,7 +27,6 @@ logger.setLevel(logging.CRITICAL)
 logger.addHandler(logging.NullHandler())
 # GLOBAL CONFIGURATION 
 CONTEXT_SIZE = 4096 
-MODEL_PATH = "../transformers/llama.cpp/models/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
 
 class LlamaChatServer:
     """WebSocket server for LLaMA model chat with native context optimization and async interruption support."""
@@ -40,7 +39,7 @@ class LlamaChatServer:
             n_gpu_layers=-1,
             seed=42,
             verbose=False,
-            chat_format="llama-3", 
+            chat_format=CHAT_FORMAT, 
             use_mlock=True,       
             use_mmap=True
         )
@@ -270,19 +269,19 @@ async def main() -> None:
     try:
         server = LlamaChatServer(MODEL_PATH)
     except Exception as e:
-        logger.error(f"{COLORS['RED']}FATAL: Failed to load LLaMA model at {MODEL_PATH}. Check path and dependencies.{COLORS['RESET']}")
+        logger.error(f"FATAL: Failed to load LLaMA model at {MODEL_PATH}. Check path and dependencies.")
         logger.error(f"Error: {e}")
         return
     
     ws_server = await websockets.serve(server.handle_client, "0.0.0.0", 8765) 
     
-    logger.info(f"{COLORS['GREEN']}WebSocket LLaMA server running on ws://0.0.0.0:8765{COLORS['RESET']}")
-    logger.info(f"{COLORS['GREEN']}Optimized generation with Thread Pool Executor and async context switching.{COLORS['RESET']}")
+    logger.info(f"WebSocket LLaMA server running on ws://0.0.0.0:8765")
+    logger.info(f"Optimized generation with Thread Pool Executor and async context switching.")
     
     try:
         await asyncio.Future()
     except KeyboardInterrupt:
-        logger.info(f"\n {COLORS['YELLOW']}Server shutting down...{COLORS['RESET']}")
+        logger.info(f"\nServer shutting down...")
         ws_server.close()
         await ws_server.wait_closed()
 

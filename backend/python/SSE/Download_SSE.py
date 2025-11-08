@@ -14,38 +14,7 @@ import subprocess
 import os
 import sys
 import time
-import logging
-from logging.handlers import RotatingFileHandler
-
-# ADD PROJECT ROOT TO PYTHONPATH
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
-
-from python import COLORS, BG_COLORS
-
-# LOGGING CONFIGURATION
-def setup_logging():
-    Path("./logs").mkdir(exist_ok=True)
-    
-    logger = logging.getLogger("download_system")
-    logger.setLevel(logging.INFO)
-    
-    handler = RotatingFileHandler(
-        "./logs/download.tmp",
-        maxBytes=10*1024*1024,
-        backupCount=30
-    )
-    handler.setFormatter(
-        logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    )
-    
-    logger.addHandler(handler)
-    logger.addHandler(logging.StreamHandler())
-    
-    return logger
-
-logger = setup_logging()
+from __init__ import logger
 
 # SECURITY VALIDATION
 class SecurityValidator:
@@ -56,15 +25,15 @@ class SecurityValidator:
         
         # PERMISSIVE VALIDATION - ACCEPTS REAL IDs
         if not model_id or len(model_id) > 100:
-            logger.debug(f"{COLORS['RED']}[VALIDATION] ID vazio ou muito longo: {model_id}{COLORS['RESET']}")
+            logger.debug(f"[VALIDATION] ID vazio ou muito longo: {model_id}")
             return False
         
         # Allows: letters (uppercase/lowercase), numbers, hyphens, dots, underscores
         if not re.match(r'^[a-zA-Z0-9\-\._]+$', model_id):
-            logger.debug(f"{COLORS['RED']}[VALIDATION] ID contém caracteres inválidos: {model_id}{COLORS['RESET']}", extra={'fatias': True})
+            logger.debug(f"[VALIDATION] ID contém caracteres inválidos: {model_id}")
             return False
         
-        logger.debug(f"{COLORS['GREEN']}[VALIDATION] ID VÁLIDO: {model_id}{COLORS['RESET']}", extra={'fatias': True})
+        logger.debug(f"[VALIDATION] ID VÁLIDO: {model_id}")
         return True
     @staticmethod
     def validate_url(url: str, allowed_domains: List[str]) -> bool:
@@ -173,13 +142,13 @@ class DownloadManager:
             logger.info(f" IDs disponíveis: {list(self.models.keys())}")
         
         except json.JSONDecodeError as e:
-            error_msg = f"{BG_COLORS['RED']}ERROR: Failed to decode JSON file: {e}{BG_COLORS['RESET']}"
+            error_msg = f"ERROR: Failed to decode JSON file: {e}"
             logger.error(error_msg)
-            raise ValueError(f"{BG_COLORS['RED']}Invalid configuration file: {e}{BG_COLORS['RESET']}")
+            raise ValueError(f"Invalid configuration file: {e}")
         except Exception as e:
-            error_msg = f"{BG_COLORS['RED']}CRITICAL ERROR loading configuration: {e}{BG_COLORS['RESET']}"
+            error_msg = f"CRITICAL ERROR loading configuration: {e}"
             logger.error(error_msg)
-            logger.error(f"{BG_COLORS['RED']}Stack trace: {traceback.format_exc()}{BG_COLORS['RESET']}")
+            logger.error(f"Stack trace: {traceback.format_exc()}")
             raise
     
     def get_models(self) -> List[Dict]:
@@ -397,7 +366,7 @@ class DownloadManager:
             if process.returncode == 0 and not state.cancel_event.is_set():
                 yield {"type": "completed", "progress": 100, "method": method}
             elif not state.cancel_event.is_set():
-                raise RuntimeError(f"{BG_COLORS['RED']}Command failed with code {process.returncode}{BG_COLORS['RESET']}")
+                raise RuntimeError(f"Command failed with code {process.returncode}")
         
         finally:
             if process.returncode is None:
@@ -445,7 +414,7 @@ app.add_middleware(
 # ROUTES
 @app.get("/api/models")
 async def list_models():
-    """# LIST ALL MODELS"""
+    """ LIST ALL MODELS """
     try:
         models = manager.get_models()
         return {"success": True, "models": models}
@@ -455,28 +424,28 @@ async def list_models():
 
 @app.get("/api/models/{model_id}/status")
 async def model_status(model_id: str):
-    """# MODEL STATUS"""
+    """ MODEL STATUS """
     try:
-        logger.info(f"{COLORS['YELLOW']}[PYTHON] STATUS REQUEST - ID received: '{model_id}'{COLORS['RESET']}")
-        logger.info(f"{COLORS['YELLOW']}[PYTHON] IDs available in system: {list(manager.models.keys())}{COLORS['RESET']}")
-        logger.info(f"{COLORS['YELLOW']}[PYTHON] Total of models: {len(manager.models)}{COLORS['RESET']}")
+        logger.info(f"[PYTHON] STATUS REQUEST - ID received: '{model_id}")
+        logger.info(f"[PYTHON] IDs available in system: {list(manager.models.keys())}")
+        logger.info(f"[PYTHON] Total of models: {len(manager.models)}")
         
         if not SecurityValidator.validate_model_id(model_id):
-            logger.error(f"{COLORS['RED']}[PYTHON] VALIDATION FAILED: {model_id}{COLORS['RESET']}")
+            logger.error(f"[PYTHON] VALIDATION FAILED: {model_id}")
             raise HTTPException(
                 status_code=400, 
                 detail=f"Invalid ID: {model_id}. Use only lowercase letters, numbers, and hyphens."
             )
         
         if model_id not in manager.models:
-            logger.error(f"{COLORS['RED']}[PYTHON] ID NOT FOUND: {model_id}{COLORS['RESET']}")
-            logger.error(f"{COLORS['YELLOW']}[PYTHON] IDs available: {list(manager.models.keys())}{COLORS['RESET']}")
+            logger.error(f"[PYTHON] ID NOT FOUND: {model_id}")
+            logger.error(f"[PYTHON] IDs available: {list(manager.models.keys())}")
             raise HTTPException(
                 status_code=404, 
                 detail=f"Model '{model_id}' not found. Available models: {', '.join(manager.models.keys())}"
             )
             
-        logger.info(f"{COLORS['GREEN']}[PYTHON] ID VALID: {model_id}{COLORS['RESET']}")
+        logger.info(f"[PYTHON] ID VALID: {model_id}")
         status = manager.get_model_status(model_id)
         return {"success": True, **status}
     
@@ -484,11 +453,11 @@ async def model_status(model_id: str):
         # Re-raise HTTP exceptions as they are already properly formatted
         raise
     except ValueError as e:
-        logger.error(f"{COLORS['RED']}[PYTHON] VALUE ERROR: {e}{COLORS['RESET']}")
+        logger.error(f"[PYTHON] VALUE ERROR: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"{COLORS['RED']}[PYTHON] ERROR in model_status: {e}{COLORS['RESET']}")
-        logger.error(f"{COLORS['YELLOW']}[PYTHON] Stack trace: {traceback.format_exc()}{COLORS['RESET']}")
+        logger.error(f"[PYTHON] ERROR in model_status: {e}")
+        logger.error(f"[PYTHON] Stack trace: {traceback.format_exc()}")
         raise HTTPException(
             status_code=500, 
             detail=f"Erro interno ao processar a requisição: {str(e)}"
@@ -517,7 +486,7 @@ async def download_model(model_id: str):
         )
     
     except Exception as e:
-        logger.error(f"{COLORS['RED']}[PYTHON] ERROR in download_model: {e}{COLORS['RESET']}")
+        logger.error(f"[PYTHON] ERROR in download_model: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/models/{model_id}/download")
@@ -535,7 +504,7 @@ async def cancel_download(model_id: str):
         }
     
     except Exception as e:
-        logger.error(f"{COLORS['RED']}[PYTHON] ERROR in cancel_download: {e}{COLORS['RESET']}")
+        logger.error(f"[PYTHON] ERROR in cancel_download: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")

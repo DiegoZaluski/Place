@@ -9,7 +9,6 @@ interface DownloadButtonProps {
 
 type DownloadStatus = 'checking' | 'idle' | 'connecting' | 'downloading' | 'downloaded' | 'error';
 
-// EXTEND WINDOW INTERFACE FOR ELECTRON API
 declare global {
   interface Window {
     api?: {
@@ -22,7 +21,6 @@ declare global {
   }
 }
 
-// CHECK MODEL STATUS FROM SERVER - MOVED TO TOP
 const checkModelStatus = async (
   url: string,
   modelId: string,
@@ -68,22 +66,18 @@ const checkModelStatus = async (
 };
 
 export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
-  // STATE DECLARATIONS
   const [status, setStatus] = useState<DownloadStatus>('checking');
   const [progress, setProgress] = useState(0);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   
-  // REFS
   const eventSourceRef = useRef<EventSource | null>(null);
   const prevStateRef = useRef({ status, progress });
   const mountedRef = useRef(true);
 
-  // CONTEXT
   const context = useContext(AppContext);
   if (!context) throw new Error('Download must be used within AppProvider');
   const { setDownloadState, addDownloadedModel } = context;
 
-  // HELPER FUNCTIONS
   const getIcon = (): JSX.Element => {
     if (status === 'downloaded') return <Check className="w-4 h-4 text-current" />;
     if (status === 'downloading' || status === 'connecting') return <X className="w-4 h-4" />;
@@ -92,7 +86,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     return <DownloadIcon className="w-4 h-4 text-current" />;
   };
 
-  // SYNC WITH CONTEXT - UPDATE ONLY WHEN CHANGED
   useEffect(() => {
     if (prevStateRef.current.status !== status || prevStateRef.current.progress !== progress) {
       console.log(`[Download] Syncing state for ${modelId}:`, { 
@@ -105,7 +98,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     }
   }, [status, progress, modelId, setDownloadState]);
 
-  // CLEANUP EVENTSOURCE ON UNMOUNT
   useEffect(() => {
     return () => {
       if (eventSourceRef.current) {
@@ -116,7 +108,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     };
   }, [modelId]);
 
-  // INITIALIZE: GET SERVER URL AND CHECK MODEL STATUS
   useEffect(() => {
     mountedRef.current = true;
     let initTimeout: NodeJS.Timeout;
@@ -125,7 +116,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       try {
         console.log(`[Download] Initializing for model: ${modelId}`);
 
-        // CHECK IF ELECTRON API IS AVAILABLE
         if (typeof window === 'undefined' || !window.api?.downloadServer) {
           console.error('[Download] Electron API not available');
           if (mountedRef.current) {
@@ -139,7 +129,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
           return;
         }
 
-        // GET SERVER STATUS OR START IT
         console.log('[Download] Checking SSE server status...');
         let url: string | null = null;
 
@@ -150,7 +139,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
             url = statusResult.status.url;
             console.log('[Download] SSE server is healthy:', url);
           } else {
-            // TRY TO START SERVER
             console.log('[Download] SSE server not ready, attempting to start...');
             const startResult = await window.api.downloadServer.start();
             
@@ -181,7 +169,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
 
         setServerUrl(url);
 
-        // CHECK MODEL STATUS USING EXTRACTED FUNCTION
         await checkModelStatus(
           url, 
           modelId, 
@@ -204,7 +191,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       }
     };
 
-    // DELAY TO ENSURE MAIN PROCESS SERVER IS READY
     initTimeout = setTimeout(initialize, 1500);
 
     return () => {
@@ -214,7 +200,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     };
   }, [modelId]);
 
-  // HANDLE DOWNLOAD BUTTON CLICK
   const handleDownload = async () => {
     console.log(`[Download] Button clicked for: ${modelId}, status: ${status}`);
 
@@ -229,7 +214,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       return;
     }
 
-    // CANCEL DOWNLOAD
     if (status === 'downloading') {
       console.log(`[Download] Cancelling download for: ${modelId}`);
       
@@ -254,13 +238,11 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       return;
     }
 
-    // ALREADY DOWNLOADED
     if (status === 'downloaded') {
       console.log(`[Download] Model already downloaded: ${modelId}`);
       return;
     }
 
-    // START DOWNLOAD
     console.log(`[Download] Starting download for: ${modelId}`);
     setStatus('connecting');
     setProgress(0);
@@ -324,7 +306,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     }, 500);
   };
 
-  // RENDER
   return (
     <button
       onClick={handleDownload}
@@ -332,8 +313,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       className={`
         border border-n-1000 rounded-full 
         flex items-center justify-center 
-        hover:bg-white/20
-        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-n-900 focus:ring-white/50
+        hover:bg-black/10
         transition-colors duration-200
         absolute p-1 top-6 right-6
         ${status === 'checking' || status === 'downloaded' ? 'cursor-not-allowed opacity-50' : ''}
@@ -350,31 +330,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
         'Download model'
       }
     >
-      {(status === 'downloading' || status === 'connecting') && (
-        <svg className="absolute inset-0 w-full h-full -rotate-90">
-          <circle 
-            cx="50%" 
-            cy="50%" 
-            r="40%" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            fill="none" 
-            className="text-n-1000/20" 
-          />
-          <circle 
-            cx="50%" 
-            cy="50%" 
-            r="40%" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            fill="none"
-            strokeDasharray="251.2"
-            strokeDashoffset={251.2 * (1 - progress / 100)}
-            className="text-white transition-all duration-300"
-            style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
-          />
-        </svg>
-      )}
       {getIcon()}
     </button>
   );
