@@ -5,8 +5,8 @@ export const headerTabsContent = ["Configuração", "Documentação", "Contribui
 export const topCardsDetails = [
   { title: "Models", detail: "5 Modelos em Produção. Último treinamento: há 3 horas.", indicator: "Alto Desempenho (94% Accuracy)" },
   { title: "Chat", detail: "21k Interações hoje. Latência média: 120ms.", indicator: "98% Satisfação do Usuário" },
-  { title: "Workflows", detail: "7 Fluxos Ativos. 2 Pendentes. Próxima execução: 01:00 AM.", indicator: "Sincronização OK" },
-  { title: "Workspace Security", detail: "12 Tentativas de acesso bloqueadas. RBAC Status: Conformidade Plena.", indicator: "Firewall Ativo" },
+  { title: "Workflows Lib", detail: "7 Fluxos Ativos. 2 Pendentes. Próxima execução: 01:00 AM.", indicator: "Sincronização OK" },
+  { title: "customization", detail: "seu modelo no jeitinho que você quer. treinamento diretamente nos pesos do modelo.", indicator: "Personalização profunda" },
   { title: "IDE", detail: "2 Projetos em Andamento. 48 Commits Pendentes. 1 Sessão Ativa (DevOps).", indicator: "Compilação Sucesso" },
 ];
 

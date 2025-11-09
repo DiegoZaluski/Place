@@ -7,7 +7,7 @@ import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check } from 'lucide-react';
 
-// --- Syntax Highlighter Imports ---
+// Syntax Highlighter Imports 
 import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
 import jsx from 'react-syntax-highlighter/dist/esm/languages/prism/jsx';
 import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript';
@@ -19,7 +19,7 @@ import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
 const LANGUAGES = { javascript, js: javascript, jsx, typescript, ts: typescript, python, py: python, css, json, bash, sh: bash };
 Object.entries(LANGUAGES).forEach(([name, lang]) => SyntaxHighlighter.registerLanguage(name, lang));
 
-// --- HOOK: Copy to Clipboard ---
+// HOOK: Copy to Clipboard
 const useCopyToClipboard = () => {
   const [copied, setCopied] = useState(false);
 
@@ -39,7 +39,7 @@ const useCopyToClipboard = () => {
   return { copied, copy };
 };
 
-// --- TYPING INDICATOR ---
+// TYPING INDICATOR 
 const TypingIndicator = memo(() => (
   <div className="flex items-center mt-4 space-x-2 font-playfair">
     {[0, 150, 300].map((delay, idx) => (
@@ -49,7 +49,7 @@ const TypingIndicator = memo(() => (
 ));
 TypingIndicator.displayName = 'TypingIndicator';
 
-// --- CODE BLOCK ---
+// CODE BLOCK 
 const CodeBlock = memo(({ children, className, ...props }) => {
   const { copied, copy } = useCopyToClipboard();
   const match = /language-([\w+-]+)/.exec(className || '');
@@ -128,10 +128,9 @@ const CodeBlock = memo(({ children, className, ...props }) => {
 });
 CodeBlock.displayName = 'CodeBlock';
 
-// --- CUSTOM COMPONENTS FOR MARKDOWN ---
+// CUSTOM COMPONENTS FOR MARKDOWN 
 const createMarkdownComponents = () => ({
   code: CodeBlock,
-  // Mantendo a renderização básica do Markdown para o corpo da resposta da IA
   h1: (p) => <h1 className="text-2xl font-bold text-white/90 mb-4 mt-6 font-playfair" {...p} />,
   h2: (p) => <h2 className="text-xl font-semibold text-white/85 mb-3 mt-5 font-playfair" {...p} />,
   h3: (p) => <h3 className="text-lg font-semibold text-white/80 mb-2 mt-4 font-playfair" {...p} />,
@@ -139,7 +138,7 @@ const createMarkdownComponents = () => ({
   a: ({ href, ...p }) => <a href={href} target="_blank" rel="noreferrer" className="text-amber-400 underline break-all font-playfair" {...p} />,
 });
 
-// --- NEW: USER MESSAGE DISPLAY COMPONENT ---
+// USER MESSAGE DISPLAY COMPONENT 
 const UserMessage = memo(({ content }) => (
   <div className="flex justify-end mb-6">
     <div className="max-w-[85%] p-4 rounded-3xl bg-[#0000004D] border-black border font-semibold text-white shadow-md break-words">
@@ -152,35 +151,35 @@ const UserMessage = memo(({ content }) => (
 UserMessage.displayName = 'UserMessage';
 
 
-// --- RESBOX COMPONENT ---
+// RESBOX COMPONENT 
 const ResBox = memo(({ messages = [], isGenerating = false, className = '', showTypingIndicator = true, showWelcome = true }) => {
   const messagesEndRef = useRef(null);
   
-  // Processa as mensagens para exibição
+  // Process messages for display
   const { processedMessages, currentResponse: streamingResponse } = useMemo(() => {
     let response = '';
     const result = [];
     
     messages.forEach((msg, index) => {
       if (msg.role === 'user') {
-        // Adiciona a mensagem do usuário
+        // Adds user message
         result.push({
           id: `user-${index}`,
           type: 'user',
           content: msg.content,
         });
       } else if (msg.token) {
-        // Acumula tokens para formar a resposta do assistente
+        // Accumulates tokens to form the assistant's response
         response += msg.token;
       } else if (msg.content) {
-        // Adiciona mensagens completas do assistente
+        // Adds complete assistant messages
         result.push({
           id: `assistant-${index}`,
           type: 'assistant',
           content: msg.content,
         });
       } else if (msg.error) {
-        // Adiciona mensagens de erro
+        // Adds error messages
         result.push({
           id: `error-${index}`,
           type: 'error',
@@ -189,21 +188,21 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
       }
     });
     
-    // Retorna tanto as mensagens processadas quanto a resposta em streaming
+    // Returns both processed messages and streaming response
     return {
       processedMessages: result,
       currentResponse: isGenerating ? response : '',
     };
   }, [messages, isGenerating]);
   
-  // Efeito para rolagem automática
+  // Scroll auto effect
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [processedMessages, streamingResponse, isGenerating]);
   
-  // Componentes para o ReactMarkdown
+  // Components for ReactMarkdown
   const markdownComponents = useMemo(() => ({
     ...createMarkdownComponents(),
     ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-4 text-white/75" {...props} />,
@@ -234,14 +233,14 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
 
   return (
     <div
-      className={`fixed inset-0 flex items-start justify-center pt-20 pl-10 pr-10 ${className}`}
+      className={`fixed inset-0 flex items-start justify-center pt-20 pl-10 pr-10 scrollbar-hide ${className}`}
       style={{ zIndex: 1, pointerEvents: 'none' }}
       >
       <div
         className="relative w-full max-w-4xl p-4 pointer-events-auto scrollbar-hide text-white/80"
         style={{ maxHeight: '65vh', overflowY: 'auto' }}
       >
-        {/* Exibe as mensagens da conversa */}
+        {/* Display conversation messages */}
         {processedMessages.map((msg) => (
           <React.Fragment key={msg.id}>
             {msg.type === 'user' ? (
@@ -264,7 +263,7 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
           </React.Fragment>
         ))}
 
-        {/* Exibe a resposta em tempo real enquanto está gerando */}
+        {/* Display the response in real-time while generating */}
         {isGenerating && streamingResponse && (
           <div className="mb-6 font-playfair text-white/80">
             <ReactMarkdown
@@ -278,12 +277,12 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
           </div>
         )}
 
-        {/* Indicador de digitação quando não há resposta ainda */}
+        {/* Typing indicator when no response is yet available */}
         {isGenerating && !streamingResponse && showTypingIndicator && (
           <TypingIndicator />
         )}
 
-        {/* Referência para rolagem automática */}
+        {/* Reference for automatic scrolling */}
         <div ref={messagesEndRef} />
       </div>
     </div>

@@ -17,9 +17,7 @@ import aiofiles
 import asyncio
 from itertools import chain
 from datetime import datetime
-import os
-from python import COLORS, BG_COLORS
-
+from __init__ import logger
 # LOGGING CONFIGURATION
 logging.basicConfig(
     level=logging.INFO,
@@ -126,29 +124,29 @@ async def save_current_model_config(model_name: str) -> bool:
         logger.info(f"Configuration updated in JSON: {model_name}")
         return True
     except Exception as e:
-        logger.error(f"{COLORS['RED']}Error saving configuration: {e}{COLORS['RESET']}")
+        logger.error(f"Error saving configuration: {e}")
         return False
 
 async def model_exists(model_name: str) -> bool:
     """Checks if model exists in models directory (READ ONLY)"""
     try:
         if not READONLY_MODELS_DIR.exists():
-            logger.error(f"{COLORS['RED']}Directory of models does not exist: {READONLY_MODELS_DIR}{COLORS['RESET']}")
+            logger.error(f"Directory of models does not exist: {READONLY_MODELS_DIR}")
             return False
 
-        logger.info(f"{COLORS['GREEN']}Directory of models found: {READONLY_MODELS_DIR}{COLORS['RESET']}")
+        logger.info(f"Directory of models found: {READONLY_MODELS_DIR}")
 
         # CHECKS AS DIRECT FILE
         model_path = READONLY_MODELS_DIR / model_name
         if model_path.exists() and model_path.is_file():
-            logger.info(f"{COLORS['GREEN']}Model found as file: {model_path}{COLORS['RESET']}")
+            logger.info(f"Model found as file: {model_path}")
             return True
 
         # CHECKS WITH COMMON EXTENSIONS
         for ext in ['.gguf', '.bin', '.ggml']:
             model_path_with_ext = READONLY_MODELS_DIR / f"{model_name}{ext}"
             if model_path_with_ext.exists() and model_path_with_ext.is_file():
-                logger.info(f"{COLORS['GREEN']}Model found with extension: {model_path_with_ext}{COLORS['RESET']}")
+                logger.info(f"Model found with extension: {model_path_with_ext}{COLORS['RESET']}")
                 return True
 
         # CHECKS AS DIRECTORY WITH FILES INSIDE
@@ -159,49 +157,49 @@ async def model_exists(model_name: str) -> bool:
                 model_path.glob("*.ggml")
             ))
             if model_files:
-                logger.info(f"{COLORS['GREEN']}Model found as directory: {model_path} with {len(model_files)} files{COLORS['RESET']}")
+                logger.info(f"Model found as directory: {model_path} with {len(model_files)} files")
                 return True
 
         # DETAILED LOG FOR DEBUGGING
-        logger.warning(f"{COLORS['RED']}Model not found: {model_name}{COLORS['RESET']}")
+        logger.warning(f"Model not found: {model_name}")
         
         # LISTS AVAILABLE FILES TO HELP WITH DEBUGGING
         try:
             available_files = list(READONLY_MODELS_DIR.glob("*"))
             model_files = [f.name for f in available_files if f.is_file() and f.suffix.lower() in ['.gguf', '.bin', '.ggml']]
             if model_files:
-                logger.warning(f"{COLORS['YELLOW']}Available files: {model_files}{COLORS['RESET']}")
+                logger.warning(f"Available files: {model_files}")
             else:
-                logger.warning("{COLORS['YELLOW']}No model files found in directory{COLORS['RESET']}")
+                logger.warning("No model files found in directory")
         except Exception as e:
-            logger.warning(f"{COLORS['YELLOW']}Error listing files: {e}{COLORS['RESET']}")
+            logger.warning(f"Error listing files: {e}")
 
         return False
     except Exception as e:
-        logger.error(f"{COLORS['RED']}Error verifying model: {e}{COLORS['RESET']}")
+        logger.error(f"Error verifying model: {e}")
         return False
 
 async def wait_for_websocket_confirmation(model_name: str, timeout: int = 60) -> bool:
     """Waits for WebSocket confirmation"""
     try:
-        logger.info(f"{COLORS['GREEN']}Waiting for WebSocket confirmation: {model_name}{COLORS['RESET']}")
+        logger.info(f"Waiting for WebSocket confirmation: {model_name}")
         await asyncio.sleep(2)
-        logger.info("{COLORS['GREEN']}WebSocket confirmation received{COLORS['RESET']}")
+        logger.info("WebSocket confirmation received")
         return True
     except Exception as e:
-        logger.error(f"{COLORS['RED']}WebSocket error: {e}{COLORS['RESET']}")
+        logger.error(f"WebSocket error: {e}")
         return False
 
 # ENDPOINTS
 @app.post("/switch-model", response_model=ModelSwitchResponse)
 async def switch_model(request: ModelSwitchRequest):
     """Switches models - read-only for models, write only to JSON"""
-    logger.info(f"{COLORS['BLUE']}Switch request for: {request.model_name}{COLORS['RESET']}")
+    logger.info(f"Switch request for: {request.model_name}")
 
     # CHECKS IF MODEL IS ALREADY ACTIVE
     current_model = await get_current_model()
     if current_model == request.model_name:
-        logger.info(f"{COLORS['GREEN']}Model already active: {request.model_name}{COLORS['RESET']}")
+        logger.info(f"Model already active: {request.model_name}")
         return ModelSwitchResponse(
             status="already_active",
             current_model=request.model_name,
@@ -211,12 +209,12 @@ async def switch_model(request: ModelSwitchRequest):
     
     # CHECKS IF MODEL EXISTS (READ ONLY)
     if not await model_exists(request.model_name):
-        logger.error(f"{COLORS['RED']}Model not found: {request.model_name}{COLORS['RESET']}")
+        logger.error(f"Model not found: {request.model_name}")
         raise HTTPException(status_code=404, detail="Model not found in models directory")
 
     # SAVES NEW CONFIGURATION (ONLY IN JSON)
     if not await save_current_model_config(request.model_name):
-        logger.error(f"{COLORS['RED']}Error saving configuration for: {request.model_name}{COLORS['RESET']}")
+        logger.error(f"Error saving configuration for: {request.model_name}")
         raise HTTPException(status_code=500, detail="Error saving configuration")
 
     # WAITS FOR CONFIRMATION
@@ -254,7 +252,7 @@ async def list_available_models():
             "readonly": True
         }
     except Exception as e:
-        logger.error(f"{COLORS['RED']}Error listing models: {e}{COLORS['RESET']}")
+        logger.error(f"Error listing models: {e}")
         raise HTTPException(status_code=500, detail="Internal error listing models")
 
 @app.get("/health")

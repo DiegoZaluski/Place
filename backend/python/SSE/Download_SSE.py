@@ -25,15 +25,15 @@ class SecurityValidator:
         
         # PERMISSIVE VALIDATION - ACCEPTS REAL IDs
         if not model_id or len(model_id) > 100:
-            logger.debug(f"[VALIDATION] ID vazio ou muito longo: {model_id}")
+            logger.debug(f"[VALIDATION] Empty or ID too long: {model_id}")
             return False
         
         # Allows: letters (uppercase/lowercase), numbers, hyphens, dots, underscores
         if not re.match(r'^[a-zA-Z0-9\-\._]+$', model_id):
-            logger.debug(f"[VALIDATION] ID contém caracteres inválidos: {model_id}")
+            logger.debug(f"[VALIDATION] ID contains invalid characters: {model_id}")
             return False
         
-        logger.debug(f"[VALIDATION] ID VÁLIDO: {model_id}")
+        logger.debug(f"[VALIDATION] ID VALID: {model_id}")
         return True
     @staticmethod
     def validate_url(url: str, allowed_domains: List[str]) -> bool:
@@ -41,25 +41,25 @@ class SecurityValidator:
         try:
             parsed = urlparse(url)
             if parsed.scheme != 'https':
-                logger.warning(f"URL não usa HTTPS: {url}")
+                logger.warning(f"URL does not use HTTPS: {url}")
                 return False
             
             domain = parsed.netloc.lower()
-            logger.debug(f"Domínio extraído: {domain}")
+            logger.debug(f"Domain extracted: {domain}")
             return any(domain.endswith(d) for d in allowed_domains)
         except Exception as e:
-            logger.error(f"Erro ao validar URL {url}: {str(e)}")
+            logger.error(f"Error validating URL {url}: {str(e)}")
             return False
     
     @staticmethod
     def validate_filename(filename: str) -> bool:
-        logger.debug(f"Validando nome de arquivo: {filename}")
+        logger.debug(f"Validando filename: {filename}")
         if '..' in filename or '/' in filename or '\\' in filename:
-            logger.warning(f"Nome de arquivo inválido (contém caracteres proibidos): {filename}")
+            logger.warning(f"Invalid filename (contains prohibited characters): {filename}")
             return False
         is_valid = filename.endswith('.gguf') and len(filename) < 100
         if not is_valid:
-            logger.warning(f"Formato de arquivo inválido ou nome muito longo: {filename}")
+            logger.warning(f"Invalid file format or name too long: {filename}")
         return is_valid
 
 # COMMAND BUILDER
@@ -73,10 +73,10 @@ class CommandBuilder:
     @classmethod
     def build(cls, method: str, url: str, output_file: str) -> List[str]:
         if method not in cls.COMMANDS:
-            raise ValueError(f"Método {method} não suportado")
+            raise ValueError(f"Method {method} not supported")
         
         if ';' in url or '&' in url or '|' in url or '`' in url:
-            raise ValueError("URL contém caracteres proibidos")
+            raise ValueError("URL contains prohibited characters")
         
         cmd = cls.COMMANDS[method].copy()
         cmd.append(output_file)
@@ -94,7 +94,7 @@ class DownloadManager:
     
     def load_config(self):
         try:
-            logger.info(" TENTANDO CARREGAR CONFIGURAÇÃO...")
+            logger.info(" Attempting to load configuration...")
             
             # TEST MULTIPLE PATHS
             possible_paths = [ # remove absolute path in the near future
@@ -111,22 +111,22 @@ class DownloadManager:
             for path in possible_paths:
                 if os.path.exists(path):
                     config_path = path
-                    logger.info(f" Arquivo encontrado em: {path}")
+                    logger.info(f" File found at: {path}")
                     break
                 else:
-                    logger.warning(f" Não encontrado: {path}")
+                    logger.warning(f" Not found: {path}")
             
             if config_path is None:
-                error_msg = " ERRO: models.json não encontrado em nenhum local!"
+                error_msg = " Error: models.json not found in any known location!"
                 logger.error(error_msg)
-                logger.error(f" Diretório atual: {os.getcwd()}")
-                logger.error(f" Conteúdo do diretório: {os.listdir('.')}")
-                raise FileNotFoundError("models.json não encontrado em nenhum local conhecido")
+                logger.error(f" Current directory: {os.getcwd()}")
+                logger.error(f" Directory contents: {os.listdir('.')}")
+                raise FileNotFoundError("models.json not found in any known location")
             
-            logger.info(f" Lendo arquivo: {config_path}")
+            logger.info(f" Reading file: {config_path}")
             with open(config_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-                logger.debug(f" Conteúdo do arquivo (primeiros 500 chars): {content[:500]}...")
+                logger.debug(f" File content (first 500 chars): {content[:500]}...")
                 
                 self.config = json.loads(content)
                 self.models = {m['id']: m for m in self.config['models']}
@@ -136,10 +136,10 @@ class DownloadManager:
             for dir_key in required_dirs:
                 if dir_key in self.config:
                     Path(self.config[dir_key]).mkdir(parents=True, exist_ok=True)
-                    logger.info(f" Diretório verificado/criado: {self.config[dir_key]}")
+                    logger.info(f" Directory verified/created: {self.config[dir_key]}")
             
-            logger.info(f" CONFIGURAÇÃO CARREGADA: {len(self.models)} modelos")
-            logger.info(f" IDs disponíveis: {list(self.models.keys())}")
+            logger.info(f" CONFIGURATION LOADED: {len(self.models)} models")
+            logger.info(f" IDs available: {list(self.models.keys())}")
         
         except json.JSONDecodeError as e:
             error_msg = f"ERROR: Failed to decode JSON file: {e}"
@@ -176,10 +176,10 @@ class DownloadManager:
         model = self.models[model_id]
         file_path = Path(self.config['download_path']) / model['filename']
         
-        # ADICIONAR INFORMAÇÃO DE PROGRESSO SE ESTIVER BAIXANDO
+        # ADD PROGRESS INFO IF DOWNLOADING
         progress = 0
         if model_id in self.active_downloads:
-            # Tentar obter progresso do estado interno (se disponível)
+            # Try to get progress from internal state (if available)
             progress = getattr(self.active_downloads[model_id], 'progress', 0)
         
         return {
@@ -337,7 +337,7 @@ class DownloadManager:
                     progress = int(float(percent_match.group(1)))
                     
                     if abs(progress - last_progress) >= 1:
-                        state.progress = progress  # ATUALIZAR ESTADO
+                        state.progress = progress  
                         elapsed = time.time() - start_time
                         
                         downloaded_gb = (progress / 100) * size_gb

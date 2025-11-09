@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Check, X } from 'lucide-react';
+import { Orbit, Check, X } from 'lucide-react';
 
 interface MountModelProps {
   modelName: string;
@@ -108,7 +108,7 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
       {/* ONLY THE GEAR - NO BUTTON DURING LOADING */}
       {status === 'loading' && (
         <div className="flex items-center justify-center">
-          <Settings className="w-8 h-8 text-gray-600 animate-spin" />
+          <Orbit className="w-8 h-8 dark-text-primary animate-spin" />
         </div>
       )}
     </div>

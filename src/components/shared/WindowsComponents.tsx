@@ -1,4 +1,4 @@
-import { CircleArrowOutUpLeft, Minus, Square, X } from 'lucide-react';
+import {  ArrowLeft, Minus, Square, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // TYPE DEFINITIONS
@@ -34,9 +34,10 @@ export function BackBtn({ whiteFixed = false }: WindowControlsProps) {
         className="w-8 h-8 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded absolute"
         aria-label="Voltar"
       >
-        <CircleArrowOutUpLeft
+        <ArrowLeft
           size={16} 
-          className={`${whiteFixed ? 'filter invert' : 'text-black dark:text-white'}`} 
+          stroke={whiteFixed ? 'white' : 'currentColor'}
+          className={whiteFixed ? '' : 'text-black dark:text-white'} 
         />
       </button>
     );
@@ -50,7 +51,11 @@ export function MinimizeBtn({ whiteFixed = false }: WindowControlsProps) {
       className="w-8 h-8 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
       aria-label="Minimizar"
     >
-      <Minus size={16} className={`${whiteFixed ? 'filter invert' : 'text-black dark:text-white'}`} />
+      <Minus
+       size={16} 
+       stroke={whiteFixed ? 'white' : 'currentColor'}
+       className={whiteFixed ? '' : 'text-black dark:text-white'} 
+       />
     </button>
   );
 }
@@ -63,7 +68,11 @@ export function MaximizeBtn({ whiteFixed = false }: WindowControlsProps) {
       className="w-8 h-8 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
       aria-label="Maximizar"
     >
-      <Square size={14} className={`${whiteFixed ? 'filter invert' : 'text-black dark:text-white'}`} />
+      <Square 
+      size={14} 
+      stroke={whiteFixed ? 'white' : 'currentColor'}
+      className={whiteFixed ? '' : 'text-black dark:text-white'} 
+      />
     </button>
   );
 }
@@ -76,7 +85,10 @@ export function CloseBtn({ whiteFixed = false }: WindowControlsProps) {
       className="w-8 h-8 flex items-center justify-center hover:bg-red-500 dark:hover:bg-red-600 transition-colors rounded group"
       aria-label="Fechar"
     >
-      <X size={16} className={`${whiteFixed ? 'brightness-0 invert' : 'text-black dark:text-white'}`} />
+      <X size={16} 
+      stroke={whiteFixed ? 'white' : 'currentColor'}
+      className={whiteFixed ? '' : 'text-black dark:text-white'} 
+      />
     </button>
   );
 }

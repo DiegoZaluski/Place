@@ -10,16 +10,17 @@ interface BottomCardProps {
     fullModelName: string;
   };
   index: number;
+  icon: React.ReactNode;
 }
 
-function BottomCard({ item, index }: BottomCardProps) {
+function BottomCard({ item, index, icon }: BottomCardProps) {
   return (
     <div
       key={`bottom-card-${index + 5}`}
       className="bg-n-900 h-92 border border-n-700 dark:border-n-200 rounded-3xl px-4 py-4 shadow-2xl flex flex-col justify-center items-center transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl cursor-pointer relative"
     >
       <div className="w-full h-full bg-b-600 rounded-2xl p-6 space-y-3 flex flex-col justify-start transition-colors duration-200">
-        
+        {icon}
         <Download modelId={item.fullModelName} />
         
         <h4 className="text-n-900 text-lg font-bold mb-2 border-b border-n-700 pb-1 leading-tight font-playfair">

@@ -25,34 +25,85 @@ BG_COLORS = {
 import logging
 import sys
 
-def setup_logging(name):
+def setup_logging(name, config=None):
+    """
+    Initialize and configure logger with optional custom settings.
+    Maintains backward compatibility while allowing extended control.
+    """
     logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
+    
+    default_config = {
+        'level': logging.INFO,
+        'colors': COLORS,
+        'format_style': 'legacy'
+    }
+    
+    # MERGE USER CONFIGURATION IF PROVIDED
+    if config:
+        default_config.update(config)
+    
+    cfg = default_config
+    logger.setLevel(cfg['level'])
 
     class FormatLogger(logging.Formatter):
-        def format(self,record):
-            match record.levelno:
-                case logging.INFO:
-                    format_str = f"{COLORS['BLUE']}[INFO]: %(name)s {COLORS['RESET']}:%(message)s"
-                case logging.WARNING:
-                    format_str = f"{COLORS['YELLOW']}[WARNING]: %(name)s {COLORS['RESET']}:%(message)s"
-                case logging.ERROR:
-                    format_str = f"{COLORS['RED']}[ERROR]: %(name)s {COLORS['RESET']}:%(message)s"
+        """Custom formatter supporting both legacy and extended formats."""
+        
+        def format(self, record):
+            colors = cfg['colors']
+            
+            if cfg['format_style'] == 'legacy':
+                match record.levelno:
+                    case logging.INFO:
+                        format_str = f"{colors['BLUE']}[INFO]: %(name)s {colors['RESET']}:%(message)s"
+                    case logging.WARNING:
+                        format_str = f"{colors['YELLOW']}[WARNING]: %(name)s {colors['RESET']}:%(message)s"
+                    case logging.ERROR:
+                        format_str = f"{colors['RED']}[ERROR]: %(name)s {colors['RESET']}:%(message)s"
+            else:
+                format_str = self._get_custom_format(record, colors, cfg)
+            
             formatter = logging.Formatter(format_str)
             return formatter.format(record)
+        
+        def _get_custom_format(self, record, colors, cfg):
+            """Generate custom format string based on configuration."""
+            level_name = record.levelname
+            color = colors.get(level_name, colors['RESET'])
+            
+            # BUILD FORMAT STRING DYNAMICALLY BASED ON CONFIGURATION
+            format_parts = []
+            
+            # ADD TIMESTAMP IF REQUESTED
+            if cfg.get('show_timestamp'):
+                timestamp_color = colors.get('GRAY', colors['RESET'])
+                format_parts.append(f"{timestamp_color}[%(asctime)s]{colors['RESET']}")
+            
+            # ADD LOG LEVEL AND NAME
+            format_parts.append(f"{color}[{level_name}]: %(name)s {colors['RESET']}:%(message)s")
+            
+            return ' '.join(format_parts)
 
     format_logger = FormatLogger()
 
+    stdout_level = cfg.get('stdout_level', logging.INFO)
+    stderr_level = cfg.get('stderr_level', logging.ERROR)
+    
     stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setLevel(logging.INFO)
-    stdout_handler.addFilter(lambda record: record.levelno < logging.ERROR)
+    stdout_handler.setLevel(stdout_level)
+    stdout_handler.addFilter(lambda record: record.levelno < stderr_level)
     stdout_handler.setFormatter(format_logger)
     
     stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.setLevel(logging.ERROR)
+    stderr_handler.setLevel(stderr_level)
     stderr_handler.setFormatter(format_logger)
+    
+    logger.handlers.clear()
     
     logger.addHandler(stdout_handler)
     logger.addHandler(stderr_handler)
-
+    
+    # OPTIONAL PROPAGATION CONTROL
+    if cfg.get('propagate') is not None:
+        logger.propagate = cfg['propagate']
+    
     return logger

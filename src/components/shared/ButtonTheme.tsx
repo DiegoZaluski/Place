@@ -27,12 +27,13 @@ export default function ButtonTheme({ className = '' }: ButtonThemeProps) {
 
     // THEME TOGGLE HANDLER
     const handleToggleTheme = () => {
-        const newIsDark = !isDark;
-        setIsDark(newIsDark);
-        
-        // Aplica ao documento e salva
-        document.documentElement.setAttribute('data-theme', newIsDark ? 'dark' : 'light');
-        localStorage.setItem('data-theme', newIsDark ? 'dark' : 'light');
+        setTimeout(() => {
+            const newIsDark = !isDark;
+            setIsDark(newIsDark);
+            
+            document.documentElement.setAttribute('data-theme', newIsDark ? 'dark' : 'light');
+            localStorage.setItem('data-theme', newIsDark ? 'dark' : 'light');
+        }, 100);
     };
 
     return (

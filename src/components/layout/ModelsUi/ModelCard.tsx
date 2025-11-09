@@ -86,10 +86,10 @@ const ModelCard: React.FC<ModelCardProps> = ({
 
         <div className="space-y-2 mb-3 flex-grow">
           <div className={`text-sm ${THEME.cardText}`}>
-            <span className="font-semibold">Memória:</span> {model.memoryUsage}
+            <span className="font-semibold">Memory:</span> {model.memoryUsage}
           </div>
           <div className={`text-sm ${THEME.cardText}`}>
-            <span className="font-semibold">Inteligência:</span>{' '}
+            <span className="font-semibold">Intelligence:</span>{' '}
             <span className={`font-medium ${getIntelligenceBadgeClass(model.intelligenceLevel)}`}>
               {model.intelligenceLevel}
             </span>
@@ -138,7 +138,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
 
         {model.features && model.features.length > 0 && (
           <div className="space-y-1.5 mb-3">
-            <h5 className={`text-xs font-semibold ${THEME.detailsLabel}`}>Características:</h5>
+            <h5 className={`text-xs font-semibold ${THEME.detailsLabel}`}>Features:</h5>
             <ul className="space-y-1">
               {model.features.map((feature, idx) => (
                 <li 
@@ -154,7 +154,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
 
         <div className={`pt-2 border-t ${THEME.detailsDivider}`}>
           <div className="flex items-center justify-between">
-            <span className={`text-xs ${THEME.detailsSubtext}`}>Memória</span>
+            <span className={`text-xs ${THEME.detailsSubtext}`}>Memory</span>
             <span className={`text-xs font-semibold ${THEME.detailsIcon}`}>{model.memoryUsage}</span>
           </div>
         </div>
