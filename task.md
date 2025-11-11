@@ -7,12 +7,15 @@
 ! organizar cores dos componente react como se fossem root css - (urgente)
 ! organizar classNames dos componentes em colunas para facilitar leitura - (baixa - prioridade)
 ! add cabeçalho para a pagina Models do app 
+! ajusta aparencia da interface de controle de modelos, circulo de controles (urgente)
+
 
 ## Tasks Media dificuldade
 ! criar interface personalização do modelo + controle de temperatura do modelos e memoria.✅ 
 ! criar os arquivos de tradução json na reta final da primeira versão - (prioridade baixa)
 ! criar funcionalidade para deixar maracado qual modelo esta em uso atualmente
 ! bug na passagem do erro para o troca de modelos, o erro não cabe nada caixa e acaba vazando - (prioridade media)
+! mudar variaveis de cor de componentes para abranger todo pacote de componentes 
 
 ## DIFICIL 
 ! criar api de facil acesso e conexão com o app, para empresas subam o app para nuvem (Uma api que oferece todos os serviços do app funcionalidade paga) - (baixa prioriadade no momento)  

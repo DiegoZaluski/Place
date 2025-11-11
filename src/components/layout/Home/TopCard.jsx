@@ -10,8 +10,8 @@ function TopCard({ item, index }) {
             return "/chat";
         case "Workflows":
             return "/workflows";
-        case "Workspace Security":
-            return "/workspace-security";
+        case "customization":
+            return "/custom";
         case "IDE":
             return "/ide";
         default:

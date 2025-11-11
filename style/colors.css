@@ -40,6 +40,15 @@
   --warn: #eab308;
   --err: #ef4444;
   --info: #3b82f6;
+
+  /*PURPLE*/
+--pur-50: #bcc0fab2;
+--pur-100: #a5aaf8b2;
+--pur-200: #8e95f6b2;
+--pur-300: #777ff4b2;
+--pur-400: #606af2b2;
+--pur-500: #4955f0b2;
+  
 }
 
 /* BACKGROUND CLASSES */

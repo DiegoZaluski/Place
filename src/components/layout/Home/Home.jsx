@@ -36,7 +36,7 @@ function Home() {
         text-2xl
         font-bold
         mb-4
-        dark-text-brand-light
+        dark-text-primary
         font-playfair
         ${styles.translate}
         `}>Download Models</h1>

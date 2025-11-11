@@ -7,6 +7,8 @@ import '../style/fonts.css';
 import Chat from './components/layout/Chat/Chat';
 import Home from './components/layout/Home/Home';
 import ModelCardsGrid from "./components/layout/ModelsUi/ModelCardsGrid";
+import CustomUI from "./components/layout/CustomModel/CustomUI";
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/models" element={<ModelCardsGrid />} />
+          <Route path="/custom" element={<CustomUI />} />
         </Routes>
       </div>
     </AppProvider>
