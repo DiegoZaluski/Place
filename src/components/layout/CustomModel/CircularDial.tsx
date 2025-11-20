@@ -8,7 +8,7 @@ interface CircularDialProps {
   label: string;
   step?: number;
 }
-// UTILITY FUNCTIONS
+
 const clamp = (value: number, min: number, max: number): number => {
   return Math.min(Math.max(value, min), max);
 };
@@ -17,8 +17,6 @@ const roundToStep = (value: number, step: number): number => {
   return Math.round(value / step) * step;
 };
 
-
-// CIRCULAR DIAL COMPONENT
 export const CircularDial: React.FC<CircularDialProps> = ({ 
   value, 
   onChange, 
@@ -46,7 +44,6 @@ export const CircularDial: React.FC<CircularDialProps> = ({
     e.preventDefault();
     setIsDragging(true);
     
-    // Start the movement immediately on click
     if (dialRef.current) {
       const rect = dialRef.current.getBoundingClientRect();
       const centerX = rect.width / 2;
@@ -121,7 +118,7 @@ export const CircularDial: React.FC<CircularDialProps> = ({
 
       <div
         ref={dialRef}
-        className="relative w-40 h-40 rounded-full border-3 border-neutral-950 bg-white flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none"
+        className={`relative w-40 h-40 rounded-full border-3 border-neutral-950 flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none`}
         onMouseDown={handleMouseDown}
       >
         {/* PROGRESS ARC */}
@@ -129,29 +126,20 @@ export const CircularDial: React.FC<CircularDialProps> = ({
           <path
             d={`M 50 8 A 42 42 0 ${percentage > 50 ? 1 : 0} 1 ${50 + 42 * Math.sin((percentage / 100) * 2 * Math.PI)} ${8 + 42 * (1 - Math.cos((percentage / 100) * 2 * Math.PI))}`}
             fill="none"
-            stroke=""
+            stroke="var(--pur-100)"
             strokeWidth="2.5"
             strokeLinecap="round"
           />
         </svg>
 
-        {/* NEEDLE */}
-        <div
-          className={`absolute w-1 h-16 bg-neutral-950 origin-bottom rounded-full pointer-events-none ${COLORS.PRIMARY_THEMA}`}
-          style={{
-            transform: `translateY(-50px) rotate(${rotation}deg)`,
-            transition: isDragging ? 'none' : 'transform 0.15s ease-out',
-          }}
-        />
-
         {/* CENTER INPUT */}
-        <div className="relative w-24 h-24 rounded-full border-2 border-neutral-950 bg-white flex items-center justify-center z-10">
+        <div className={`relative w-24 h-24 rounded-full border-2 border-neutral-950 flex items-center justify-center z-10 ${COLORS.PRIMARY_THEMA}`}>
           <input
             type="text"
             value={inputVal}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
-            className="w-full h-full text-center text-base font-bold text-neutral-950 focus:outline-none bg-transparent"
+            className={`w-full h-full text-center text-base font-bold focus:outline-none bg-transparent ${COLORS.TEXT_PRIMARY}`}
             style={{ appearance: 'textfield' }}
             step={step}
             min={min}

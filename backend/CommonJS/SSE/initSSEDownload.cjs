@@ -70,7 +70,7 @@ class ModelDownloadServerManager {
       throw new Error(`${COLORS.RED}Python not found in PATH. Install Python 3.8+ or configure pythonPath${COLORS.RESET}`);
     }
 
-    // Verificar porta disponível
+    // Check if the port is available
     const portAvailable = await this._isPortAvailable(this.options.port);
     if (!portAvailable) {
       throw new Error(`${COLORS.RED}Port ${this.options.port} is already in use${COLORS.RESET}`);
@@ -239,10 +239,10 @@ class ModelDownloadServerManager {
     try {
       this.logger.info('Starting model download server...');
 
-      // Validate environment
+      // VALIDATE ENVIRONMENT
       await this._validateEnvironment();
 
-      // Uvicorn command (dynamically extracts script name)
+      // UVICORN COMMAND (DYNAMICALLY EXTRACTS SCRIPT NAME)
       const scriptName = path.basename(this.options.scriptPath, '.py');
       const args = [
         '-m', 'uvicorn',
@@ -252,7 +252,7 @@ class ModelDownloadServerManager {
         '--log-level', 'warning'
       ];
 
-      // Start process
+      // START PROCESS
       this.process = spawn(this.options.pythonPath, args, {
         cwd: path.dirname(this.options.scriptPath),
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -262,7 +262,7 @@ class ModelDownloadServerManager {
 
       this.lastStartTime = Date.now();
 
-      // Event handlers
+      // EVENT HANDLERS
       this.process.stdout.on('data', (data) => {
         this.logger.debug(`STDOUT: ${data.toString().trim()}`);
       });
@@ -288,13 +288,13 @@ class ModelDownloadServerManager {
         this.isRunning = false;
       });
 
-      // Wait for server to be ready
+      // WAIT FOR SERVER TO BE READY
       await this._waitForServer();
 
       this.isRunning = true;
       this.restartCount = 0;
 
-      // Start health check
+      // START HEALTH CHECK
       this._startHealthCheck();
 
       const info = this.getServerInfo();
@@ -315,7 +315,7 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Auto-restart after failure
+   * AUTO-RESTART AFTER FAILURE
    * @private
    */
   async _handleAutoRestart() {
@@ -337,7 +337,7 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Health check periodically
+   * START HEALTH CHECK PERIODICALLY
    * @private
    */
   _startHealthCheck() {
@@ -357,7 +357,7 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Stops the server
+   * STOP THE SERVER
    * @returns {Promise<void>}
    */
   async stop() {
@@ -369,7 +369,7 @@ class ModelDownloadServerManager {
     this.logger.info('Stopping model download server...');
     this.isShuttingDown = true;
 
-    // Stop health check
+    // STOP HEALTH CHECK
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
       this.healthCheckInterval = null;
@@ -394,7 +394,7 @@ class ModelDownloadServerManager {
           resolve();
         });
 
-        // Try graceful shutdown (compatible with Windows)
+        // Tente desligamento suave (compatível com Windows)
         const signal = process.platform === 'win32' ? 'SIGINT' : 'SIGTERM';
         this.process.kill(signal);
       } else {
@@ -405,7 +405,7 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Restart the server
+   * RESTART THE SERVER
    * @returns {Promise<Object>}
    */
   async restart() {
@@ -432,7 +432,7 @@ class ModelDownloadServerManager {
   }
 
   /**
-   * Checks the server status
+   * CHECKS THE SERVER STATUS
    * @returns {Promise<Object>}
    */
   async getStatus() {
@@ -467,7 +467,7 @@ class ModelDownloadServerSingleton {
     ModelDownloadServerSingleton.instance = this;
   }
 
-// Initializes the singleton with options (only once)
+// INITIALIZES THE SINGLETON WITH OPTIONS (ONLY ONCE)
   initialize(options = {}) {
     if (this._manager) {
       console.warn('[Singleton] Manager already initialized. Ignoring new options.');
@@ -479,7 +479,7 @@ class ModelDownloadServerSingleton {
     return this._manager;
   }
 
-// Gets the manager instance
+// GETS THE MANAGER INSTANCE
   getManager() {
     if (!this._manager) {
       throw new Error('[Singleton] Manager not initialized. Call initialize() first.');
@@ -487,7 +487,7 @@ class ModelDownloadServerSingleton {
     return this._manager;
   }
 
-// Checks if it is initialized
+// CHECKS IF IT IS INITIALIZED
   isInitialized() {
     return !!this._manager;
   }
@@ -506,17 +506,17 @@ class ModelDownloadServerSingleton {
 // Global unique instance
 const downloadServerSingleton = new ModelDownloadServerSingleton();
 
-// Factory function
+// FACTORY FUNCTION
 function createModelDownloadServer(options = {}) {
   return downloadServerSingleton.initialize(options);
 }
 
-// Cleanup on app close
+// CLEANUP ON APP CLOSE
 async function cleanupModelDownloadServer() {
   downloadServerSingleton.destroy();
 }
 module.exports = {
-  // MAIN SINGLETON - Always use this
+  // MAIN SINGLETON - ALWAYS USE THIS
   downloadManager: downloadServerSingleton,
   // FACTORY - For compatibility
   createModelDownloadServer,

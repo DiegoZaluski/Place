@@ -4,7 +4,7 @@
   --bg-primary: var(--n-900);
   --bg-secondary: var(--n-800);
   --bg-tertiary: var(--n-700);
-  --bg-surface: var(--c-50);
+  --bg-surface: var(--n-900);
   --bg-surface-hover: var(--c-100);
   --bg-surface-active: var(--c-200);
 
@@ -13,7 +13,7 @@
   --text-tertiary: var(--n-300);
   --text-disabled: var(--n-500);
 
-  --border-primary: var(--n-500);
+  --border-primary: var(--n-900);
   --border-secondary: var(--n-600);
   --border-light: var(--n-500);
 
@@ -68,3 +68,4 @@
 [data-theme="dark"] .dark-text-warning { color: var(--status-warning); }
 [data-theme="dark"] .dark-text-error { color: var(--status-error); }
 [data-theme="dark"] .dark-text-info { color: var(--status-info); }
+

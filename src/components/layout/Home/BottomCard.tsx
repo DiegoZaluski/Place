@@ -1,7 +1,7 @@
 import React from 'react';
 import { Download } from '../../shared/Download';
 import DownloadProgress from '../../shared/DownloadProgress';
-
+import {MountModel} from '../../shared/MountModel';
 interface BottomCardProps {
   item: {
     modelName: string;
@@ -17,7 +17,7 @@ function BottomCard({ item, index, icon }: BottomCardProps) {
   return (
     <div
       key={`bottom-card-${index + 5}`}
-      className="bg-n-900 h-92 border border-n-700 dark:border-n-200 rounded-3xl px-4 py-4 shadow-2xl flex flex-col justify-center items-center transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl cursor-pointer relative"
+      className="bg-n-900 h-92 border dark-border-primary rounded-3xl shadow-2xl flex flex-col justify-center items-center transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl cursor-pointer relative"
     >
       <div className="w-full h-full bg-b-600 rounded-2xl p-6 space-y-3 flex flex-col justify-start transition-colors duration-200">
         {icon}
@@ -37,15 +37,16 @@ function BottomCard({ item, index, icon }: BottomCardProps) {
         </div>
         
         <div className="flex-grow"></div>
-        
-        <div className="w-full h-2 bg-n-900 rounded-full"></div>
-        <div className="w-4/5 h-2 bg-n-900 rounded-full"></div>
 
         <DownloadProgress 
           modelId={item.fullModelName} 
           size="sm" 
         />
-        
+      
+        <MountModel 
+          modelName={item.fullModelName}
+          className="w-full py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2"
+        />   
       </div>
     </div>
   );

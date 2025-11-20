@@ -35,6 +35,8 @@
 --b-800: #8f8f86;
 --b-900: #666661;
 
+--p-50: #ececec;
+
   /* STATUS COLORS */
   --ok: #22c55e;
   --warn: #eab308;
@@ -62,6 +64,7 @@
 .bg-n-700 { background-color: var(--n-700); }
 .bg-n-800 { background-color: var(--n-800); }
 .bg-n-900 { background-color: var(--n-900); }
+.bg-n-1000 { background-color: var(--n-1000); }
 
 .bg-c-50 { background-color: var(--c-50); }
 .bg-c-100 { background-color: var(--c-100); }
@@ -78,11 +81,18 @@
 .bg-b-300 { background-color: var(--b-300); }
 .bg-b-400 { background-color: var(--b-400); }
 .bg-b-500 { background-color: var(--b-500); }
-.bg-b-600 { background-color: var(--b-600); }
+.bg-b-600 { background-color: var(--pur-100); }
 .bg-b-700 { background-color: var(--b-700); }
 .bg-b-800 { background-color: var(--b-800); }
 .bg-b-900 { background-color: var(--b-900); }
 
+.bg-pur-50 { background-color: var(--pur-50); }
+.bg-pur-100 { background-color: var(--pur-100); }
+.bg-pur-200 { background-color: var(--pur-200); }
+.bg-pur-300 { background-color: var(--pur-300); }
+.bg-pur-400 { background-color: var(--pur-400); }
+.bg-pur-500 { background-color: var(--pur-500); }
+.bg-p-50 { background-color: var(--p-50); }
 /* TEXT COLOR CLASSES */
 .text-n-50 { color: var(--n-50); }
 .text-n-100 { color: var(--n-100); }
@@ -105,6 +115,14 @@
 .text-c-600 { color: var(--c-600); }
 .text-c-700 { color: var(--c-700); }
 .text-c-800 { color: var(--c-800); }
+
+.text-pur-50 { color: var(--pur-50); }
+.text-pur-100 { color: var(--pur-100); }
+.text-pur-200 { color: var(--pur-200); }
+.text-pur-300 { color: var(--pur-300); }
+.text-pur-400 { color: var(--pur-400); }
+.text-pur-500 { color: var(--pur-500); }
+.text-p-50 { color: var(--p-50); }
 
 /* BORDER CLASSES */
 .border-n-200 { border-color: var(--n-200); }

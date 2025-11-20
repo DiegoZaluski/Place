@@ -6,7 +6,7 @@ import { AppContext } from '../../global/AppProvider';
 const COLORS = {
   spinnerPrimary: '#3b82f6',
   progressBackground: '#e5e7eb',
-  progressFill: '#3b82f6',
+  progressFill: 'var(--pur-300)',
   progressBorder: '#d1d5db',
   textPrimary: '#1f2937',
   textSecondary: '#6b7280',
@@ -101,7 +101,7 @@ const DownloadProgress: React.FC<DownloadProgressProps> = ({
             style={{ color: COLORS.progressFill }}
           />
           <p className={`${currentSize.fontSize} font-medium`} style={{ color: COLORS.textPrimary }}>
-            Download completed!
+            model available!
           </p>
         </div>
       )}

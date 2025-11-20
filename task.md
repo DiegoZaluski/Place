@@ -1,21 +1,22 @@
 # kanban
 
 ## Tasks Simples 
-! estruturar o backend - padronizar codigo e logs - (prioridade media)-(✅ +- ) 
-! montar workflows de divulagação e propagação de projeto para divilgar o projeto e gerar conteudo nas redes para o marketing - (baixa prioriadade no momento) 
 ! usar bibliotecas ou frameworks para ler comentarios e tranformar em documentação evitando trabalho manual - (baixa quando o projeto lançar)
 ! organizar cores dos componente react como se fossem root css - (urgente)
 ! organizar classNames dos componentes em colunas para facilitar leitura - (baixa - prioridade)
 ! add cabeçalho para a pagina Models do app 
 ! ajusta aparencia da interface de controle de modelos, circulo de controles (urgente)
-
+! criar faixa de models animada para dividir app 
 
 ## Tasks Media dificuldade
-! criar interface personalização do modelo + controle de temperatura do modelos e memoria.✅ 
+! criar controle de temperatura do modelos e memoria.
 ! criar os arquivos de tradução json na reta final da primeira versão - (prioridade baixa)
 ! criar funcionalidade para deixar maracado qual modelo esta em uso atualmente
 ! bug na passagem do erro para o troca de modelos, o erro não cabe nada caixa e acaba vazando - (prioridade media)
 ! mudar variaveis de cor de componentes para abranger todo pacote de componentes 
+! cria um caixa de agent tira duvidas ao lado esquerdo 
+!criar barra d pesquisa para encontrar modelos
+! ajustar logica montar models 
 
 ## DIFICIL 
 ! criar api de facil acesso e conexão com o app, para empresas subam o app para nuvem (Uma api que oferece todos os serviços do app funcionalidade paga) - (baixa prioriadade no momento)  

@@ -9,11 +9,11 @@ interface MountModelProps {
 
 // CUSTOM COLORS - CAN BE DEFINED IN THE CSS ROOT
 const colors = {
-  primary: 'transparent border border-gray-400',
-  success: 'bg-green-600 hover:bg-green-700',
+  primary: 'transparent',
+  success: '',
   error: 'text-err',
   loading: 'bg-gray-400 cursor-not-allowed',
-  textInit: 'dark-text-brand-light',
+  textInit: 'text-n-1000',
 };
 
 export const MountModel = ({ modelName, className = '', testMode = false }: MountModelProps) => {

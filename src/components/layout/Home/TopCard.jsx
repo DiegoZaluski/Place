@@ -25,10 +25,7 @@ function TopCard({ item, index }) {
                 className="
                 w-72 
                 h-96
-                dark-border-c-700
-                border-2 
-                dark-border-primary
-                bg-c-100
+                bg-p-50
                 dark-bg-primary
                 rounded-3xl
                 px-10
@@ -49,7 +46,6 @@ function TopCard({ item, index }) {
                         font-bold
                         text-n-900
                         dark-text-secondary
-                        dark:text-n-900
                         overflow-hidden
                         whitespace-nowrap
                         text-ellipsis
@@ -60,14 +56,12 @@ function TopCard({ item, index }) {
                     w-3/5
                     h-4
                     g-n-700
-                    dark:bg-n-200
                     rounded-full
                     mt-2"></div>
                 </div>
 
                 <div className="
                 flex-grow
-                bg-b-900
                 rounded-2xl
                 mb-4
                 p-5
@@ -78,19 +72,17 @@ function TopCard({ item, index }) {
                 transition-colors
                 duration-200">
                     <p className="
-                    text-white
-                    dark:text-n-900
-                    text-sm
+                    dark-text-secondary
+                    text-lg
                     font-semibold
                     leading-relaxed">{item.detail.split('.')[0]}.</p>
                     <p className="
-                    text-white/90
-                    dark:text-n-700
+                    dark-text-secondary
                     text-xs
                     leading-relaxed
                     mt-1">{item.detail.split('.')[1] ? item.detail.split('.')[1].trim() : ""}</p>
                     <p className="
-                    text-white/95
+                    dark-text-secondary
                     text-xs
                     font-medium
                     mt-auto
@@ -99,14 +91,6 @@ function TopCard({ item, index }) {
                     pt-1
                     leading-relaxed">{item.indicator}</p>
                 </div>
-
-                {/* Placeholder para um indicador/botão no rodapé */}
-                <div className="
-                w-full
-                h-4
-                bg-b-800
-                dark:bg-n-200
-                rounded-full"></div>
             </div>
         </Link>
     );

@@ -14,4 +14,3 @@ function TopCardsModel() {
 
 export default TopCardsModel;
 
-// coloar um nome mais adequado para eles 

@@ -31,18 +31,18 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
 
   return (
     <div className="space-y-2">
-      <div className={`rounded-lg p-4 ${COLORS.BEGG_MEDIUM}`}>
+      <div className={`rounded-lg p-4 bg-pur-100`}>
         <div className="flex items-center gap-2 mb-2">
-          <label className="text-xs font-semibold text-neutral-900 uppercase tracking-widest">
+          <label className="text-xs font-semibold text-c-50 uppercase tracking-widest">
             LoRa
           </label>
         </div>
-        <p className="text-xs text-neutral-600 mb-4">
+        <p className="text-xs text-c-50 mb-4">
           Ajustes leves para modificar comportamento. Máximo 5 arquivos.
         </p>
 
         {files.length < 5 && (
-          <label className="flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 text-white rounded-md font-medium text-sm cursor-pointer hover:bg-neutral-800 transition-colors border border-neutral-900">
+          <label className="flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 text-c-50 rounded-md font-medium text-sm cursor-pointer hover:bg-neutral-800 transition-colors border border-neutral-900">
             <Upload size={14} />
             Upload LoRa
             <input
@@ -61,7 +61,7 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
                 key={file.id}
                 className="flex items-center justify-between bg-white p-2 rounded border border-neutral-200 text-xs"
               >
-                <span className="text-neutral-700 truncate font-medium flex-1 mr-2">
+                <span className="text-c-50 truncate font-medium flex-1 mr-2">
                   {file.name}
                 </span>
                 <button
@@ -75,7 +75,7 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
             ))}
           </div>
         )}
-        <p className="text-xs text-neutral-500 mt-2 font-medium">{files.length}/5</p>
+        <p className="text-xs text-c-50 mt-2 font-medium">{files.length}/5</p>
       </div>
     </div>
   );

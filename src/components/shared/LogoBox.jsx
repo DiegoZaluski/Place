@@ -1,8 +1,8 @@
 import React from 'react';
 
 // CONFIGURATION VARIABLES (Based on your :root)
-const RED_PRIMARY = 'tomato';
-const RED_TRANSPARENT = 'rgba(255, 99, 71, 0.75)';
+const RED_PRIMARY = '#585191';
+const RED_TRANSPARENT = '#59519186';
 const OUTLINE_COLOR = '#000';
 
 // MAIN COMPONENT RENAMED TO LOGOBOX

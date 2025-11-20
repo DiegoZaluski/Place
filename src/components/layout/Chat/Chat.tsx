@@ -1,11 +1,19 @@
-// components/Chat.js
+// components/Chat.ts
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import MessageInput from './MessageInput';
 import ResBox from './ResBox';
 import { useLlama } from '../../../hooks/useLlama';
 import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from '../../shared/WindowsComponents'
-// Custom hook to manage tooltip
+
+// COLORS: centralized color palette for the chat component
+const COLORS = {
+  BACKGROUND: '#0f0f11',
+  TEXT: 'text-white',
+  SHADOW: 'shadow-b-md',
+} as const;
+
+// HOOK: CUSTOM TOOLTIP MANAGEMENT
 const useTooltip = () => {
   const tooltipRef = useRef(null);
   
@@ -20,7 +28,7 @@ const useTooltip = () => {
   return { tooltipRef, showTooltip, hideTooltip };
 };
 
-// Custom hook for textarea auto-resize
+// HOOK: TEXTAREA AUTO-RESIZE FUNCTIONALITY
 const useAutoResize = () => {
   const textareaRef = useRef(null);
   
@@ -35,18 +43,42 @@ const useAutoResize = () => {
   return { textareaRef, adjustHeight };
 };
 
-// Isolated Header component
+// COMPONENT: ISOLATED HEADER SECTION
 const ChatHeader = React.memo(() => (
-  <header className="h-20 w-full flex items-center text-white shadow-b-md z-10">
-    <div className="flex items-center ml-8 flex-1">
+  <header className={`
+    h-20
+    w-full
+    flex
+    items-center
+    ${COLORS.TEXT}
+    ${COLORS.SHADOW}
+    z-10
+  `}>
+    <div className={`
+      flex
+      items-center
+      ml-8
+      flex-1
+    `}>
       <BackBtn whiteFixed={true} />
     </div>
     
-    <div className="flex-1 flex justify-center">
-      {/* conteúdo futuro aqui */}
+    <div className={`
+      flex-1
+      flex
+      justify-center
+    `}>
+      {/* FUTURE: content placeholder for header expansion */}
     </div>
     
-    <div className="flex items-center justify-end gap-4 mr-10 flex-1">
+    <div className={`
+      flex
+      items-center
+      justify-end
+      gap-4
+      mr-10
+      flex-1
+    `}>
       <MinimizeBtn whiteFixed={true} />
       <MaximizeBtn whiteFixed={true} />
       <CloseBtn whiteFixed={true} />
@@ -54,11 +86,12 @@ const ChatHeader = React.memo(() => (
   </header>
 ));
 
-// Main Chat component
+// COMPONENT: MAIN CHAT CONTAINER
 const Chat = () => {
+  // TRANSLATION: initialize localization with auth namespace
   const { t, ready } = useTranslation(['auth']);
   
-  // Aqui usamos o hook real do LLaMA
+  // LLAMA: use real llama hook for messaging functionality
   const {
     messages,
     isGenerating,
@@ -66,41 +99,81 @@ const Chat = () => {
     stopGeneration,
     clearMessages
   } = useLlama();
-
+  
+  // STATE: message input management
   const [message, setMessage] = React.useState('');
+  
+  // TOOLTIP: custom tooltip hook instance
   const { tooltipRef, showTooltip, hideTooltip } = useTooltip();
+  
+  // TEXTAREA: auto-resize hook instance
   const { textareaRef, adjustHeight } = useAutoResize();
-
-  const handleSend = (msg) => {
+  
+  // HANDLER: send message to llama
+  const handleSend = (msg: string) => {
     if (!msg?.trim()) return;
     sendPrompt(msg);
     setMessage('');
   };
-
-  const updateMessage = (e) => {
+  
+  // HANDLER: update message state from input
+  const updateMessage = (e: React.ChangeEvent<HTMLTextAreaElement> | string) => {
     const value = typeof e === 'string' ? e : e?.target?.value || '';
     setMessage(value);
   };
-
+  
+  // HANDLER: clear message input field
   const clearMessage = () => setMessage('');
-
-  // Loading state
+  
+  // LOADING: render loading state until translation ready
   if (!ready) {
     return (
-      <div className="flex items-center justify-center h-screen w-full bg-[#0f0f11] text-white">
+      <div className={`
+        flex
+        items-center
+        justify-center
+        h-screen
+        w-full
+        ${COLORS.TEXT}
+        `}
+        style={{ backgroundColor: COLORS.BACKGROUND }}
+      >
         <div className="text-lg">Loading...</div>
       </div>
     );
   }
-
+  
+  // RENDER: main chat interface
   return (
-    <div className="flex flex-col flex-wrap justify-center items-center h-screen w-full paddEnv bg-[#0f0f11] p-0 m-0 noScroll">
-      
+    <div className={`
+      flex
+      flex-col
+      flex-wrap
+      justify-center
+      items-center
+      h-screen
+      w-full
+      p-0
+      m-0
+      paddEnv
+      noScroll
+      ${COLORS.TEXT}
+    `}
+    style={{ backgroundColor: COLORS.BACKGROUND }}
+    >
       <ChatHeader />
-
+      
       <div
-        className="flex flex-col justify-end items-center flex-1 w-full bg-[#0f0f11]"
+        className={`
+          flex
+          flex-col
+          justify-end
+          items-center
+          flex-1
+          w-full
+        `}
         role="main"
+        style={{ backgroundColor: COLORS.BACKGROUND }}
       >
         <div className="flex-1 overflow-y-auto w-full">
           <ResBox 
@@ -127,10 +200,19 @@ const Chat = () => {
         />
       </div>
       
-      <footer className="flex items-center justify-center h-10 w-full text-white bg-[#0f0f11] text-sm">
+      <footer className={`
+        flex
+        items-center
+        justify-center
+        h-10
+        w-full
+        ${COLORS.TEXT}
+        text-sm
+      `}
+      style={{ backgroundColor: COLORS.BACKGROUND }}
+      >
         <span>Place&trade;</span>
       </footer>
-      
     </div>
   );
 };

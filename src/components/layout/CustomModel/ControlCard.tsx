@@ -1,5 +1,5 @@
 import React, { useState, useCallback,} from 'react';
-import { BookOpen, Upload, X, ChevronDown } from 'lucide-react';
+import { Pen, ChevronDown } from 'lucide-react';
 import { CircularDial } from './CircularDial';
 import { LoRaUpload, LoRaFile } from './LoRaUpload';
 
@@ -8,6 +8,7 @@ export const COLORS = {
   PRIMARY: 'bg-c-700',
   SECONDARY: 'bg-n-500 ',
   TERTIARY: 'bg-b-900',
+  SURFACE: 'dark-bg-surface',
   BEGG_MEDIUM: 'bg-b-700 ',
   PRIMARY_THEMA: 'dark-bg-primary ',
   SECONDARY_THEMA: 'dark-bg-secondary',
@@ -119,7 +120,7 @@ export const ControlCard: React.FC<ControlCardProps> = ({ model, onUpdate }) => 
       {/* CONTENT */}
       <div className="p-5 space-y-6">
         {/* DIALS */}
-        <div className={`grid grid-cols-3 gap-6 p-4 rounded-lg border border-neutral-200 ${COLORS.PRIMARY_THEMA}`}>
+        <div className={`grid grid-cols-3 gap-6 p-4 rounded-lg${COLORS.PRIMARY_THEMA}`}>
           {dials.map(dial => (
             <CircularDial
               key={dial.key}
@@ -134,7 +135,7 @@ export const ControlCard: React.FC<ControlCardProps> = ({ model, onUpdate }) => 
         </div>
 
         {/* TOKENS */}
-        <div className={`border border-neutral-300 rounded-lg p-4 ${COLORS.PRIMARY_THEMA}`}>
+        <div className={` rounded-lg p-4 ${COLORS.PRIMARY_THEMA}`}>
           <label className={`text-xs font-semibold uppercase tracking-widest mb-3 block ${COLORS.TEXT_SECONDARY}`}>
             Max Tokens
           </label>
@@ -186,13 +187,13 @@ export const ControlCard: React.FC<ControlCardProps> = ({ model, onUpdate }) => 
           onClick={() => setExpandedPrompt(!expandedPrompt)}
           className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border font-medium text-sm transition-all ${
             expandedPrompt
-              ? 'bg-neutral-900 text-white border-neutral-900'
+              ? 'bg-white text-neutral-900 border-neutral-900'
               : 'bg-white border-neutral-300 text-neutral-900 hover:border-neutral-400'
           }`}
           aria-expanded={expandedPrompt}
         >
           <span className="flex items-center gap-2">
-            <BookOpen size={16} />
+            <Pen size={16} />
             Prompt System
           </span>
           <ChevronDown

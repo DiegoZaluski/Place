@@ -11,7 +11,7 @@ function Home() {
   return (
     <div className={`
       min-h-screen
-      bg-c-50
+      bg-p-50
       dark-bg-primary
       font-sans
       transition-colors
@@ -25,13 +25,6 @@ function Home() {
       flex-col
       items-center`}>
         <TopCardsModel />
-        <div className={`
-        w-11/12
-        h-1
-        bg-n-800
-        dark:bg-n-100
-        my-8
-        rounded-full`}></div>
         <h1 className={`
         text-2xl
         font-bold
