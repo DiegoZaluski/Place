@@ -42,6 +42,7 @@ const MessageInput = React.memo(({
   onSend,
   isGenerating, 
   stopGeneration, 
+  adaptable,
 }) => {
   
   const handleSubmitOrStop = useCallback((e) => {
@@ -100,7 +101,23 @@ const MessageInput = React.memo(({
           placeholder={placeholder}
           value={value || ''}
           onChange={handleChange}
-          className="bg-[#0000004D] w-full min-h-[9rem] max-h-40 outline-none caret-white text-white border border-black border-b-2 rounded-3xl p-4 pr-12 resize-none overflow-hidden shadow-b-xl transition-all duration-200"
+          className={`
+            bg-[#0000004D]
+            w-full
+            ${adaptable ? 'min-h-[4rem] max-h-20' : 'min-h-[9rem] max-h-40'}
+            outline-none
+            caret-white
+            text-white
+            border
+            border-black
+            border-b-2 
+            rounded-3xl 
+            p-4
+            resize-none 
+            overflow-hidden 
+            shadow-b-xl 
+            transition-all 
+            duration-200`}
           rows="1"
           style={{ scrollbarWidth: 'none' }}
           aria-label="Type your message"
@@ -110,7 +127,19 @@ const MessageInput = React.memo(({
         <button
           type="submit"
           disabled={isButtonDisabled}
-          className={`absolute right-4 bottom-4 w-8 h-8 bg-[#F5F5DC] rounded-full flex items-center justify-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+          className={`
+            absolute 
+            right-4 
+            bottom-4 
+            ${adaptable ? 'w-6 h-6' :'w-8 h-8'}
+            bg-[#F5F5DC] 
+            rounded-full 
+            flex items-center 
+            justify-center 
+            transition-colors 
+            duration-200 
+            disabled:opacity-50 
+            disabled:cursor-not-allowed ${
             isGenerating ? 'hover:bg-red-500 hover:text-white' : 'hover:bg-white'
           }`}
         >

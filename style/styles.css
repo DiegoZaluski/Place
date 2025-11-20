@@ -17,3 +17,8 @@
   -ms-overflow-style: none;  
   scrollbar-width: none;  
 }
+
+.local {
+  background-attachment: fixed;
+  background-position: center;
+}

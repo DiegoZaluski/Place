@@ -85,9 +85,11 @@ const ChatHeader = React.memo(() => (
     </div>
   </header>
 ));
+  
+type AdaptableProps = true | false;
 
 // COMPONENT: MAIN CHAT CONTAINER
-const Chat = () => {
+const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
   // TRANSLATION: initialize localization with auth namespace
   const { t, ready } = useTranslation(['auth']);
   
@@ -151,17 +153,18 @@ const Chat = () => {
       flex-wrap
       justify-center
       items-center
-      h-screen
       w-full
       p-0
       m-0
       paddEnv
       noScroll
       ${COLORS.TEXT}
+      ${adaptable ? 'h-full' : 'h-screen'}
+      ${adaptable ? 'rounded-3xl border border-black' : ''}
     `}
     style={{ backgroundColor: COLORS.BACKGROUND }}
     >
-      <ChatHeader />
+    { adaptable ? null : <ChatHeader />}    
       
       <div
         className={`
@@ -171,6 +174,7 @@ const Chat = () => {
           items-center
           flex-1
           w-full
+          ${ adaptable ? 'rounded-3xl': null} 
         `}
         role="main"
         style={{ backgroundColor: COLORS.BACKGROUND }}
@@ -181,6 +185,7 @@ const Chat = () => {
             isGenerating={isGenerating} 
             showTypingIndicator={isGenerating}
             showWelcome={messages.length === 0}
+            adaptable={adaptable? true : false}
           />
         </div>
         
@@ -197,22 +202,24 @@ const Chat = () => {
           hideTooltip={hideTooltip}
           isGenerating={isGenerating} 
           stopGeneration={stopGeneration}
+          adaptable={adaptable? true : false}
         />
       </div>
-      
-      <footer className={`
-        flex
-        items-center
-        justify-center
-        h-10
-        w-full
-        ${COLORS.TEXT}
-        text-sm
-      `}
-      style={{ backgroundColor: COLORS.BACKGROUND }}
-      >
-        <span>Place&trade;</span>
-      </footer>
+
+      {adaptable ? null :        
+        <footer className={`
+          flex
+          items-center
+          justify-center
+          h-10
+          w-full
+          ${COLORS.TEXT}
+          text-sm
+        `}
+        style={{ backgroundColor: COLORS.BACKGROUND }}
+        >
+          <span>Place&trade;</span>
+        </footer>}
     </div>
   );
 };

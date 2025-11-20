@@ -46,5 +46,35 @@ export const modelCardsDetails = [
     memoryUsage: "2.5 GB RAM",
     intelligenceLevel: "Balanced",
     fullModelName: "phi-3-mini-4k-instruct.Q4_K_M.gguf"
-  }
+  },
+  {
+  modelName: "Llama 3.2 1B",
+  memoryUsage: "1.1 GB RAM",
+  intelligenceLevel: "Ultra Fast",
+  fullModelName: "Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+},
+{
+  modelName: "TinyLlama 1.1B",
+  memoryUsage: "0.8 GB RAM",
+  intelligenceLevel: "Ultra Fast",
+  fullModelName: "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
+},
+{
+  modelName: "Zephyr 7B",
+  memoryUsage: "4.7 GB RAM",
+  intelligenceLevel: "Very High",
+  fullModelName: "zephyr-7b-beta.Q4_K_M.gguf"
+},
+{
+  modelName: "Neural Chat 7B",
+  memoryUsage: "4.6 GB RAM",
+  intelligenceLevel: "Very High",
+  fullModelName: "neural-chat-7b-v3-3.Q4_K_M.gguf"
+},
+{
+  modelName: "Openchat 3.6",
+  memoryUsage: "4.9 GB RAM",
+  intelligenceLevel: "Very High",
+  fullModelName: "openchat-3.6-8b-20240522.Q4_K_M.gguf"
+}
 ];

@@ -7,6 +7,7 @@
 ! add cabeçalho para a pagina Models do app 
 ! ajusta aparencia da interface de controle de modelos, circulo de controles (urgente)
 ! criar faixa de models animada para dividir app 
+! add button de abrir modelAi home (urgente)
 
 ## Tasks Media dificuldade
 ! criar controle de temperatura do modelos e memoria.
