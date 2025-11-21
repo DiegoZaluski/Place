@@ -19,7 +19,6 @@ function Header() {
   return (
     <header className="w-full h-20 px-8 bg-p-50 dark-bg-primary shadow-2xl sticky top-0 z-10 transition-colors duration-200">
       <div className="h-full grid grid-cols-3 items-center">
-        <BackBtn whiteFixed={isDark}/>
         {/* 1. Left Section: Tabs */}
         <HeaderTabs/>
 

@@ -31,18 +31,46 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
 
   return (
     <div className="space-y-2">
-      <div className={`rounded-lg p-4 bg-pur-100`}>
-        <div className="flex items-center gap-2 mb-2">
-          <label className="text-xs font-semibold text-c-50 uppercase tracking-widest">
+      <div className={`rounded-tr-2xl rounded-bl-2xl rounded-br-2xl p-4 bg-pur-200`}>
+        <div className="
+        flex 
+        items-center 
+        gap-2 
+        mb-2">
+          <label className="
+          text-xs 
+          font-semibold 
+          text-c-50 
+          uppercase 
+          tracking-widest">
             LoRa
           </label>
         </div>
-        <p className="text-xs text-c-50 mb-4">
+        <p className="
+        text-xs 
+        text-c-50 
+        mb-4">
           Ajustes leves para modificar comportamento. Máximo 5 arquivos.
         </p>
 
         {files.length < 5 && (
-          <label className="flex items-center justify-center gap-2 px-4 py-2.5 bg-neutral-900 text-c-50 rounded-md font-medium text-sm cursor-pointer hover:bg-neutral-800 transition-colors border border-neutral-900">
+          <label className="
+          flex 
+          items-center 
+          justify-center 
+          gap-2 
+          px-4 
+          py-2.5 
+          bg-neutral-900 
+          text-c-50 
+          rounded-md 
+          font-medium 
+          text-sm 
+          cursor-pointer 
+          hover:bg-neutral-800 
+          transition-colors 
+          border 
+          border-neutral-900">
             <Upload size={14} />
             Upload LoRa
             <input

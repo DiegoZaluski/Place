@@ -60,3 +60,5 @@ except Exception as e:
     logger.error(f"[INIT] FATAL ERROR loading config: {e}")
     raise
 
+# PORTS
+FALLBACK_PORTS = [8765, 8766, 8767, 8768, 8769, 8770, 8771, 8772]

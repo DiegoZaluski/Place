@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { ControlCard, Model, ModelState, COLORS } from './ControlCard';
-import {BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn} from '../../shared/WindowsComponents';
+import GenericHeader from '../../shared/GenericHeader';
 
 // CONSTANTS
 const MODELS: Model[] = [
@@ -19,14 +19,9 @@ export default function CustomUI() {
 
   return (
     <div className={`min-h-screen p-8 ${COLORS.PRIMARY_THEMA}`}>
+      {/* HEADER: here */}
+      <GenericHeader/>
       <div className="max-w-7xl mx-auto">
-        {/* HEADER: here */}
-        <div className="grid grid-cols-4 items-center justify-between mb-6">
-          <BackBtn />
-          <MinimizeBtn />
-          <MaximizeBtn />
-          <CloseBtn />
-        </div>
         {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {MODELS.map(model => (

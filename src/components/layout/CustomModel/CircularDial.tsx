@@ -126,7 +126,7 @@ export const CircularDial: React.FC<CircularDialProps> = ({
           <path
             d={`M 50 8 A 42 42 0 ${percentage > 50 ? 1 : 0} 1 ${50 + 42 * Math.sin((percentage / 100) * 2 * Math.PI)} ${8 + 42 * (1 - Math.cos((percentage / 100) * 2 * Math.PI))}`}
             fill="none"
-            stroke="var(--pur-100)"
+            stroke="var(--pur-400)"
             strokeWidth="2.5"
             strokeLinecap="round"
           />

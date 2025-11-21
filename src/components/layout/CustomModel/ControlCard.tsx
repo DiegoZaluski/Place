@@ -140,22 +140,6 @@ export const ControlCard: React.FC<ControlCardProps> = ({ model, onUpdate }) => 
             Max Tokens
           </label>
 
-          <div className="flex gap-2 mb-4 flex-wrap">
-            {PRESET_VALUES.map((preset) => (
-              <button
-                key={preset}
-                onClick={() => handleChange('maxTokens', preset)}
-                className={`px-3 py-1.5 rounded text-xs font-semibold transition-all border ${
-                  state.maxTokens === preset
-                    ? 'bg-neutral-900 text-white border-neutral-900'
-                    : 'bg-white border-neutral-300 text-neutral-900 hover:border-neutral-400'
-                }`}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
-
           <div className="flex items-center gap-3">
             <input
               type="range"

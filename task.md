@@ -1,19 +1,20 @@
 # kanban
+## PRE-LANÇAMENTO BETA
+! usar bibliotecas ou frameworks para ler comentarios e tranformar em documentação evitando trabalho manual - (baixa quando o projeto lançar)
+! add jsons n8n 
+
+## PADORNIZAR 
+! organizar cores dos componente react como se fossem root css 
+! organizar classNames dos componentes em colunas para facilitar leitura - (baixa - prioridade)
 
 ## Tasks Simples 
-! usar bibliotecas ou frameworks para ler comentarios e tranformar em documentação evitando trabalho manual - (baixa quando o projeto lançar)
-! organizar cores dos componente react como se fossem root css - (urgente)
-! organizar classNames dos componentes em colunas para facilitar leitura - (baixa - prioridade)
-! add cabeçalho para a pagina Models do app 
-! ajusta aparencia da interface de controle de modelos, circulo de controles (urgente)
-! criar faixa de models animada para dividir app 
-! add button de abrir modelAi home (urgente)
+! add um ancora, para quando o usuario clicar no elemento do contador do github ser levado para o respositorio ✖️
+! FALLBACK: de portas para deixar o app robusto e garantir que o servidor não ira ficar incapacitato (URGENTE) (add: websocket ! | SSE x| HTTP x) ✖️
 
 ## Tasks Media dificuldade
 ! criar controle de temperatura do modelos e memoria.
 ! criar os arquivos de tradução json na reta final da primeira versão - (prioridade baixa)
 ! criar funcionalidade para deixar maracado qual modelo esta em uso atualmente
-! bug na passagem do erro para o troca de modelos, o erro não cabe nada caixa e acaba vazando - (prioridade media)
 ! mudar variaveis de cor de componentes para abranger todo pacote de componentes 
 ! cria um caixa de agent tira duvidas ao lado esquerdo 
 !criar barra d pesquisa para encontrar modelos

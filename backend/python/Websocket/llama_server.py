@@ -1,4 +1,4 @@
-from __init__ import MODEL_PATH, CHAT_FORMAT
+# from __init__ import MODEL_PATH, CHAT_FORMAT
 import asyncio
 import json
 import uuid
@@ -11,7 +11,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from __init__ import MODEL_PATH, CHAT_FORMAT, logger 
+from __init__ import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
@@ -273,11 +273,17 @@ async def main() -> None:
         logger.error(f"Error: {e}")
         return
     
-    ws_server = await websockets.serve(server.handle_client, "0.0.0.0", 8765) 
-    
-    logger.info(f"WebSocket LLaMA server running on ws://0.0.0.0:8765")
-    logger.info(f"Optimized generation with Thread Pool Executor and async context switching.")
-    
+    for port in FALLBACK_PORTS:
+        try:
+            ws_server = await websockets.serve(server.handle_client, "0.0.0.0", port)
+            logger.info(f"WebSocket LLaMA server running on ws://0.0.0.0:{port}") 
+            break
+        except OSError as e:
+            logger.error(f"WebSocket error: {e}")
+            continue
+    if not ws_server:
+        logger.error("WebSocket server failed to start.")
+        return
     try:
         await asyncio.Future()
     except KeyboardInterrupt:
