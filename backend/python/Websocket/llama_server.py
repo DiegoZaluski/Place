@@ -11,7 +11,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from __init__ import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS
+from __init__ import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
@@ -266,6 +266,7 @@ class LlamaChatServer:
 async def main() -> None:
     """Main function of the server."""
     logger.info("Initializing LLaMA model...")
+    ws_server = None
     try:
         server = LlamaChatServer(MODEL_PATH)
     except Exception as e:
@@ -273,9 +274,16 @@ async def main() -> None:
         logger.error(f"Error: {e}")
         return
     
-    for port in FALLBACK_PORTS:
+    for port in FALLBACK_PORTS_WEBSOCKET:
         try:
-            ws_server = await websockets.serve(server.handle_client, "0.0.0.0", port)
+            ws_server = await websockets.serve(
+                server.handle_client,
+                "0.0.0.0",
+                port,
+                ping_interval=20,   
+                ping_timeout=10,     
+                close_timeout=10 
+                )
             logger.info(f"WebSocket LLaMA server running on ws://0.0.0.0:{port}") 
             break
         except OSError as e:

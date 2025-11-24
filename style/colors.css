@@ -45,11 +45,14 @@
 
   /*PURPLE*/
 --pur-50: #bcc0fab2;
---pur-100: #a5aaf8b2;
+--pur-primary: #585191;
 --pur-200: #8e95f6b2;
 --pur-300: #777ff4b2;
 --pur-400: #606af2b2;
 --pur-500: #4955f0b2;
+
+/*BLUE*/
+--blue-900: #161b29;
   
 }
 
@@ -81,7 +84,7 @@
 .bg-b-300 { background-color: var(--b-300); }
 .bg-b-400 { background-color: var(--b-400); }
 .bg-b-500 { background-color: var(--b-500); }
-.bg-b-600 { background-color: var(--pur-100); }
+.bg-b-600 { background-color: var(--b-600); }
 .bg-b-700 { background-color: var(--b-700); }
 .bg-b-800 { background-color: var(--b-800); }
 .bg-b-900 { background-color: var(--b-900); }

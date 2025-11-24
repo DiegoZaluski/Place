@@ -20,5 +20,10 @@
 
 .local {
   background-attachment: fixed;
-  background-position: center;
+  background-attachment: local;
+}
+
+.text-left {
+  display: grid!important; 
+  grid-row-start: auto!important;
 }

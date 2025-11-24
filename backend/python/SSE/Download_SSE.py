@@ -14,7 +14,7 @@ import subprocess
 import os
 import sys
 import time
-from __init__ import logger
+from __init__ import logger, FALLBACK_PORTS_SSE
 
 # SECURITY VALIDATION
 class SecurityValidator:
@@ -148,7 +148,6 @@ class DownloadManager:
         except Exception as e:
             error_msg = f"CRITICAL ERROR loading configuration: {e}"
             logger.error(error_msg)
-            logger.error(f"Stack trace: {traceback.format_exc()}")
             raise
     
     def get_models(self) -> List[Dict]:
@@ -514,3 +513,30 @@ async def health():
         "status": "ok",
         "active_downloads": len(manager.active_downloads)
     }
+def main() -> None:
+    import uvicorn
+    import socket
+    SUCCESSFUL_SSE = False
+    for port in FALLBACK_PORTS_SSE:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('0.0.0.0', port))
+            
+            logger.info(f"[PYTHON] Starting server on port {port}")
+            uvicorn.run(
+                app,
+                host="0.0.0.0",
+                port=port,
+                reload=True
+                )
+            SUCCESSFUL_SSE = True
+            break
+            
+        except OSError:
+            logger.warning(f"[PYTHON] Port {port} busy, trying next...")
+            continue
+    if not SUCCESSFUL_SSE:
+        logger.error("[PYTHON] Server failed to start.")
+
+if __name__ == "__main__":
+    main()   

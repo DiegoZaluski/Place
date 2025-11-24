@@ -8,7 +8,7 @@ import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from '../../shared/Window
 
 // COLORS: centralized color palette for the chat component
 const COLORS = {
-  BACKGROUND: '#0f0f11',
+  BACKGROUND: `bg-chat`,
   TEXT: 'text-white',
   SHADOW: 'shadow-b-md',
 } as const;
@@ -147,7 +147,8 @@ const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
   
   // RENDER: main chat interface
   return (
-    <div className={`
+    <div 
+    className={`
       flex
       flex-col
       flex-wrap
@@ -158,11 +159,10 @@ const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
       m-0
       paddEnv
       noScroll
+      ${COLORS.BACKGROUND}
       ${COLORS.TEXT}
       ${adaptable ? 'h-full' : 'h-screen'}
-      ${adaptable ? 'rounded-3xl border border-black' : ''}
     `}
-    style={{ backgroundColor: COLORS.BACKGROUND }}
     >
     { adaptable ? null : <ChatHeader />}    
       
@@ -173,13 +173,14 @@ const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
           justify-end
           items-center
           flex-1
-          w-full
-          ${ adaptable ? 'rounded-3xl': null} 
+          w-full 
         `}
         role="main"
-        style={{ backgroundColor: COLORS.BACKGROUND }}
       >
-        <div className="flex-1 overflow-y-auto w-full">
+        <div className="
+          flex-1 
+          overflow-y-auto 
+          w-full">
           <ResBox 
             messages={messages}
             isGenerating={isGenerating} 

@@ -134,31 +134,29 @@ export const ControlCard: React.FC<ControlCardProps> = ({ model, onUpdate }) => 
           ))}
         </div>
 
-        {/* TOKENS */}
-        <div className={` rounded-lg p-4 ${COLORS.PRIMARY_THEMA}`}>
-          <label className={`text-xs font-semibold uppercase tracking-widest mb-3 block ${COLORS.TEXT_SECONDARY}`}>
-            Max Tokens
-          </label>
+    {/* TOKENS CONTROL */}
+    <div className={`p-5 ${COLORS.PRIMARY_THEMA} border-t border-b`}>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs text-neutral-500">
+          {state.maxTokens.toLocaleString()} tokens
+        </span>
+      </div>
 
-          <div className="flex items-center gap-3">
-            <input
-              type="range"
-              min="128"
-              max="8192"
-              step="128"
-              value={state.maxTokens}
-              onChange={(e) => handleChange('maxTokens', parseInt(e.target.value))}
-              className="flex-1 h-1.5 bg-neutral-300 rounded-full appearance-none cursor-pointer accent-neutral-900"
-            />
-            <input
-              type="number"
-              value={state.maxTokens}
-              onChange={(e) => handleChange('maxTokens', parseInt(e.target.value) || 0)}
-              className="w-16 px-2 py-1.5 border border-neutral-300 rounded text-xs font-bold text-neutral-900 text-center focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-950"
-            />
-          </div>
+      <div className="relative">
+        <input
+          type="number"
+          value={state.maxTokens}
+          onChange={(e) => handleChange('maxTokens', parseInt(e.target.value) || 128)}
+          min="128"
+          max="8192"
+          className="bg-transparent focus:ring-0 focus:border-0 border-0 outline-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full px-4 py-3 border border-neutral-300 rounded-lg text-white font-semibold text-neutral-900 text-center focus:outline-none focus:border-neutral-700 focus:ring-2 focus:ring-neutral-500 focus:ring-opacity-30 transition-all"
+        />
+        <div className="flex justify-between text-xs text-neutral-400 mt-2">
+          <span>Min: 128</span>
+          <span>Max: 8,192</span>
         </div>
-
+      </div>
+    </div>
         {/* LORA */}
         <LoRaUpload
           files={state.loraFiles}

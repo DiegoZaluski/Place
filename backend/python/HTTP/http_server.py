@@ -17,13 +17,7 @@ import aiofiles
 import asyncio
 from itertools import chain
 from datetime import datetime
-from __init__ import logger
-# LOGGING CONFIGURATION
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+from __init__ import logger, FALLBACK_PORTS_HTTP
 
 # CONFIGURATION - CORRECT PATHS
 def get_project_root() -> Path:
@@ -270,12 +264,29 @@ async def health_check():
         "readonly_models": True
     }
 
-if __name__ == "__main__":
+def main () -> None:
     import uvicorn
-    uvicorn.run(
-        "http_server:app",
-        host="0.0.0.0",
-        port=8001,
-        log_level="info",
-        reload=True
-    )
+    import socket
+    SUCCESSFUL_HTTP = False
+    for port in FALLBACK_PORTS_HTTP:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('0.0.0.0', port))
+            logger.info(f"[PYTHON] - HTTP Starting server on port {port}")
+            uvicorn.run(
+                app,
+                host="0.0.0.0", 
+                port=port,
+                log_level="info",
+                reload=True
+                )
+            SUCCESSFUL_HTTP = True
+            break
+        except OSError:
+            logger.warning(f"[PYTHON] Port {port} busy, trying next...")
+            continue
+    if not SUCCESSFUL_HTTP:
+        logger.error("[PYTHON] Server HTTP failed to start.")
+
+if __name__ == "__main__":
+    main()

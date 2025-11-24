@@ -2,6 +2,15 @@ import { Download as DownloadIcon, X, Check, AlertCircle } from 'lucide-react';
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AppContext } from '../../global/AppProvider';
 
+// CONSTANTS: Color mapping for consistent styling across the component
+const COLORS = {
+  BORDER_DEFAULT: 'border-white',
+  BORDER_ERROR: 'border-red-500/50',
+  ICON_DEFAULT: 'text-current',
+  BUTTON_HOVER: 'hover:bg-black/10',
+  DISABLED_OPACITY: 'cursor-not-allowed opacity-50'
+} as const;
+
 interface DownloadButtonProps {
   modelId: string;
   className?: string;
@@ -21,6 +30,7 @@ declare global {
   }
 }
 
+// HELPER: Checks model download status from server
 const checkModelStatus = async (
   url: string,
   modelId: string,
@@ -78,14 +88,16 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
   if (!context) throw new Error('Download must be used within AppProvider');
   const { setDownloadState, addDownloadedModel } = context;
 
+  // HELPER: Returns appropriate icon based on current download status
   const getIcon = (): JSX.Element => {
-    if (status === 'downloaded') return <Check className="w-4 h-4 text-current" />;
+    if (status === 'downloaded') return <Check stroke={`white`} className="w-4 h-4 text-current" />;
     if (status === 'downloading' || status === 'connecting') return <X className="w-4 h-4" />;
     if (status === 'error') return <AlertCircle className="w-4 h-4" />;
-    if (status === 'checking') return <DownloadIcon className="w-4 h-4 animate-pulse" />;
-    return <DownloadIcon className="w-4 h-4 text-current" />;
+    if (status === 'checking') return <DownloadIcon stroke={`white`} className="w-4 h-4 animate-pulse" />;
+    return <DownloadIcon stroke={`white`} className="w-4 h-4 text-current" />;
   };
 
+  // EFFECT: Syncs component state with global app state
   useEffect(() => {
     if (prevStateRef.current.status !== status || prevStateRef.current.progress !== progress) {
       console.log(`[Download] Syncing state for ${modelId}:`, { 
@@ -98,6 +110,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     }
   }, [status, progress, modelId, setDownloadState]);
 
+  // EFFECT: Cleans up EventSource connection on unmount
   useEffect(() => {
     return () => {
       if (eventSourceRef.current) {
@@ -108,6 +121,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     };
   }, [modelId]);
 
+  // EFFECT: Initializes download server connection and checks model status
   useEffect(() => {
     mountedRef.current = true;
     let initTimeout: NodeJS.Timeout;
@@ -200,6 +214,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
     };
   }, [modelId]);
 
+  // HANDLER: Manages download/cancel actions and EventSource connection
   const handleDownload = async () => {
     console.log(`[Download] Button clicked for: ${modelId}, status: ${status}`);
 
@@ -311,13 +326,13 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       onClick={handleDownload}
       disabled={status === 'checking' || status === 'downloaded'}
       className={`
-        border border-n-1000 rounded-full 
+        border ${COLORS.BORDER_DEFAULT} rounded-full 
         flex items-center justify-center 
-        hover:bg-black/10
+        ${COLORS.BUTTON_HOVER}
         transition-colors duration-200
         absolute p-1 top-6 right-6
-        ${status === 'checking' || status === 'downloaded' ? 'cursor-not-allowed opacity-50' : ''}
-        ${status === 'error' ? 'border-red-500/50' : ''}
+        ${status === 'checking' || status === 'downloaded' ? COLORS.DISABLED_OPACITY : ''}
+        ${status === 'error' ? COLORS.BORDER_ERROR : ''}
         ${className}
       `}
       aria-label={status === 'downloading' ? 'Cancel' : 'Download'}

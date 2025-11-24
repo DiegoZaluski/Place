@@ -13,7 +13,8 @@ const colors = {
   success: '',
   error: 'text-err',
   loading: 'bg-gray-400 cursor-not-allowed',
-  textInit: 'text-n-1000',
+  textInit: 'text-white',
+  icons: `white`
 };
 
 export const MountModel = ({ modelName, className = '', testMode = false }: MountModelProps) => {
@@ -99,8 +100,8 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
             ${testMode ? 'ring-2 ring-yellow-400' : ''}
           `}
         >
-          {status === 'success' && <Check className="w-4 h-4" />}
-          {status === 'error' && <X className="w-4 h-4" />}
+          {status === 'success' && <Check stroke={colors.icons} className="w-4 h-4" />}
+          {status === 'error' && <X stroke={colors.icons} className="w-4 h-4" />}
           {status === 'success' ? 'Mounted' : status === 'error' ? 'Mount failed' : 'Mount'}
         </button>
       )}
@@ -108,7 +109,9 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
       {/* ONLY THE GEAR - NO BUTTON DURING LOADING */}
       {status === 'loading' && (
         <div className="flex items-center justify-center">
-          <Orbit className="w-8 h-8 dark-text-primary animate-spin" />
+          <Orbit 
+          stroke={colors.icons}
+          className="w-8 h-8 dark-text-primary animate-spin" />
         </div>
       )}
     </div>

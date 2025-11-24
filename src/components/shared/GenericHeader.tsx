@@ -39,7 +39,7 @@ const GenericHeader: React.FC = () => {
         <CloseBtn whiteFixed={true} />
         </div>
         :
-                <div className="
+        <div className="
         gap-2 
         flex 
         col-start-3 

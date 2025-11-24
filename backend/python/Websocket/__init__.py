@@ -9,7 +9,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from python import COLORS, setup_logging
+from python import setup_logging
 # LOGGER CONFIGURATION
 logger = setup_logging('WEBSOCKET_Server')
 
@@ -61,4 +61,4 @@ except Exception as e:
     raise
 
 # PORTS
-FALLBACK_PORTS = [8765, 8766, 8767, 8768, 8769, 8770, 8771, 8772]
+FALLBACK_PORTS_WEBSOCKET = [8765, 8766, 8767, 8768, 8769, 8770, 8771, 8772]

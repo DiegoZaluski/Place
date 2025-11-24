@@ -229,8 +229,8 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
   // Mensagem de boas-vindas
   if (processedMessages.length === 0 && !isGenerating && showWelcome) {
     return (
-      <div className={`${ adaptable ? '' : 'fixed' } inset-0 flex items-center justify-center pointer-events-none ${adaptable ? 'pt-20 pl-10 pr-10' : ''}`}> {/* adaptable*/}
-        <h1 className={`font-playfair text-[#F5F5DC] font-bold ${ adaptable? 'text-lg' : 'text-4xl' }`}>{adaptable? 'olá':'Conte-me sobre o seu projeto!'}</h1> 
+      <div className={`${ adaptable ? '' : 'fixed' } inset-0 flex items-center justify-center pointer-events-none ${adaptable ? 'translate-y-44 pt-20 pl-10 pr-10' : ''}`}> {/* adaptable*/}
+        <h1 className={`font-playfair text-[#F5F5DC] font-bold ${ adaptable? 'text-lg' : 'text-4xl' }`}>{adaptable? 'olá, alguma dúvida?':'Conte-me sobre o seu projeto!'}</h1> 
       </div>
     );
   }

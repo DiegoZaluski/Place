@@ -1,14 +1,33 @@
-import React, { useCallback } from 'react';
-import { Plus, ArrowUp, X } from 'lucide-react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { Eraser, ArrowUp, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const ClearTooltip = React.memo(({ tooltipRef }) => {
+const ClearTooltip = React.memo(({ tooltipRef, className }) => {
   const { t } = useTranslation();
   return (
     <span
       id="clear"
       ref={tooltipRef}
-      className="w-28 flex items-center justify-center self-center translate-y-[-100%] mb-2 px-2 py-2 rounded bg-black text-white text-xs whitespace-nowrap opacity-0 transition-opacity duration-300 pointer-events-none"
+      className={`
+        ${className}
+        w-28 
+        flex 
+        items-center 
+        justify-center 
+        self-center 
+        translate-y-[-100%] 
+        mb-2 
+        px-2 
+        py-2 
+        rounded 
+        bg-black/30 
+        text-white 
+        text-xs 
+        whitespace-nowrap 
+        opacity-0 
+        transition-opacity 
+        duration-300 
+        pointer-events-none`}
       role="tooltip"
       >
       {t('clear')}
@@ -16,16 +35,25 @@ const ClearTooltip = React.memo(({ tooltipRef }) => {
   );
 });
 
-const ClearButton = React.memo(({ onMouseEnter, onMouseLeave, onClick }) => (
+const ClearButton = React.memo(({ onMouseEnter, onMouseLeave, onClick, className }) => (
   <button
     onMouseEnter={onMouseEnter}
     onMouseLeave={onMouseLeave}
     onClick={onClick}
-    className="flex w-14 h-12 rounded-md bottom-2 transform -translate-y-1/2 items-center justify-center self-center relative"
+    className={`
+      ${className} 
+      flex w-14 h-12 
+      rounded-md bottom-2 
+      transform 
+      -translate-y-1/2 
+      items-center 
+      justify-center 
+      self-center 
+      relative`}
     aria-label="Clear message"
     type="button"
     >
-    <Plus className="text-white hover:text-red-500 transition-colors duration-200" />
+    <Eraser className="text-white active:opacity-50" />
   </button>
 ));
 
@@ -44,7 +72,19 @@ const MessageInput = React.memo(({
   stopGeneration, 
   adaptable,
 }) => {
-  
+  const [beenGenerated, setBeenGenerated] = useState(isGenerating);
+  const been = useEffect(() => {
+    if (isGenerating) {
+      setBeenGenerated(true);
+    }
+  }, [isGenerating]);
+
+  // TRANSLATION: move textArea and nearby components 
+  const Move = {
+      NoGenerate: '-translate-y-96', 
+      Generate: 'translate-y-2',
+  };
+
   const handleSubmitOrStop = useCallback((e) => {
     e.preventDefault();
       
@@ -77,7 +117,7 @@ const MessageInput = React.memo(({
   };
 
   const SendStopButton = isGenerating ? (
-    <X className="w-4 h-4" />
+    <X className="w-4 h-4 text-black hover:text-white" />
   ) : (
     <ArrowUp className="w-4 h-4 text-black" />
   );
@@ -89,67 +129,121 @@ const MessageInput = React.memo(({
       onSubmit={handleSubmitOrStop} 
       className="flex flex-col relative w-96 xl:w-1/2 md:w-2/4 -translate-y-16 z-10"
       >
-      <div className="flex flex-col relative w-full">
-        <ClearTooltip tooltipRef={tooltipRef} />
-        <ClearButton 
-          onMouseEnter={showTooltip}
-          onMouseLeave={hideTooltip}
-          onClick={onClear}
-        />
-        <textarea
-          ref={textareaRef}
-          placeholder={placeholder}
-          value={value || ''}
-          onChange={handleChange}
-          className={`
-            bg-[#0000004D]
-            w-full
-            ${adaptable ? 'min-h-[4rem] max-h-20' : 'min-h-[9rem] max-h-40'}
-            outline-none
-            caret-white
-            text-white
-            border
-            border-black
-            border-b-2 
-            rounded-3xl 
-            p-4
-            resize-none 
-            overflow-hidden 
-            shadow-b-xl 
-            transition-all 
-            duration-200`}
-          rows="1"
-          style={{ scrollbarWidth: 'none' }}
-          aria-label="Type your message"
-          onKeyDown={handleEnterKey} 
-          disabled={isGenerating} 
-        />
-        <button
-          type="submit"
-          disabled={isButtonDisabled}
-          className={`
-            absolute 
-            right-4 
-            bottom-4 
-            ${adaptable ? 'w-6 h-6' :'w-8 h-8'}
-            bg-[#F5F5DC] 
-            rounded-full 
-            flex items-center 
-            justify-center 
-            transition-colors 
-            duration-200 
-            disabled:opacity-50 
-            disabled:cursor-not-allowed ${
-            isGenerating ? 'hover:bg-red-500 hover:text-white' : 'hover:bg-white'
-          }`}
-        >
-          {SendStopButton}
-        </button>
-      </div>
+        {beenGenerated ?
+        <div className="flex flex-col relative w-full">
+          <ClearTooltip 
+            tooltipRef={tooltipRef}
+            className={`${adaptable ? `${Move.Generate}`: ''}`} />
+          <ClearButton 
+            onMouseEnter={showTooltip}
+            onMouseLeave={hideTooltip}
+            onClick={onClear}
+            className={`${adaptable ? `${Move.Generate}`: ''}`}
+          />
+          <textarea
+            ref={textareaRef}
+            placeholder={placeholder}
+            value={value || ''}
+            onChange={handleChange}
+            className={`
+              bg-[#0000004D]
+              w-full
+              ${adaptable ? `min-h-[6rem] max-h-20 ${Move.Generate}` : 'min-h-[9rem] max-h-40'}
+              outline-none
+              caret-white
+              text-white
+              border
+              border-black
+              border-b-2 
+              rounded-3xl 
+              p-4
+              resize-none 
+              overflow-hidden 
+              shadow-b-xl 
+              `}
+            rows="1"
+            style={{ scrollbarWidth: 'none' }}
+            aria-label="Type your message"
+            onKeyDown={handleEnterKey} 
+            disabled={isGenerating} 
+          />
+          <button
+            type="submit"
+            disabled={isButtonDisabled}
+            className={`
+              absolute 
+              right-4 
+              bottom-4 
+              ${adaptable ? `w-6 h-6 ${Move.Generate}` :'w-8 h-8'}
+              bg-[#F5F5DC] 
+              rounded-full 
+              flex items-center 
+              justify-center 
+              transition-colors 
+              duration-200 
+              disabled:opacity-50 
+              disabled:cursor-not-allowed ${
+              isGenerating ? 'hover:bg-red-500 hover:text-white' : 'hover:bg-white'
+            }`}
+          >
+            {SendStopButton}
+          </button>
+        </div>
+          : 
+        <div className="flex flex-col relative w-full">
+          {adaptable ? null : <ClearTooltip tooltipRef={tooltipRef}/>}
+          {adaptable ? null : <ClearButton onMouseEnter={showTooltip} onMouseLeave={hideTooltip} onClick={onClear}/>}
+          <textarea
+            ref={textareaRef}
+            placeholder={placeholder}
+            value={value || ''}
+            onChange={handleChange}
+            className={`
+              bg-[#0000004D]
+              w-full
+              ${adaptable ? `min-h-[6rem] max-h-20 ${Move.NoGenerate}` : 'min-h-[9rem] max-h-40'}
+              outline-none
+              caret-white
+              text-white
+              border
+              border-black
+              border-b-2 
+              rounded-3xl 
+              p-4
+              resize-none 
+              overflow-hidden 
+              shadow-b-xl 
+              `}
+            rows="1"
+            style={{ scrollbarWidth: 'none' }}
+            aria-label="Type your message"
+            onKeyDown={handleEnterKey} 
+            disabled={isGenerating} 
+          />
+          <button
+            type="submit"
+            disabled={isButtonDisabled}
+            className={`
+              absolute 
+              right-4 
+              bottom-4 
+              ${adaptable ? `w-6 h-6 ${Move.NoGenerate}` :'w-8 h-8'}
+              bg-[#F5F5DC] 
+              rounded-full 
+              flex items-center 
+              justify-center 
+              transition-colors 
+              duration-200 
+              disabled:opacity-50 
+              disabled:cursor-not-allowed ${
+              isGenerating ? 'hover:bg-red-500 hover:text-white' : 'hover:bg-white'
+            }`}
+          >
+            {SendStopButton}
+          </button>
+        </div>}
     </form>
   );
 });
 
 export default MessageInput;
-
-

@@ -1,12 +1,20 @@
+:root {
+  --bg-primary: var(--p-50);
+  --bg-chat: var(--blue-900);
+  --bg-card: var(--blue-900);
+}
+
 /* DARK THEME */
 [data-theme="dark"] {
   /* NEUTRAL COLORS - Dark */
   --bg-primary: var(--n-900);
+  --bg-chat: var(--n-900);
   --bg-secondary: var(--n-800);
   --bg-tertiary: var(--n-700);
   --bg-surface: var(--n-900);
   --bg-surface-hover: var(--c-100);
   --bg-surface-active: var(--c-200);
+  --bg-card: var(--pur-primary);
 
   --text-primary: var(--n-50);
   --text-secondary: var(--n-200);
@@ -16,6 +24,8 @@
   --border-primary: var(--n-900);
   --border-secondary: var(--n-600);
   --border-light: var(--n-500);
+  --border-pur-primary: var(--pur-primary);
+  --border-blue-900: var(--blue-900);
 
   /* BRAND COLORS - Dark */
   --brand-primary: var(--b-400);
@@ -27,14 +37,16 @@
   --accent-light: var(--c-100);
   --accent-cream: var(--c-400);
 }
-
-/* BACKGROUNDS */
+/*dark*/
+[data-theme="dark"] .bg-chat { background-color: var(--bg-chat); } 
 [data-theme="dark"] .dark-bg-primary { background-color: var(--bg-primary); }
 [data-theme="dark"] .dark-bg-secondary { background-color: var(--bg-secondary); }
+[data-theme="dark"] .bg-card { background-color: var(--bg-card); }
 [data-theme="dark"] .dark-bg-tertiary { background-color: var(--bg-tertiary); }
 [data-theme="dark"] .dark-bg-surface { background-color: var(--bg-surface); }
 [data-theme="dark"] .dark-bg-surface-hover { background-color: var(--bg-surface-hover); }
 [data-theme="dark"] .dark-bg-surface-active { background-color: var(--bg-surface-active); }
+[data-theme="dark"] .bg-input { background-color: rgba(0, 0, 0, 0.555);}
 
 /* TEXT COLORS */
 [data-theme="dark"] .dark-text-primary { color: var(--text-primary); }
@@ -69,3 +81,11 @@
 [data-theme="dark"] .dark-text-error { color: var(--status-error); }
 [data-theme="dark"] .dark-text-info { color: var(--status-info); }
 
+
+/*LIGHT*/
+
+/*BACKGROUNDS*/
+.dark-bg-primary { background-color: var(--bg-primary); }
+.bg-chat { background-color: var(--bg-chat); }
+.bg-card { background-color: var(--bg-card); }
+.bg-input { background-color: var(--blue-900);}

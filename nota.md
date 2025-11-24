@@ -32,3 +32,6 @@ p8Syt=KkYmb]uX&
 ps aux | grep python
 pkill -f "python.*llama_server"
 
+
+print("🕵️‍♂️ SOCKET IN GLOBALS:", 'socket' in globals())
+print("🕵️‍♂️ SOCKET IN BUILTINS:", 'socket' in __builtins__.__dict__)

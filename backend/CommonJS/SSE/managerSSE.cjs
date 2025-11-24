@@ -13,7 +13,7 @@ class SSEServerManager {
     this.servers = new Map();
     this.isInitialized = false;
     this.defaultConfig = {
-      port: 8000,
+      // port: 8000,
       pythonPath: path.join(__dirname, "..", "venv", "bin", "python"),
       logLevel: 'info',
       autoRestart: true,
@@ -71,7 +71,7 @@ class SSEServerManager {
       // Configurar event listeners para o servidor
       this.setupServerEventListeners(serverId, server);
       
-      console.log(colors.COLORS.GREEN + `SSE server ${serverId} started on port ${serverConfig.port}` + colors.COLORS.RESET);
+      console.log(colors.COLORS.GREEN + `SSE server ${serverId}` + colors.COLORS.RESET);
       
       return serverInfo;
     } catch (error) {
