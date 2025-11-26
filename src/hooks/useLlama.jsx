@@ -9,7 +9,7 @@ export function useLlama() {
   
   const messageListeners = useRef({});
 
-  // 1. Limpeza de Listeners (Mantido)
+  // Listener Cleanup (Maintained)
   useEffect(() => {
     return () => {
       Object.values(messageListeners.current).forEach(cleanup => {
@@ -20,7 +20,7 @@ export function useLlama() {
     };
   }, []);
 
-  // Função interna para limpar o estado de geração (uso interno e seguro)
+  // Internal function to clear the generation state (for internal and safe use).
   const _cleanupGenerationState = useCallback(() => {
     setIsGenerating(false);
     setCurrentPromptId(null);
@@ -28,12 +28,12 @@ export function useLlama() {
 
   const sendPrompt = useCallback(async (prompt) => {
     if (!prompt?.trim()) {
-      console.error('❌ Prompt is empty');
+      console.error('Prompt is empty');
       return;
     }
     
     if (!window.api?.sendPrompt) {
-      console.error('❌ API not available');
+      console.error('API not available');
       setMessages(prev => [...prev, { 
         role: 'error', 
         content: 'API not available - check connection' 
@@ -41,18 +41,18 @@ export function useLlama() {
       return;
     }
 
-    // Se já estiver gerando, tenta parar o prompt atual primeiro.
+    // If it's already generating, try stopping the current prompt first.
     if (isGenerating && currentPromptId) {
-        console.warn('⚠️ Already generating, stopping current generation before sending new prompt');
+        console.warn('Already generating, stopping current generation before sending new prompt');
         try {
             await window.api.stopPrompt(currentPromptId);
         } catch (err) {
-             console.error('❌ Error sending stop signal to previous prompt:', err);
+             console.error('Error sending stop signal to previous prompt:', err);
              _cleanupGenerationState();
         }
     }
 
-    // Prepara e envia o novo prompt
+    // Prepare and send the new prompt.
     setMessages(prev => [...prev, { role: 'user', content: prompt.trim() }]);
     setIsGenerating(true);
 
@@ -61,13 +61,13 @@ export function useLlama() {
       
       if (result.success) {
         setCurrentPromptId(result.promptId); 
-        console.log('📤 Prompt sent successfully:', result.promptId);
+        console.log('Prompt sent successfully:', result.promptId);
         setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
       } else {
         throw new Error(result.error || 'Failed to send prompt');
       }
     } catch (err) {
-      console.error('❌ Error sending prompt:', err);
+      console.error('Error sending prompt:', err);
       setMessages(prev => [
         ...prev,
         { role: 'error', content: `Error sending prompt: ${err.message}` }
@@ -77,19 +77,19 @@ export function useLlama() {
   }, [isGenerating, currentPromptId, _cleanupGenerationState]);
 
 
-  // CORREÇÃO CHAVE DE FLUXO: Envia o comando, mas a limpeza real é feita pelo listener onComplete.
+  // FLOW KEY CORRECTION: Sends the command, but the actual cleanup is done by the onComplete listener.
   const stopGeneration = useCallback(async () => {
     if (currentPromptId && window.api?.stopPrompt) {
       try {
         await window.api.stopPrompt(currentPromptId); 
-        console.log('🛑 Stop signal sent for:', currentPromptId);
-        // Não limpa o estado aqui. A confirmação do servidor (onComplete) fará isso.
+        console.log('Stop signal sent for:', currentPromptId);
+        // It doesn't clear the state here. The server confirmation (onComplete) will do that.
       } catch (err) {
-        console.error('❌ Error stopping generation (comm failed):', err);
-        _cleanupGenerationState(); // Limpa localmente em caso de falha de comunicação
+        console.error('Error stopping generation (comm failed):', err);
+        _cleanupGenerationState(); // Clears locally in case of communication failure.
       }
     } else {
-        // Se o estado estiver inconsistente, limpa localmente.
+        // If the state is inconsistent, clear it locally.
         if (isGenerating) {
             _cleanupGenerationState();
         }
@@ -100,10 +100,10 @@ export function useLlama() {
     try {
       if (window.api?.clearMemory) {
         await window.api.clearMemory();
-        console.log('🧹 Memory cleared');
+        console.log('Memory cleared');
       }
     } catch (err) {
-      console.error('❌ Error clearing memory:', err);
+      console.error('Error clearing memory:', err);
     }
   }, []);
 
@@ -116,11 +116,11 @@ export function useLlama() {
   // Setup event listeners
   useEffect(() => {
     if (!window.api) {
-      console.warn('⚠️ Window API not available yet');
+      console.warn('Window API not available yet');
       return;
     }
 
-    // Novo token (Mantido, garante que apenas o prompt atual seja atualizado)
+    // New token (Maintained, ensures that only the current prompt is updated)
     messageListeners.current.newToken = window.api.onNewToken((promptId, token) => {
       setMessages(prev => {
         const lastMessage = prev[prev.length - 1];
@@ -134,16 +134,15 @@ export function useLlama() {
       });
     });
 
-    // Conclusão (RESPONSÁVEL PELA LIMPEZA DE ESTADO após geração ou CANCELAMENTO)
+    // Conclusion (RESPONSIBLE FOR CLEANING UP THE STATUS after generation or CANCELLATION)
     messageListeners.current.complete = window.api.onComplete((promptId) => {
-      console.log('✅ Generation complete or Canceled for:', promptId);
-      // Limpa o estado APENAS quando o servidor confirma.
+      console.log('Generation complete or Canceled for:', promptId);
+      // Clear the state ONLY when the server confirms.
       _cleanupGenerationState(); 
     });
 
-    // Erro (Limpa o estado em caso de erro)
     messageListeners.current.error = window.api.onError((promptId, error) => {
-      console.error('❌ Model error:', { promptId, error });
+      console.error('Model error:', { promptId, error });
       setMessages(prev => [
         ...prev,
         { role: 'error', content: `Error: ${error || 'Unknown error'}` }
@@ -151,22 +150,22 @@ export function useLlama() {
       _cleanupGenerationState();
     });
 
-    // Conexão e Status
+    // Status and connection
     messageListeners.current.ready = window.api.onReady((data) => {
-      console.log('✅ Model ready:', data);
+      console.log('Model ready:', data);
       setIsConnected(true);
       if (data.sessionId) setSessionId(data.sessionId);
     });
 
     messageListeners.current.disconnected = window.api.onDisconnected(() => {
-      console.log('🔌 Model disconnected');
+      console.log('Model disconnected');
       setIsConnected(false);
       _cleanupGenerationState();
     });
 
-    // Geração iniciada
+    // initialization
     messageListeners.current.started = window.api.onStarted((data) => {
-      console.log('🚀 Generation started:', data.promptId, 'Session:', data.sessionId);
+      console.log('Generation started:', data.promptId, 'Session:', data.sessionId);
       setCurrentPromptId(data.promptId);
       if (data.newSessionId) {
         setSessionId(data.newSessionId);
@@ -175,7 +174,7 @@ export function useLlama() {
     });
 
     messageListeners.current.memoryCleared = window.api.onMemoryCleared((clearedSessionId) => {
-      console.log('🧹 Memory cleared for session:', clearedSessionId);
+      console.log('Memory cleared for session:', clearedSessionId);
     });
 
     return () => {

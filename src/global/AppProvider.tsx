@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-
+import { useStorage } from "../hooks/useStorage";
 // TYPES AND INTERFACES
 type DownloadState = {
   status: 'checking' | 'idle' | 'connecting' | 'downloading' | 'downloaded' | 'error';
@@ -14,6 +14,7 @@ type GlobalState = {
   cartItems: number;
   downloads: Record<string, DownloadState>;
   downloadedModels: string[]; 
+  curretModel: string;
 }
 
 interface GlobalActions {
@@ -22,9 +23,11 @@ interface GlobalActions {
   setIsLoggedIn: (isLoggedIn: boolean) => void;
   setCartItems: (cartItems: number) => void;
   setDownloadState: (modelId: string, state: DownloadState) => void;
+  setCurrentModel: (modelId: string) => void;
   getDownloadState: (modelId: string) => DownloadState;
   addDownloadedModel: (modelId: string) => void; 
-  removeDownloadedModel: (modelId: string) => void; 
+  removeDownloadedModel: (modelId: string) => void;
+  addCurrentModel: (modelId: string) => void; 
 }
 
 type AppContextType = GlobalState & GlobalActions;
@@ -45,7 +48,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [cartItems, setCartItems] = useState<number>(0);
   const [downloads, setDownloads] = useState<Record<string, DownloadState>>({});
-  const [downloadedModels, setDownloadedModels] = useState<string[]>([]); 
+  const [downloadedModels, setDownloadedModels] = useState<string[]>([]);
+  const [curretModel, setCurrentModel] = useStorage('current-model', ''); // '' default, substitute in production 
 
   const setDownloadState = (modelId: string, state: DownloadState) => {
     setDownloads(prev => ({ ...prev, [modelId]: state }));
@@ -73,6 +77,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setDownloadedModels(prev => prev.filter(id => id !== modelId));
   };
 
+  const addCurrentModel = (modelId: string) => {
+    setCurrentModel(modelId);
+  }
   // CONTEXT VALUE
   const value: AppContextType = {
     isDark,
@@ -81,14 +88,17 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     cartItems,
     downloads,
     downloadedModels, 
+    curretModel,
     setIsDark,
     setUser,
     setIsLoggedIn,
     setCartItems,
+    setCurrentModel,
     setDownloadState,
     getDownloadState,
     addDownloadedModel, 
-    removeDownloadedModel
+    removeDownloadedModel,
+    addCurrentModel
   };
 
   return (

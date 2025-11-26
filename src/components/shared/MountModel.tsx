@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Orbit, Check, X } from 'lucide-react';
+import { useStorage } from '../../hooks/useStorage';
+import { AppContext } from '../../global/AppProvider';
 
 interface MountModelProps {
   modelName: string;
@@ -21,7 +23,26 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [showTooltip, setShowTooltip] = useState(false);
+  const contexCurrentModel = useContext(AppContext);
+  const {curretModel, setCurrentModel, downloadedModels} = contexCurrentModel;
 
+  const isMounted = modelName === curretModel ? true : false;
+  const isDownloaded = () => {
+    for (let model of downloadedModels) {
+      if (model === modelName) {
+        return true;
+      } 
+    }
+    return false;
+  };
+  
+  useEffect(() => {
+    if(isMounted){
+      setStatus('success');
+    } else {
+      setStatus('idle');
+    }
+  }, [curretModel]);
   const handleMount = async () => {
     setStatus('loading');
     setErrorMessage('');
@@ -55,6 +76,7 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
       // CHECKS IF THE OPERATION WAS SUCCESSFUL ON THE BACKEND
       if (data.status === 'success') {
         setStatus('success');
+        setCurrentModel(modelName);
       } else {
         setStatus('error');
         setErrorMessage(data.message || 'Operation was not completed successfully');
@@ -69,6 +91,9 @@ export const MountModel = ({ modelName, className = '', testMode = false }: Moun
     }
   };
 
+  if (!isDownloaded()) {
+    return null;
+  }
   return (
     <div className="relative flex items-center justify-center">
       {/* ERROR TOOLTIP - LEFT SIDE */}
