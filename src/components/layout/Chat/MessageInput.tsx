@@ -2,6 +2,7 @@ import React, { useCallback, useState, useEffect, useRef, RefObject } from 'reac
 import { Eraser, ArrowUp, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SearchButton from './SearchButton';
+import ThinkButton from './ThinkButton';
 
 // Color constants
 const COLORS = {
@@ -206,7 +207,6 @@ const MessageInput = React.memo(({
             `}
             rows={1}
             style={{ scrollbarWidth: 'none' }}
-            aria-label="Type your message"
             onKeyDown={handleEnterKey} 
             disabled={isGenerating} 
           />
@@ -233,8 +233,19 @@ const MessageInput = React.memo(({
             absolute 
             left-4 
             bottom-4 
-            ${adaptable ? 'left-4 bottom-4' : 'left-6 bottom-6'}`}>
+            w-16 
+            h-8
+            ${adaptable ? 'left-4 bottom-4 w-12 h-6' : 'left-6 bottom-6'}`}>
             <SearchButton />
+          </div>
+          <div className={`
+            absolute 
+            left-[100px] 
+            bottom-4 
+            w-16 
+            h-8
+            ${adaptable ? 'left-[70px] bottom-4 w-12 h-6' : 'left-6 bottom-6'}`}>
+            <ThinkButton />
           </div>
         </div>
       </div>
@@ -264,7 +275,6 @@ const MessageInput = React.memo(({
               `}
               rows={1}
               style={{ scrollbarWidth: 'none' }}
-              aria-label="Type your message"
               onKeyDown={handleEnterKey} 
               disabled={isGenerating} 
             />
