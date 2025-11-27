@@ -52,8 +52,17 @@ export function useLlama() {
         }
     }
 
-    // Prepare and send the new prompt.
-    setMessages(prev => [...prev, { role: 'user', content: prompt.trim() }]);
+    // Prepare and send the new prompt. study here 
+    setMessages(prev => {
+      try {
+        const prompData = JSON.parse(prompt);
+        const userMessage = prompData.prompt || prompt;
+        return [...prev, { role: 'user', content: userMessage.trim() }];
+      } catch {
+        return [...prev, { role: 'user', content: prompt.trim() }];
+      }
+    });
+
     setIsGenerating(true);
 
     try {

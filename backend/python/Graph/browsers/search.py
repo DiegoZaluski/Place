@@ -1,4 +1,4 @@
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 from urllib.parse import unquote, urlparse, parse_qs
 import re
 from Graph.__init__ import logger, cleanPage
@@ -20,67 +20,98 @@ class Search:
             "ecosia": "https://www.ecosia.org/search?q={}",
             "mojeek": "https://www.mojeek.com/search?q={}"
         }
-        self.fiveSearches = fiveSearches 
+        self.fiveSearches = fiveSearches
+        self.main_selectors = [
+            "article",
+            "main",
+            "[role='main']",
+            ".main-content",
+            ".content-main",
+            ".post-content",
+            ".entry-content",
+            ".article-content",
+            ".article-body",
+            ".page-content",
+            ".page-body",
+            "div[data-content='true']",
+            ".prose",
+            ".markdown-body",
+        ]
+        self.noise_selectors = [
+            "nav",
+            "footer",
+            "aside",
+            ".sidebar",
+            ".advertisement",
+            ".ads",
+            ".comments",
+            ".related-posts",
+            ".navigation",
+            "[role='navigation']",
+            ".breadcrumb",
+            ".social-share",
+            ".widgets",
+            ".banner",
+            ".cookie-notice",
+            "script",
+            "style",
+        ]
 
-    def simpleSearch(self, url: str) -> Dict:
-        """Extract main content from webpage using intelligent content detection."""
-        return self._withBrowser(lambda page: self._fastExtractPage(url, page))
+    async def simpleSearch(self, url: str) -> Dict:
+        return await self._withBrowser(lambda page: self._fastExtractPage(url, page))
 
-    def duckDuckGo(self, query: str) -> Dict:
-        return self._universalSearch(query, "duckduckgo")
+    async def duckDuckGo(self, query: str) -> Dict:
+        return await self._universalSearch(query, "duckduckgo")
 
-    def brave(self, query: str) -> Dict:
-        return self._universalSearch(query, "brave") 
+    async def brave(self, query: str) -> Dict:
+        return await self._universalSearch(query, "brave") 
 
-    def ecosia(self, query: str) -> Dict:
-        return self._universalSearch(query, "ecosia")
+    async def ecosia(self, query: str) -> Dict:
+        return await self._universalSearch(query, "ecosia")
 
-    def mojeek(self, query: str) -> Dict:
-        return self._universalSearch(query, "mojeek")
+    async def mojeek(self, query: str) -> Dict:
+        return await self._universalSearch(query, "mojeek")
 
-    def _universalSearch(self, query: str, engine: str) -> Dict:
-        """Universal search method that works with any search engine."""
-        return self._withBrowser(lambda page: self._performSearch(page, query, engine))
+    async def _universalSearch(self, query: str, engine: str) -> Dict:
+        return await self._withBrowser(lambda page: self._performSearch(page, query, engine))
 
-    def _withBrowser(self, operation) -> Dict:
-        """Context manager for browser operations with error handling."""
-        with sync_playwright() as pw:
-            browser = self._browser_map[self.browser](pw).launch(headless=self.headless)
+    async def _withBrowser(self, operation) -> Dict:
+        async with async_playwright() as pw:
+            browser = await self._browser_map[self.browser](pw).launch(headless=self.headless)
             try:
-                return operation(browser.new_page())
+                page = await browser.new_page()
+                return await operation(page)
             except Exception as e:
                 logger.error(f"Browser operation failed: {e}")
                 return self._emptyResult()
             finally:
-                browser.close()
+                await browser.close()
 
-    def _performSearch(self, page, query: str, engine: str) -> Dict:
+    async def _performSearch(self, page, query: str, engine: str) -> Dict:
         logger.info(f"Searching {engine} for: {query}")
-        page.goto(self._search_engines[engine].format(query), wait_until="domcontentloaded")
+        await page.goto(self._search_engines[engine].format(query), wait_until="domcontentloaded")
         
-        urls = self._extractAndFilterUrls(page.content(), engine)
+        html_content = await page.content()
+        urls = self._extractAndFilterUrls(html_content, engine)
         if len(urls) < 3:
             logger.warning(f"Only {len(urls)} quality URLs found")
             return self._emptyResult()
         
-        # Modified behavior for fiveSearches mode
         if self.fiveSearches:
-            return self._extractMultipleContents(urls, page)
+            return await self._extractMultipleContents(urls, page)
         else:
-            return self._extractBestContent(urls, page)
+            return await self._extractBestContent(urls, page)
 
-    def _extractMultipleContents(self, urls: List[str], page) -> Dict:
-        """Extract content from multiple URLs for fiveSearches mode."""
+    async def _extractMultipleContents(self, urls: List[str], page) -> Dict:
         contents = []
         used_urls = []
         
-        for url in urls[:5]:  # Process up to 5 URLs
-            if content := self._fastExtractPage(url, page):
-                if len(content) > 300:  # Quality threshold
+        for url in urls[:5]:
+            if content := await self._fastExtractPage(url, page):
+                if len(content) > 300:
                     contents.append(cleanPage(content))
                     used_urls.append(url)
                     
-                    # Stop if we have 5 good contents
                     if len(contents) >= 5:
                         break
         
@@ -92,7 +123,6 @@ class Search:
         }
 
     def _extractAndFilterUrls(self, html: str, engine: str) -> List[str]:
-        """Extract and filter URLs from HTML in one pass."""
         urls = set()
         for match in re.findall(r'href=[\'"]?([^\'" >]+)', html, re.IGNORECASE):
             if url := self._cleanAndValidateUrl(match, engine):
@@ -100,9 +130,7 @@ class Search:
         return list(urls)[:8]
 
     def _cleanAndValidateUrl(self, url: str, engine: str) -> str:
-        """Clean, decode and validate URL in single operation."""
         try:
-            # Decode search engine redirects
             if '/url?q=' in url or 'uddg=' in url:
                 parsed = urlparse(url)
                 for key in ['q', 'uddg']:
@@ -114,7 +142,6 @@ class Search:
             return None
 
     def _isQualityUrl(self, url: str, engine: str) -> bool:
-        """Comprehensive URL quality check in single validation."""
         try:
             if not url.startswith('http') or len(url) > 500:
                 return False
@@ -131,62 +158,81 @@ class Search:
         except Exception:
             return False
 
-    def _extractBestContent(self, urls: List[str], page) -> Dict:
-        """Extract content from best available URL with quality check."""
+    async def _extractBestContent(self, urls: List[str], page) -> Dict:
         for url in urls[:3]:
-            if content := self._fastExtractPage(url, page):
-                if len(content) > 300:  # Quality threshold
+            if content := await self._fastExtractPage(url, page):
+                if len(content) > 300:
                     return {
                         "used_url": url,
                         "content": cleanPage(content),
                         "remaining_urls": [u for u in urls if u != url][:4]
                     }
         
-        # Fallback with first URL
         used_url = urls[0] if urls else ""
-        content = self._fastExtractPage(used_url, page) if used_url else ""
+        content = await self._fastExtractPage(used_url, page) if used_url else ""
         return {
             "used_url": used_url,
             "content": cleanPage(content),
             "remaining_urls": urls[1:5]
         }
 
-    def _fastExtractPage(self, url: str, page) -> str:
-        """Fast content extraction with smart selector prioritization."""
+    async def _fastExtractPage(self, url: str, page) -> str:
         try:
-            page.goto(url, wait_until="domcontentloaded", timeout=10000)
+            await page.goto(url, wait_until="domcontentloaded", timeout=10000)
             
-            # Try semantic selectors first for better content
-            for selector in ["article", "main", "[role='main']", ".content", ".post-content"]:
-                if content := self._extractBySelector(page, selector):
+            for selector in self.main_selectors:
+                if content := await self._extractBySelector(page, selector):
                     return content
             
-            # Fallback to body with paragraph filtering
-            return self._extractFallbackContent(page)
+            return await self._extractFallbackContent(page)
             
         except Exception as e:
             logger.warning(f"Fast extraction failed for {url}: {e}")
             return ""
 
-    def _extractBySelector(self, page, selector: str) -> str:
-        """Extract content from elements matching selector."""
-        elements = page.query_selector_all(selector)
-        texts = [el.text_content().strip() for el in elements if el.text_content().strip()]
-        return " ".join(texts) if texts else ""
+    async def _extractBySelector(self, page, selector: str) -> str:
+        try:
+            element = await page.query_selector(selector)
+            if not element:
+                return ""
+            
+            for noise in self.noise_selectors:
+                elements_to_remove = await element.query_selector_all(noise)
+                for el in elements_to_remove:
+                    try:
+                        await el.evaluate("el => el.remove()", el)
+                    except:
+                        pass
+            
+            text_content = await element.text_content()
+            
+            if text_content and len(text_content.strip()) > 200:
+                return text_content.strip()
+            
+            return ""
+        except Exception:
+            return ""
 
-    def _extractFallbackContent(self, page) -> str:
-        """Fallback content extraction focusing on meaningful text."""
-        body_text = page.text_content("body")
-        paragraphs = [p.strip() for p in body_text.split('\n') if len(p.strip()) > 100]
-        return '\n'.join(paragraphs[:5])  # Limit to top 5 paragraphs
+    async def _extractFallbackContent(self, page) -> str:
+        try:
+            for selector in self.noise_selectors:
+                elements = await page.query_selector_all(selector)
+                for el in elements:
+                    try:
+                        await el.evaluate("el => el.remove()", el)
+                    except:
+                        pass
+            
+            body_text = await page.text_content("body")
+            lines = body_text.split('\n')
+            paragraphs = [line.strip() for line in lines if len(line.strip()) > 80 and line.strip().count(' ') > 3]
+            
+            return '\n'.join(paragraphs[:10])
+        except Exception:
+            return ""
 
     def _emptyResult(self) -> Dict:
-        """Return empty result structure."""
         if self.fiveSearches:
             return {"used_urls": [], "contents": [], "total_extracted": 0, "mode": "fiveSearches"}
         else:
             return {"used_url": "", "content": "", "remaining_urls": []}
-
-# Usage examples:
-# page_fast = Search(headless=False, fiveSearches=True) 
-# print(page_fast.duckDuckGo("receita de bolo de chocolate"))  

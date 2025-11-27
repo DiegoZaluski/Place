@@ -1,10 +1,11 @@
 // components/Chat.ts
-import React, { useRef } from 'react';
+import React, { useRef, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import MessageInput from './MessageInput';
 import ResBox from './ResBox';
 import { useLlama } from '../../../hooks/useLlama';
 import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from '../../shared/WindowsComponents'
+import { AppContext } from '../../../global/AppProvider';
 
 // COLORS: centralized color palette for the chat component
 const COLORS = {
@@ -88,11 +89,17 @@ const ChatHeader = React.memo(() => (
   
 type AdaptableProps = true | false;
 
+type typeSearchCode = 100 | 200 | 300;
 // COMPONENT: MAIN CHAT CONTAINER
 const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
   // TRANSLATION: initialize localization with auth namespace
   const { t, ready } = useTranslation(['auth']);
-  
+
+  const CONTEXT = useContext(AppContext);
+  const searchCode  = CONTEXT.searchCode // 100 not search | 200 simple search | 300 deep search 
+  const thinking = CONTEXT.thinking
+  console.log(searchCode, thinking);
+   
   // LLAMA: use real llama hook for messaging functionality
   const {
     messages,
@@ -114,7 +121,14 @@ const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
   // HANDLER: send message to llama
   const handleSend = (msg: string) => {
     if (!msg?.trim()) return;
-    sendPrompt(msg);
+    sendPrompt(JSON.stringify({
+      action: "prompt",
+      prompt: msg,
+      promptId: null,
+      search: searchCode, // 100 not search | 200 simple search | 300 deep search
+      think: thinking,
+      timeStamp: new Date().toISOString()
+    }));
     setMessage('');
   };
   

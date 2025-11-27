@@ -1,179 +1,214 @@
 """
 KERNEL ORCHESTRATOR
-Core agent orchestration system using LangGraph.
-Designed for seamless integration with WebSocket server.
+Professional orchestration system for WebSocket server.
+Dynamically controls system prompts based on task type.
 """
-from python import setup_logging
-logger = setup_logging('Agent_Orchestrator')
-
 from typing import TypedDict, List, Dict, Any, Literal
 from langgraph.graph import StateGraph, END
+from python import setup_logging
+from ..browsers.search import Search
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
-# STATE: Define agent state structure
-class AgentState(TypedDict):
-    # CORE: Essential identification and input
+logger = setup_logging('Orchestrator')
+
+class OrchestrationState(TypedDict):
+    """State management for WebSocket session processing."""
     session_id: str
     user_input: str
-    history: List[Dict[str, str]]
-    
-    # EXECUTION: Task tracking and flow control  
-    current_task: str
-    needs_research: bool
-    needs_automation: bool
-    needs_memory: bool
-    
-    # OUTPUT: Response and results
-    response: str
-    research_results: List[str]
-    automation_results: List[str]
-    
-    # METADATA: System information
-    error: str
-    complete: bool
+    conversation_history: List[Dict[str, str]]
+    search_code: int  # 100=chat | 200=simple search | 300=deep search
+    think_flag: bool
+    final_response: str
+    processing_complete: bool
+    system_prompt: str  # Dynamic system prompt control
 
 
-# NODES: Core processing units
-def analyze_request(state: AgentState) -> AgentState:
-    """Analyze user input and determine required actions"""
-    logger.debug(f"Analyzing request for session: {state['session_id']}")
-    logger.info(f"User input: {state['user_input'][:100]}...")
+def analyzeRequest(state: OrchestrationState) -> OrchestrationState:
+    """Analyze request and set appropriate system prompt."""
+    logger.info(f"Analyzing request for session: {state['session_id']}")
     
-    input_text = state["user_input"].lower()
-    
-    # DECISION: Determine required capabilities
-    research_keywords = ["pesquisar", "pesquisa", "buscar", "encontrar"]
-    automation_keywords = ["abrir", "executar", "iniciar", "rodar"] 
-    memory_keywords = ["lembrar", "anotar", "salvar", "memorizar"]
-    
-    state["needs_research"] = any(word in input_text for word in research_keywords)
-    state["needs_automation"] = any(word in input_text for word in automation_keywords)
-    state["needs_memory"] = any(word in input_text for word in memory_keywords)
-    
-    # TASK: Set current task based on analysis
-    if state["needs_research"]:
-        state["current_task"] = "research"
-    elif state["needs_automation"]:
-        state["current_task"] = "automation" 
+    # Set dynamic system prompt based on task type
+    if state["think_flag"]:
+        state["system_prompt"] = """
+        You are in advanced thinking mode. Analyze deeply and provide comprehensive insights.
+        Structure your response with clear reasoning, evidence, and conclusions.
+        Consider multiple perspectives and provide well-reasoned analysis.
+        """
+    elif state["search_code"] == 200:
+        state["system_prompt"] = """
+        You are processing simple search results. Format the information clearly and concisely.
+        Focus on the most relevant findings and present them in an organized manner.
+        Keep responses direct and to the point.
+        """
+    elif state["search_code"] == 300:
+        state["system_prompt"] = """
+        You are processing deep search results from multiple sources. 
+        Format the response professionally:
+        - Start with source overview
+        - Organize information by topic/theme
+        - Cite key findings from different sources
+        - Provide comprehensive analysis
+        - Highlight consensus and contradictions
+        - End with summary and conclusions
+        """
     else:
-        state["current_task"] = "chat"
+        state["system_prompt"] = """
+        You are a helpful, knowledgeable, and professional AI assistant.
+        Provide clear, accurate, and well-structured responses.
+        Adapt your communication style to match the user's needs.
+        """
     
-    logger.info(f"Task determined: {state['current_task']}")
-    logger.debug(f"Research needed: {state['needs_research']}, Automation needed: {state['needs_automation']}")
-    
+    logger.debug(f"System prompt set for: search_code={state['search_code']}, think={state['think_flag']}")
     return state
 
 
-def execute_chat(state: AgentState) -> AgentState:
-    """Handle standard chat responses using existing LLM"""
-    logger.info(f"Executing chat task for session: {state['session_id']}")
+def routeRequest(state: OrchestrationState) -> str:
+    """Route request based on client control flags."""
+    logger.info(f"Routing request for session: {state['session_id']}")
     
-    # NOTE: This will integrate with your current Llama instance
-    state["response"] = f"Chat response for: {state['user_input']}"
-    state["complete"] = True
-    
-    logger.debug(f"Chat response generated: {state['response'][:50]}...")
-    return state
-
-
-def execute_research(state: AgentState) -> AgentState:
-    """Execute research tasks using browser tools"""
-    logger.info(f"Executing research task for session: {state['session_id']}")
-    
-    # PLACEHOLDER: Will integrate with your browsers/ module
-    state["research_results"] = [f"Research result for: {state['user_input']}"]
-    state["response"] = f"Pesquisei sobre: {state['user_input']}"
-    state["complete"] = True
-    
-    logger.info(f"Research completed, results: {len(state['research_results'])} items")
-    return state
-
-
-def execute_automation(state: AgentState) -> AgentState:
-    """Handle app automation tasks"""
-    logger.info(f"Executing automation task for session: {state['session_id']}")
-    
-    # PLACEHOLDER: Will integrate with your automation/ module
-    state["automation_results"] = [f"Automated: {state['user_input']}"]
-    state["response"] = f"Executei automação para: {state['user_input']}"
-    state["complete"] = True
-    
-    logger.info(f"Automation completed, results: {len(state['automation_results'])} actions")
-    return state
-
-
-# ROUTING: Dynamic flow control
-def route_after_analysis(state: AgentState) -> Literal["execute_research", "execute_automation", "execute_chat", "error"]:
-    """Determine next node based on task analysis"""
-    task = state["current_task"]
-    
-    logger.debug(f"Routing decision for task: {task}")
-    
-    if task == "research":
-        logger.info("Routing to research execution")
-        return "execute_research"
-    elif task == "automation":
-        logger.info("Routing to automation execution")
-        return "execute_automation" 
-    elif task == "chat":
-        logger.info("Routing to chat execution")
-        return "execute_chat"
+    if state["think_flag"]:
+        return "processThinking"
+    elif state["search_code"] == 200:
+        return "processSimpleSearch" 
+    elif state["search_code"] == 300:
+        return "processDeepSearch"
     else:
-        logger.error(f"Unknown task type encountered: {task}")
-        return "error"
+        return "processChat"
 
 
-def handle_error(state: AgentState) -> AgentState:
-    """Error handling and cleanup"""
-    logger.error(f"Error handling triggered for session: {state['session_id']}")
-    logger.error(f"Error context - Task: {state['current_task']}, Input: {state['user_input']}")
+def processChat(state: OrchestrationState) -> OrchestrationState:
+    """Process standard chat request using dynamic system prompt."""
+    logger.info(f"Processing chat for session: {state['session_id']}")
     
-    state["error"] = f"Failed to process task: {state['current_task']}"
-    state["response"] = "I couldn't process your request."
-    state["complete"] = True
+    # This will use the system prompt set in analyzeRequest
+    state["final_response"] = f"Chat response to: {state['user_input']}"
+    state["processing_complete"] = True
     
-    logger.info("Error response generated and marked complete")
     return state
 
 
-# ORCHESTRATOR: Main graph builder
-def create_orchestrator() -> StateGraph:
-    """Create and configure the main agent graph"""
-    logger.info("Initializing LangGraph orchestrator")
+def processSimpleSearch(state: OrchestrationState) -> OrchestrationState:
+    """Process simple search request."""
+    logger.info(f"Processing simple search for session: {state['session_id']}")
     
-    graph = StateGraph(AgentState)
+    # Placeholder - will integrate search with formatted response
+    state["final_response"] = f"Simple search completed for: {state['user_input']}"
+    state["processing_complete"] = True
     
-    # NODES: Add all processing nodes
-    graph.add_node("analyze_request", analyze_request)
-    graph.add_node("execute_chat", execute_chat) 
-    graph.add_node("execute_research", execute_research)
-    graph.add_node("execute_automation", execute_automation)
-    graph.add_node("error", handle_error)
+    return state
+
+
+def _run_async_search(query: str, engine: str) -> Dict:
+    """Helper function to run async search in sync context."""
+    search = Search(browser="firefox", headless=True, fiveSearches=True)
     
-    # FLOW: Define graph execution flow
-    graph.set_entry_point("analyze_request")
+    # Create a new event loop for this thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     
-    graph.add_conditional_edges(
-        "analyze_request",
-        route_after_analysis,
+    try:
+        if engine == "duckduckgo":
+            results = loop.run_until_complete(search.duckDuckGo(query))
+        elif engine == "brave":
+            results = loop.run_until_complete(search.brave(query))
+        elif engine == "ecosia":
+            results = loop.run_until_complete(search.ecosia(query))
+        elif engine == "mojeek":
+            results = loop.run_until_complete(search.mojeek(query))
+        else:
+            results = {}
+        
+        return results
+    finally:
+        loop.close()
+
+
+def processDeepSearch(state: OrchestrationState) -> OrchestrationState:
+    """
+    Execute deep search with multi-engine fallback.
+    LLM will format results using the dynamic system prompt.
+    """
+    logger.info(f"Processing deep search for session: {state['session_id']}")
+    
+    try:
+        executor = ThreadPoolExecutor(max_workers=1)
+        
+        # Try search engines with fallback
+        engines = ["duckduckgo", "brave", "ecosia", "mojeek"]
+        results = None
+        
+        for engine in engines:
+            future = executor.submit(_run_async_search, state["user_input"], engine)
+            results = future.result(timeout=30)
+            
+            if results and results.get("contents"):
+                break
+        
+        if results and results.get("contents"):
+            # Return raw content - LLM will format using the search-specific system prompt
+            raw_content = "\n\n".join(results["contents"][:5])
+            state["final_response"] = raw_content
+        else:
+            state["final_response"] = f"Search completed for: {state['user_input']}"
+        
+        executor.shutdown(wait=False)
+            
+    except Exception as error:
+        logger.error(f"Deep search failed: {error}")
+        state["final_response"] = f"Search completed for: {state['user_input']}"
+    
+    state["processing_complete"] = True
+    return state
+
+
+def processThinking(state: OrchestrationState) -> OrchestrationState:
+    """Process thinking mode request."""
+    logger.info(f"Processing thinking mode for session: {state['session_id']}")
+    
+    # LLM will use the thinking-specific system prompt
+    state["final_response"] = f"Thinking analysis for: {state['user_input']}"
+    state["processing_complete"] = True
+    
+    return state
+
+
+def createOrchestrationGraph() -> StateGraph:
+    """Create and configure the main orchestration graph."""
+    logger.info("Creating orchestration graph")
+    
+    workflow = StateGraph(OrchestrationState)
+    
+    # Add all processing nodes
+    workflow.add_node("analyzeRequest", analyzeRequest)
+    workflow.add_node("processChat", processChat)
+    workflow.add_node("processSimpleSearch", processSimpleSearch)
+    workflow.add_node("processDeepSearch", processDeepSearch)
+    workflow.add_node("processThinking", processThinking)
+    
+    # Define workflow with conditional routing
+    workflow.set_entry_point("analyzeRequest")
+    
+    workflow.add_conditional_edges(
+        "analyzeRequest",
+        routeRequest,
         {
-            "execute_research": "execute_research",
-            "execute_automation": "execute_automation", 
-            "execute_chat": "execute_chat",
-            "error": "error"
+            "processChat": "processChat",
+            "processSimpleSearch": "processSimpleSearch",
+            "processDeepSearch": "processDeepSearch", 
+            "processThinking": "processThinking"
         }
     )
     
-    # TERMINATION: All execution nodes lead to end
-    graph.add_edge("execute_chat", END)
-    graph.add_edge("execute_research", END) 
-    graph.add_edge("execute_automation", END)
-    graph.add_edge("error", END)
+    # All nodes lead to end
+    workflow.add_edge("processChat", END)
+    workflow.add_edge("processSimpleSearch", END)
+    workflow.add_edge("processDeepSearch", END)
+    workflow.add_edge("processThinking", END)
     
-    logger.info("Orchestrator graph compiled successfully")
-    return graph.compile()
+    logger.info("Orchestration graph created successfully")
+    return workflow.compile()
 
 
-# CLIENT: Main orchestrator instance
-logger.info("Creating orchestrator instance")
-orchestrator = create_orchestrator()
-logger.info("Kernel orchestrator ready for integration")
+# Global orchestrator instance
+orchestrator = createOrchestrationGraph()

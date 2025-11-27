@@ -15,6 +15,8 @@ type GlobalState = {
   downloads: Record<string, DownloadState>;
   downloadedModels: string[]; 
   curretModel: string;
+  searchCode: 100 | 200 | 300; 
+  thinking: boolean;
 }
 
 interface GlobalActions {
@@ -28,6 +30,8 @@ interface GlobalActions {
   addDownloadedModel: (modelId: string) => void; 
   removeDownloadedModel: (modelId: string) => void;
   addCurrentModel: (modelId: string) => void; 
+  setSearchCode: (code: 100 | 200 | 300) => void;
+  setThinking: (thinking: boolean) => void;
 }
 
 type AppContextType = GlobalState & GlobalActions;
@@ -50,6 +54,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [downloads, setDownloads] = useState<Record<string, DownloadState>>({});
   const [downloadedModels, setDownloadedModels] = useState<string[]>([]);
   const [curretModel, setCurrentModel] = useStorage('current-model', ''); // '' default, substitute in production 
+  const [searchCode, setSearchCode] = useState<100 | 200 | 300>(100);
+  const [thinking, setThinking] = useState<boolean>(false);
 
   const setDownloadState = (modelId: string, state: DownloadState) => {
     setDownloads(prev => ({ ...prev, [modelId]: state }));
@@ -89,6 +95,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     downloads,
     downloadedModels, 
     curretModel,
+    searchCode,
+    thinking,
     setIsDark,
     setUser,
     setIsLoggedIn,
@@ -98,7 +106,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     getDownloadState,
     addDownloadedModel, 
     removeDownloadedModel,
-    addCurrentModel
+    addCurrentModel,
+    setSearchCode,
+    setThinking
   };
 
   return (

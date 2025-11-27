@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import React, { memo, useMemo, useState, useEffect, useCallback, useRef, useContext } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
@@ -6,6 +6,8 @@ import rehypeSanitize from 'rehype-sanitize';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check } from 'lucide-react';
+import SearchAnime from '../../shared/Animations/SearchAnime';
+import {AppContext} from '../../../global/AppProvider';
 
 // Syntax Highlighter Imports 
 import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
@@ -158,7 +160,10 @@ const OBJTADAPTABLE = {
 // RESBOX COMPONENT 
 const ResBox = memo(({ messages = [], isGenerating = false, className = '', showTypingIndicator = true, showWelcome = true, adaptable = false }) => {
   const messagesEndRef = useRef(null);
-  
+  const CONTEXT = useContext(AppContext);
+  const searchCode = (CONTEXT.searchCode === 200 || CONTEXT.searchCode === 300 ) ? true : false;
+  console.log(`Search code: ${searchCode}`);
+
   // Process messages for display
   const { processedMessages, currentResponse: streamingResponse } = useMemo(() => {
     let response = '';
@@ -283,7 +288,10 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
 
         {/* Typing indicator when no response is yet available */}
         {isGenerating && !streamingResponse && showTypingIndicator && (
+          !searchCode ? 
           <TypingIndicator />
+          :
+          <div className='w-full h-[200px]'><SearchAnime color='white'/></div>
         )}
 
         {/* Reference for automatic scrolling */}

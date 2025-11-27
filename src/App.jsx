@@ -7,6 +7,7 @@ import '../style/fonts.css';
 import Chat from './components/layout/Chat/Chat';
 import Home from './components/layout/Home/Home';
 import CustomUI from "./components/layout/CustomModel/CustomUI";
+import SearchAnime from './components/shared/Animations/SearchAnime';
 
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/custom" element={<CustomUI />} />
+          <Route path="/models" element={<SearchAnime />} />
         </Routes>
       </div>
     </AppProvider>

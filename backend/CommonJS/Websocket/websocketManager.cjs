@@ -92,12 +92,9 @@ function sendPrompt(userMessage) {
 
   const promptId = uuidv4();
   try {
-    const message = JSON.stringify({ 
-      action: "prompt", 
-      prompt: userMessage, 
-      promptId 
-    });
-    wsClient.send(message);
+    let message = JSON.parse(userMessage);
+    message.promptId = promptId;
+    wsClient.send(JSON.stringify(message));
     console.log(`${COLORS.BLUE}SEND PROMPT:${COLORS.RESET}`, promptId);
     return promptId;
   } catch (err) {

@@ -46,7 +46,6 @@
 ! pacote de social_bots intgração com qualquer rede social 
 
 
-
-
-
-
+# BUGS 
+! AJUSTAR PESQUISA
+! resetar estado quando sair do chat para não bugar, ou add um estado global para o button de pesquisa 

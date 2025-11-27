@@ -2,10 +2,10 @@
 import asyncio
 import json
 import uuid
-import logging
 import os
 import sys
 from typing import List, Dict, Optional, Any, Set
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 # ADD PROJECT ROOT TO PYTHONPATH
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
@@ -17,21 +17,12 @@ import websockets
 from websockets.exceptions import ConnectionClosedOK
 from python import COLORS
 
-# CONFIGURE LOGGING
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.CRITICAL)
-logger.addHandler(logging.NullHandler())
 # GLOBAL CONFIGURATION 
 CONTEXT_SIZE = 4096 
 
 class LlamaChatServer:
     """WebSocket server for LLaMA model chat with native context optimization and async interruption support."""
-    
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, system_prompt: str = None):
         # MODEL INITIALIZATION
         self.llm = Llama(
             model_path=model_path, 
@@ -48,6 +39,7 @@ class LlamaChatServer:
         
         self.active_prompts: Set[str] = set()
         self.session_history: Dict[str, List[Dict[str, str]]] = {}
+        self.system_prompt = "You are a helpful, knowledgeable, and professional AI assistant. " or system_prompt
     
     def get_session_history(self, session_id: str) -> List[Dict[str, str]]:
         """Retrieves or creates conversation history for a session."""
@@ -55,10 +47,7 @@ class LlamaChatServer:
             self.session_history[session_id] = [
                 {
                     "role": "system", 
-                    "content": "You are a helpful, knowledgeable, and professional AI assistant. "
-                               "Provide clear, accurate, and well-structured responses. "
-                               "Always maintain a respectful and patient tone. "
-                               "Adapt your communication style to match the user's language and level of expertise."
+                    "content": self.system_prompt
                 }
             ]
         return self.session_history[session_id]
@@ -186,6 +175,7 @@ class LlamaChatServer:
         """Processes an individual client message."""
         try:
             data = json.loads(message)
+            print(f'\033[31m[DEBUG]: {data} \033[m')
             action = data.get("action")
 
             if action == "prompt":
@@ -204,7 +194,7 @@ class LlamaChatServer:
     
     async def _handle_prompt_action(self, websocket: websockets.WebSocketServerProtocol, data: dict, session_id: str) -> None:
         """Handles the 'prompt' action."""
-        prompt_text = data.get("prompt", "").strip()
+        prompt_text = data.get("prompt", "").strip() # HERE
         if not prompt_text:
             await self._send_error(websocket, None, "Empty prompt")
             return
@@ -218,7 +208,7 @@ class LlamaChatServer:
         self.active_prompts.add(prompt_id)
         
         # Starts processing asynchronously in the background
-        asyncio.create_task(self.handle_prompt(prompt_id, prompt_text, session_id, websocket))
+        asyncio.create_task(self.router(data, prompt_id, prompt_text, session_id, websocket))
         
         await websocket.send(json.dumps({
             "promptId": prompt_id, 
@@ -240,7 +230,7 @@ class LlamaChatServer:
             print(f"[SERVER] Signal sent to cancel prompt {prompt_id}")
         
     async def _handle_clear_history_action(self, websocket: websockets.WebSocketServerProtocol, session_id: str) -> None:
-        """Processa ação de limpar histórico."""
+        """Processes the action of clearing history."""
         self.session_history[session_id] = [
             {"role": "system", "content": "You are a helpful and polite assistant. Always respond in the user's language."}
         ]
@@ -262,7 +252,92 @@ class LlamaChatServer:
         except Exception as e:
             logger.error(f"[SERVER] Could not send error message: {e}")
 
+    async def bridges(
+        self,
+        data: Dict, 
+        promptId: str, 
+        promptText: str, 
+        sessionId: str, 
+        websocket: websockets.WebSocketServerProtocol
+    ) -> None:
+        """Bridge method to integrate orchestrator with WebSocket server."""
+        from Graph.kernel.orchestrator import orchestrator
+        
+        try:
+            # Create state with client control flags
+            initial_state = {
+                "session_id": sessionId,
+                "user_input": promptText,
+                "conversation_history": self.get_session_history(sessionId),
+                "search_code": data.get("search", 100),
+                "think_flag": data.get("think", False),
+                "final_response": "",
+                "processing_complete": False,
+                "system_prompt": ""  # Will be set by analyzeRequest
+            }
+            
+            # Execute orchestrator
+            final_state = orchestrator.invoke(initial_state)
+            
+            # Update system prompt in session history
+            self._updateSystemPrompt(sessionId, final_state["system_prompt"])
+            
+            # Send response via WebSocket
+            await websocket.send(json.dumps({
+                "promptId": promptId,
+                "token": final_state["final_response"],
+                "type": "token"
+            }))
+            
+            await websocket.send(json.dumps({
+                "promptId": promptId,
+                "complete": True,
+                "type": "complete"
+            }))
+            
+            # Update conversation history
+            self.get_session_history(sessionId).append({"role": "user", "content": promptText})
+            self.get_session_history(sessionId).append({"role": "assistant", "content": final_state["final_response"]})
+            
+            logger.info(f"Orchestrator processing complete for {promptId}")
+            
+        except Exception as e:
+            logger.error(f"Orchestrator bridge error: {e}")
+            await self._send_error(websocket, promptId, f"Orchestration failed: {e}")
 
+    def _updateSystemPrompt(self, session_id: str, new_prompt: str) -> None:
+        """Update system prompt in session history."""
+        if session_id in self.session_history:
+            # Find and update system message
+            for i, message in enumerate(self.session_history[session_id]):
+                if message.get("role") == "system":
+                    self.session_history[session_id][i]["content"] = new_prompt
+                    logger.debug(f"Updated system prompt for session {session_id}")
+                    return
+            
+            # If no system message found, add one
+            self.session_history[session_id].insert(0, {"role": "system", "content": new_prompt})
+
+    def router(
+        self,
+        data: Dict, 
+        promptId: str, 
+        promptText: str, 
+        sessionId: str, 
+        websocket: websockets.WebSocketServerProtocol) -> Any:
+        """
+        Routing logic for enhanced processing modes.
+        Returns None for standard processing flow.
+        """
+
+        searchCode = data.get("search", 100)
+        thinkFlag = data.get("think", False)
+
+        if searchCode == 100 and not thinkFlag:
+            return self.handle_prompt(promptId, promptText, sessionId, websocket)   
+        else:
+            return self.bridges(data, promptId, promptText, sessionId, websocket)   
+        
 async def main() -> None:
     """Main function of the server."""
     logger.info("Initializing LLaMA model...")

@@ -78,3 +78,17 @@ export const modelCardsDetails = [
   fullModelName: "openchat-3.6-8b-20240522.Q4_K_M.gguf"
 }
 ];
+
+export const deepResearchModels = [
+  "mistral-7b-instruct-v0.3.Q4_K_M.gguf",
+  "qwen2.5-7b-instruct.Q4_K_M.gguf", 
+  "llama-3.1-8b-instruct.Q4_K_M.gguf",
+  "zephyr-7b-beta.Q4_K_M.gguf",
+  "neural-chat-7b-v3-3.Q4_K_M.gguf",
+  "openchat-3.6-8b-20240522.Q4_K_M.gguf"
+];
+
+export const simpleModel = [
+  "Llama-3.2-1B-Instruct-Q4_K_M.gguf",
+  "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
+];
