@@ -30,35 +30,14 @@ def analyzeRequest(state: OrchestrationState) -> OrchestrationState:
     
     # Set dynamic system prompt based on task type
     if state["think_flag"]:
-        state["system_prompt"] = """
-        You are in advanced thinking mode. Analyze deeply and provide comprehensive insights.
-        Structure your response with clear reasoning, evidence, and conclusions.
-        Consider multiple perspectives and provide well-reasoned analysis.
-        """
+        state["system_prompt"] = "Think deeply. Provide comprehensive analysis with clear reasoning."
     elif state["search_code"] == 200:
-        state["system_prompt"] = """
-        You are processing simple search results. Format the information clearly and concisely.
-        Focus on the most relevant findings and present them in an organized manner.
-        Keep responses direct and to the point.
-        """
+        state["system_prompt"] = "Process search results. Present key findings clearly and concisely."
     elif state["search_code"] == 300:
-        state["system_prompt"] = """
-        You are processing deep search results from multiple sources. 
-        Format the response professionally:
-        - Start with source overview
-        - Organize information by topic/theme
-        - Cite key findings from different sources
-        - Provide comprehensive analysis
-        - Highlight consensus and contradictions
-        - End with summary and conclusions
-        """
+        state["system_prompt"] = "Process search results. Present key findings clearly and concisely."
     else:
-        state["system_prompt"] = """
-        You are a helpful, knowledgeable, and professional AI assistant.
-        Provide clear, accurate, and well-structured responses.
-        Adapt your communication style to match the user's needs.
-        """
-    
+        state["system_prompt"] = "Helpful AI assistant. Provide clear, accurate responses."
+        
     logger.debug(f"System prompt set for: search_code={state['search_code']}, think={state['think_flag']}")
     return state
 
@@ -101,7 +80,7 @@ def processSimpleSearch(state: OrchestrationState) -> OrchestrationState:
 
 def _run_async_search(query: str, engine: str) -> Dict:
     """Helper function to run async search in sync context."""
-    search = Search(browser="firefox", headless=True, fiveSearches=True)
+    search = Search(browser="firefox", headless=True) # REMOVED: fiveSearches=True -> for 5 sites
     
     # Create a new event loop for this thread
     loop = asyncio.new_event_loop()
@@ -142,12 +121,12 @@ def processDeepSearch(state: OrchestrationState) -> OrchestrationState:
             future = executor.submit(_run_async_search, state["user_input"], engine)
             results = future.result(timeout=30)
             
-            if results and results.get("contents"):
+            if results and results.get("content"):
                 break
         
-        if results and results.get("contents"):
+        if results and results.get("content"):
             # Return raw content - LLM will format using the search-specific system prompt
-            raw_content = "\n\n".join(results["contents"][:5])
+            raw_content = results.get("content", "") #"\n\n".join(results["contents"][:5])
             state["final_response"] = raw_content
         else:
             state["final_response"] = f"Search completed for: {state['user_input']}"

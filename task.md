@@ -7,6 +7,10 @@
 ! organizar cores dos componente react como se fossem root css 
 ! organizar classNames dos componentes em colunas para facilitar leitura - (baixa - prioridade)
 
+# FUNCIONANALIDADES FUTURAS 
+! RESUMIR - pesquisas do sites de forma eficiente sem sobre carregar o modelo
+! criar caixa de pesquisa na lateral esquerda indicando nome do site e mostrar um de cada vez um pesquisa por ve e nome do site - add:(integrar com resumidor de pesquisa provavelmente tera que ser um modelo rodando separado em outro thread para conseguir) 
+
 ## Tasks Simples 
 ! add um ancora, para quando o usuario clicar no elemento do contador do github ser levado para o respositorio 
 ! add, loggings de mundanças para o class de pesquisa do modelo 
@@ -14,13 +18,13 @@
 ## Tasks Media dificuldade
 ! debugar e testar as fallbacks do servidores
 ! organizar arquivos em pasta em (shared) 
+! AJUSTAR PESQUISA
+    ! não mandar contexto de pesquisa apos voltar para modo comum para o modelo isso vai sobrecarregalo
+    ! organizar recebimento de pesquisa no front - end  
 
 ## DIFICIL 
 ! criar api de facil acesso e conexão com o app, para empresas subam o app para nuvem (Uma api que oferece todos os serviços do app funcionalidade paga) - (baixa prioriadade no momento)  
 ### tasks pre lançamento - (quando todas forem cumpridas a versão beta é lançada)### 
-    ! criar buttons de pequisa profunda e basica  <--- 
-    ! add node de pesquisa no grapho
-    ! add logicas controle de envio do webSocket para grapho - via objeto 
     ! cria raciocicionio em loop 
     ! add raciocionio a ao switch  ou ifs depnede de qual logica sera usada 
     ! criar menu lateral no chat add alguns config ali 
@@ -47,5 +51,5 @@
 
 
 # BUGS 
-! AJUSTAR PESQUISA
+! lupa aparecendo quando o modelo esta repondendo
 ! resetar estado quando sair do chat para não bugar, ou add um estado global para o button de pesquisa 

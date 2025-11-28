@@ -296,8 +296,9 @@ class LlamaChatServer:
             }))
             
             # Update conversation history
-            self.get_session_history(sessionId).append({"role": "user", "content": promptText})
-            self.get_session_history(sessionId).append({"role": "assistant", "content": final_state["final_response"]})
+            if final_state["search_code"] == 100:
+                self.get_session_history(sessionId).append({"role": "user", "content": promptText})
+                self.get_session_history(sessionId).append({"role": "assistant", "content": final_state["final_response"]})
             
             logger.info(f"Orchestrator processing complete for {promptId}")
             
