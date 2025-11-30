@@ -3,10 +3,10 @@ import { AppContext } from '../../../global/AppProvider';
 import { useRef } from 'react';
 import HeaderTabs from './HeaderTabs';
 import StatusBox from './StatusBox';
-import LogoBox from '../../shared/LogoBox';
 import ButtonTheme from '../../shared/ButtonTheme';
 import { MinimizeBtn, MaximizeBtn, CloseBtn, BackBtn } from '../../shared/WindowsComponents';
 import ButtonI18n from '../../shared/ButtonI18n';
+import logo from '../../../../public/images/logo.png';
 
 function Header() {
    const appContext = useContext(AppContext);
@@ -24,7 +24,7 @@ function Header() {
 
         {/* Central Section: Empty */}
         <div className="justify-self-center flex items-center space-x-2 flex-row font-playfair"> 
-            <LogoBox size={30}/>
+            <img src={logo} className="w-14 h-14" alt="logoPlace" />
             <h1 className='text-2xl font-bold text-n-900 dark-text-primary '>Place</h1>
         </div>
 

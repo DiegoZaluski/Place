@@ -6,7 +6,7 @@ import ResBox from './ResBox';
 import { useLlama } from '../../../hooks/useLlama';
 import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from '../../shared/WindowsComponents'
 import { AppContext } from '../../../global/AppProvider';
-
+import SideOption from './SideOption';
 // COLORS: centralized color palette for the chat component
 const COLORS = {
   BACKGROUND: `bg-chat`,
@@ -178,8 +178,8 @@ const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
       ${adaptable ? 'h-full' : 'h-screen'}
     `}
     >
+    { adaptable ? null : <SideOption/>} 
     { adaptable ? null : <ChatHeader />}    
-      
       <div
         className={`
           flex

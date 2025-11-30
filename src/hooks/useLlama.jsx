@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-
 export function useLlama() {
   const [messages, setMessages] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);

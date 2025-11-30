@@ -38,14 +38,11 @@
     "wait-on": "^8.0.1"
   },
   "dependencies": {
-    "dompurify": "^3.2.7",
     "i18next": "^25.3.4",
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^3.0.2",
-    "i18next-localstorage-backend": "^4.2.0",
     "lucide-react": "^0.539.0",
     "node-pty-prebuilt-multiarch": "^0.10.1-pre.5",
-    "prismjs": "^1.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^15.6.1",
