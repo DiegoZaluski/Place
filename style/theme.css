@@ -81,9 +81,7 @@
 [data-theme="dark"] .dark-text-error { color: var(--status-error); }
 [data-theme="dark"] .dark-text-info { color: var(--status-info); }
 
-
 /*LIGHT*/
-
 /*BACKGROUNDS*/
 .dark-bg-primary { background-color: var(--bg-primary); }
 .bg-chat { background-color: var(--bg-chat); }

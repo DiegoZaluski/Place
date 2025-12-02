@@ -1,176 +1,179 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { COLORS } from './ControlCard';
+import { Thermometer, Target, Crown, Repeat, Minus, Zap, Filter, PieChart, Gauge } from 'lucide-react'
 
 interface CircularDialProps {
   value: number;
   onChange: (value: number) => void;
+  label: string;
+  simple?: boolean;
   min?: number;
   max?: number;
-  label: string;
   step?: number;
-  simple?: boolean; 
 }
-
-const clamp = (value: number, min: number, max: number): number => 
-  Math.min(Math.max(value, min), max);
-
-const roundToStep = (value: number, step: number): number => 
-  Math.round(value / step) * step;
 
 export const CircularDial: React.FC<CircularDialProps> = ({ 
   value, 
   onChange, 
-  min = 0, 
-  max = 2, 
   label,
-  step = 0.01,
-  simple = false
+  simple = false,
+  min: propMin,
+  max: propMax,
+  step: propStep,
 }) => {
   const [inputVal, setInputVal] = useState(value.toFixed(2));
   const [isDragging, setIsDragging] = useState(false);
   const dialRef = useRef<HTMLDivElement>(null);
 
-  // Update value with automatic max correction
-  const updateValue = useCallback((newValue: number) => {
-    const clamped = clamp(newValue, min, max);
-    const rounded = roundToStep(clamped, step);
-    onChange(rounded);
-    setInputVal(rounded.toFixed(2));
-  }, [min, max, step, onChange]);
-
-  // Handle input changes - allow free typing but validate numbers
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInputVal(newValue);
+  // CONFIG: Default parameter definitions for Llama.cpp (fallback)
+  const DEFAULT_CONFIGS = {
+    'Temp': { MIN: 0.0, MAX: 2.0, STEP: 0.1, icon: Thermometer },
+    'Top P': { MIN: 0.0, MAX: 1.0, STEP: 0.05, icon: Target },
+    'Top K': { MIN: 0, MAX: 100, STEP: 1, icon: Crown },
+    'Repeat': { MIN: 1.0, MAX: 2.0, STEP: 0.1, icon: Repeat },
+    'Freq Penalty': { MIN: -1.0, MAX: 2.0, STEP: 0.1, icon: Minus },
+    'Pres Penalty': { MIN: -1.0, MAX: 2.0, STEP: 0.1, icon: Minus },
+    'Mirostat Tau': { MIN: 0.0, MAX: 5.0, STEP: 0.1, icon: Zap },
+    'Min P': { MIN: 0.0, MAX: 0.5, STEP: 0.05, icon: Filter },
+    'TFS Z': { MIN: 0.5, MAX: 1.0, STEP: 0.05, icon: PieChart },
   };
 
-  // Validate and clamp value when input loses focus
+  // LOGIC: Use props if provided, otherwise use defaults
+  const defaultConfig = DEFAULT_CONFIGS[label] || { MIN: 0, MAX: 2, STEP: 0.01, icon: Gauge };
+  const MIN = propMin !== undefined ? propMin : defaultConfig.MIN;
+  const MAX = propMax !== undefined ? propMax : defaultConfig.MAX;
+  const STEP = propStep !== undefined ? propStep : defaultConfig.STEP;
+  const IconComponent = defaultConfig.icon;
+
+  // HELPER: Update value with clamping and rounding
+  const updateValue = (newValue: number) => {
+    const clamped = Math.min(Math.max(newValue, MIN), MAX);
+    const rounded = Math.round(clamped / STEP) * STEP;
+    onChange(rounded);
+    setInputVal(rounded.toFixed(2));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputVal(e.target.value);
+  };
+
   const handleBlur = () => {
     const numericValue = parseFloat(inputVal);
     
     if (isNaN(numericValue) || inputVal === '') {
-      // Reset to current value if invalid
       setInputVal(value.toFixed(2));
     } else {
-      // Auto-correct to max if value exceeds maximum
       updateValue(numericValue);
     }
   };
 
-  // Sync input value when prop changes
   useEffect(() => {
     setInputVal(value.toFixed(2));
   }, [value]);
 
-  // CSS to remove number input arrows
   const numberInputStyles = "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
-  let isLast = false
-  // Simple version - just the input without dial
-  if (simple) {
-    return (
-      //last-child
-      <div className={`ml-4 pl-6 transform translate-y-4`}>
-        <div className='transform -translate-x-6'>
-          <span className={`text-xs font-medium uppercase font-semibold ${COLORS.TEXT_SECONDARY} text-right w-20`}>
-            {label} :
-          </span>
+
+  // RENDER: Simple mode (compact horizontal layout)
+  if (simple) return (
+    <div className="h-10 pl-6 transform translate-y-4 hover:bg-black/20 hover:shadow-[inset_4px_0_0_0_black] flex items-center">
+      <div className=' ml-4 transform -translate-x-6 flex items-center gap-2'>
+        {label === 'Temp' && <Thermometer size={16} className={COLORS.TEXT_SECONDARY} stroke={value > 1 ? 'red' : value <= 0.5 ? 'blue' : 'orange'}/>}
+        {label === 'Top P' && <Target size={16} className={COLORS.TEXT_SECONDARY} />}
+        {label === 'Top K' && <Crown size={16} className={COLORS.TEXT_SECONDARY} />}
+        {label === 'Rept' && <Repeat size={16} className={COLORS.TEXT_SECONDARY} />}
+        {label === 'Freq Penalty' && <Minus size={16} className={COLORS.TEXT_SECONDARY} />}
+        {label === 'Pres Penalty' && <Minus size={16} className={COLORS.TEXT_SECONDARY} />}
+        {label === 'Mirostat Tau' && <Zap size={16} className={COLORS.TEXT_SECONDARY} />}
+        {label === 'Min P' && <Filter size={16} className={COLORS.TEXT_SECONDARY} />}
+        {label === 'TFS Z' && <PieChart size={16} className={COLORS.TEXT_SECONDARY} />}
+        <span className={`text-xs font-medium uppercase font-semibold ${COLORS.TEXT_SECONDARY}`}>
+          {label}:
+        </span>
+        <input
+          type="number"
+          value={inputVal}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          onFocus={(e) => e.target.select()}
+          onKeyDown={(e) => e.key === 'Enter' && handleBlur()}
+          className={`w-12 text-center text-sm font-bold bg-transparent focus:outline-none bg-white/10 rounded-lg ${COLORS.TEXT_PRIMARY} ${numberInputStyles}`}
+        />
+        <span className="text-xs text-white mr-2">max: {MAX}</span>
+      </div>
+    </div>
+  );
+
+  // INTERACTION: Circular dial mouse handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging || !dialRef.current) return;
+    
+    const rect = dialRef.current.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const x = e.clientX - rect.left - centerX;
+    const y = e.clientY - rect.top - centerY;
+
+    const angle = Math.atan2(y, x) + Math.PI / 2;
+    let normalized = (angle / (2 * Math.PI)) % 1;
+    if (normalized < 0) normalized += 1;
+
+    updateValue(MIN + normalized * (MAX - MIN));
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging]);
+
+  // CALC: Progress percentage for circular visualization
+  const percentage = ((value - MIN) / (MAX - MIN)) * 100;
+
+  // RENDER: Advanced mode (circular dial layout)
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <label className={`text-xs font-semibold uppercase tracking-widest ${COLORS.TEXT_SECONDARY}`}>
+        {label}
+      </label>
+
+      <div
+        ref={dialRef}
+        className="relative w-20 h-20 lg:w-32 lg:h-32 rounded-full border-3 border-neutral-950 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+        onMouseDown={handleMouseDown}
+      >
+        <svg className="absolute w-full h-full" viewBox="0 0 100 100">
+          <path
+            d={`M 50 8 A 42 42 0 ${percentage > 50 ? 1 : 0} 1 ${50 + 42 * Math.sin((percentage / 100) * 2 * Math.PI)} ${8 + 42 * (1 - Math.cos((percentage / 100) * 2 * Math.PI))}`}
+            fill="none"
+            stroke="var(--pur-400)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+
+        <div className={`relative w-12 h-12 lg:w-20 lg:h-20 rounded-full border-2 border-neutral-950 flex items-center justify-center z-10 ${COLORS.PRIMARY_THEMA}`}>
           <input
             type="number"
             value={inputVal}
             onChange={handleInputChange}
             onBlur={handleBlur}
             onFocus={(e) => e.target.select()}
-            onKeyDown={(e) => e.key === 'Enter' && handleBlur()}
-            className={`w-12 text-center text-sm font-bold bg-transparent focus:outline-none border-b border-white ${COLORS.TEXT_PRIMARY} ${numberInputStyles}`}
+            className={`w-full h-full text-center text-sm lg:text-base font-bold bg-transparent focus:outline-none ${COLORS.TEXT_PRIMARY} ${numberInputStyles}`}
           />
-          <span className="text-xs text-white ml-1 mr-2">max: {max}</span>
         </div>
       </div>
-    );
-  }
-
-  const CircularDialFull = () => {
-    const handleMouseDown = useCallback((e: React.MouseEvent) => {
-      e.preventDefault();
-      setIsDragging(true);
-      updateFromEvent(e.nativeEvent);
-    }, []);
-
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-      if (isDragging) updateFromEvent(e);
-    }, [isDragging]);
-
-    const handleMouseUp = useCallback(() => setIsDragging(false), []);
-
-    // Calculate value based on mouse position
-    const updateFromEvent = useCallback((e: MouseEvent | React.MouseEvent) => {
-      if (!dialRef.current) return;
-      const rect = dialRef.current.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const x = e.clientX - rect.left - centerX;
-      const y = e.clientY - rect.top - centerY;
-
-      const angle = Math.atan2(y, x) + Math.PI / 2;
-      let normalized = (angle / (2 * Math.PI)) % 1;
-      if (normalized < 0) normalized += 1;
-
-      updateValue(min + normalized * (max - min));
-    }, [min, max, updateValue]);
-
-    // Mouse event listeners for drag interaction
-    useEffect(() => {
-      if (isDragging) {
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-        return () => {
-          document.removeEventListener('mousemove', handleMouseMove);
-          document.removeEventListener('mouseup', handleMouseUp);
-        };
-      }
-    }, [isDragging, handleMouseMove, handleMouseUp]);
-
-    // Calculate percentage for arc visualization
-    const percentage = ((value - min) / (max - min)) * 100;
-
-    return (
-      <div className="flex flex-col items-center gap-3">
-        <label className={`text-xs font-semibold uppercase tracking-widest ${COLORS.TEXT_SECONDARY}`}>
-          {label}
-        </label>
-
-        {/* Dial container with SVG arc and input */}
-        <div
-          ref={dialRef}
-          className="relative w-20 h-20 lg:w-32 lg:h-32 rounded-full border-3 border-neutral-950 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
-          onMouseDown={handleMouseDown}
-        >
-          {/* SVG arc visualization */}
-          <svg className="absolute w-full h-full" viewBox="0 0 100 100">
-            <path
-              d={`M 50 8 A 42 42 0 ${percentage > 50 ? 1 : 0} 1 ${50 + 42 * Math.sin((percentage / 100) * 2 * Math.PI)} ${8 + 42 * (1 - Math.cos((percentage / 100) * 2 * Math.PI))}`}
-              fill="none"
-              stroke="var(--pur-400)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-
-          {/* Central input area */}
-          <div className={`relative w-12 h-12 lg:w-20 lg:h-20 rounded-full border-2 border-neutral-950 flex items-center justify-center z-10 ${COLORS.PRIMARY_THEMA}`}>
-            <input
-              type="number"
-              value={inputVal}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              onFocus={(e) => e.target.select()}
-              className={`w-full h-full text-center text-sm lg:text-base font-bold bg-transparent focus:outline-none ${COLORS.TEXT_PRIMARY} ${numberInputStyles}`}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  return <CircularDialFull />;
+    </div>
+  );
 };

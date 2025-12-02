@@ -67,79 +67,100 @@ def processChat(state: OrchestrationState) -> OrchestrationState:
     return state
 
 
-def processSimpleSearch(state: OrchestrationState) -> OrchestrationState:
-    """Process simple search request."""
-    logger.info(f"Processing simple search for session: {state['session_id']}")
-    
-    # Placeholder - will integrate search with formatted response
-    state["final_response"] = f"Simple search completed for: {state['user_input']}"
-    state["processing_complete"] = True
-    
-    return state
-
-
-def _run_async_search(query: str, engine: str) -> Dict:
-    """Helper function to run async search in sync context."""
-    search = Search(browser="firefox", headless=True) # REMOVED: fiveSearches=True -> for 5 sites
-    
-    # Create a new event loop for this thread
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+def _run_sync_search(query: str, engine: str, fiveSearches: bool = False) -> Dict:
+    """Execute sync search with new Search class."""
+    search = Search(fiveSearches=fiveSearches)
     
     try:
         if engine == "duckduckgo":
-            results = loop.run_until_complete(search.duckDuckGo(query))
+            results = search.duckDuckGo(query)
         elif engine == "brave":
-            results = loop.run_until_complete(search.brave(query))
-        elif engine == "ecosia":
-            results = loop.run_until_complete(search.ecosia(query))
-        elif engine == "mojeek":
-            results = loop.run_until_complete(search.mojeek(query))
+            results = search.brave(query)
         else:
             results = {}
         
         return results
-    finally:
-        loop.close()
+    except Exception as e:
+        logger.error(f"Search failed for {engine}: {e}")
+        return {}
+
+
+def processSimpleSearch(state: OrchestrationState) -> OrchestrationState:
+    """Process simple search with clean content extraction."""
+    logger.info(f"Processing simple search for session: {state['session_id']}")
+    
+    try:
+        executor = ThreadPoolExecutor(max_workers=1)
+        
+        engines = ["duckduckgo", "brave"]
+        quality_results = None
+        
+        for engine in engines:
+            future = executor.submit(_run_sync_search, state["user_input"], engine, False)
+            results = future.result(timeout=30)
+            
+            if results and results.get("content") and len(results["content"].strip()) > 150:
+                quality_results = results
+                break
+        
+        if quality_results and quality_results.get("content"):
+            state["final_response"] = quality_results["content"]
+        else:
+            state["final_response"] = ""
+        
+        executor.shutdown(wait=False)
+            
+    except Exception as error:
+        logger.error(f"Simple search failed: {error}")
+        state["final_response"] = ""
+    
+    state["processing_complete"] = True
+    return state
 
 
 def processDeepSearch(state: OrchestrationState) -> OrchestrationState:
-    """
-    Execute deep search with multi-engine fallback.
-    LLM will format results using the dynamic system prompt.
-    """
+    """Execute deep search with multi-engine fallback and quality filtering."""
     logger.info(f"Processing deep search for session: {state['session_id']}")
     
     try:
         executor = ThreadPoolExecutor(max_workers=1)
         
-        # Try search engines with fallback
-        engines = ["duckduckgo", "brave", "ecosia", "mojeek"]
-        results = None
+        engines = ["duckduckgo", "brave"]
+        quality_results = None
         
         for engine in engines:
-            future = executor.submit(_run_async_search, state["user_input"], engine)
+            future = executor.submit(_run_sync_search, state["user_input"], engine, True)
             results = future.result(timeout=30)
             
-            if results and results.get("content"):
+            has_content = (
+                (results.get("content") and len(results["content"].strip()) > 150) or
+                (results.get("contents") and any(len(c.strip()) > 150 for c in results["contents"]))
+            )
+            
+            if results and has_content:
+                quality_results = results
+                logger.info(f"Quality content found from {engine}")
                 break
         
-        if results and results.get("content"):
-            # Return raw content - LLM will format using the search-specific system prompt
-            raw_content = results.get("content", "") #"\n\n".join(results["contents"][:5])
-            state["final_response"] = raw_content
+        if quality_results:
+            if quality_results.get("content"):
+                state["final_response"] = quality_results["content"]
+            elif quality_results.get("contents"):
+                valid_contents = [c for c in quality_results["contents"][:3] if len(c.strip()) > 150]
+                state["final_response"] = "\n\n".join(valid_contents) if valid_contents else ""
+            else:
+                state["final_response"] = ""
         else:
-            state["final_response"] = f"Search completed for: {state['user_input']}"
+            state["final_response"] = ""
         
         executor.shutdown(wait=False)
             
     except Exception as error:
         logger.error(f"Deep search failed: {error}")
-        state["final_response"] = f"Search completed for: {state['user_input']}"
+        state["final_response"] = ""
     
     state["processing_complete"] = True
     return state
-
 
 def processThinking(state: OrchestrationState) -> OrchestrationState:
     """Process thinking mode request."""

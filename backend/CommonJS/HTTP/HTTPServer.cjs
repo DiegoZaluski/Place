@@ -2,76 +2,73 @@ const { spawn } = require('child_process');
 const path = require('path');
 
 class HTTPServer {
-    constructor() {
-        this.httpProcess = null; 
-    }
+  constructor() { 
+    this.httpProcess = null; 
+  }
 
-    // HTTP SERVER INITIALIZATION
-    async startHTTP() {
-        return new Promise((resolve, reject) => {
-            const pathHTTP = path.join(__dirname, '..', '..', 'python', 'HTTP', 'http_server.py');
-            const pythonPath = path.join(__dirname, '..', '..', 'venv', 'bin', 'python3');
-            
-            console.log('Python Path:', pythonPath);
-            console.log('HTTP Script Path:', pathHTTP);
+  startHTTP() {
+    return new Promise((resolve, reject) => {
+      // PATH CONFIG: Locate Python virtual environment
+      const pythonPath = path.join(__dirname, '..', '..', 'venv', 'bin', 'python3');
+      const cwd = path.join(__dirname, '..', '..', 'python', 'HTTP');
 
-            this.httpProcess = spawn(pythonPath, [
-                '-c', 
-                `import sys; sys.path.insert(0, '${path.join(__dirname, "..", "..", "python", "HTTP")}'); import http_server; import uvicorn; uvicorn.run(http_server.app, host="0.0.0.0", port=8001)`
-            ], {
-                cwd: path.join(__dirname, '..', '..'),
-                stdio: ['pipe', 'pipe', 'pipe']
-            });   
-            
-            this.httpProcess.stdout.on('data', (data) => {
-                const output = data.toString().trim();
-                console.log('HTTP Server:', output);
-                
-                // DETECTS WHEN SERVER IS READY
-                if (output.includes('Uvicorn running on')) {
-                    resolve(true);
-                }
-            });
+      // PROCESS SPAWN: Start Uvicorn server with specific configuration
+      this.httpProcess = spawn(pythonPath, [
+        '-m', 'uvicorn',
+        'main:app',
+        '--host', '0.0.0.0',
+        '--port', '8001'
+      ], { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
 
-            this.httpProcess.stderr.on('data', (data) => {
-                console.error('HTTP Server ERR:', data.toString().trim());
-            });
-
-            this.httpProcess.on('error', (error) => {  // Adds error handler
-                reject(error);
-            });
-
-            this.httpProcess.on('close', (code) => {
-                console.log(`HTTP Server exited with code ${code}`);
-            });
-
-            // TIMEOUT DE SEGURANÇA
-            setTimeout(() => {
-                if (this.httpProcess) {
-                    resolve(true); // Assume que iniciou
-                }
-            }, 5000);
-        });
-    }
-
-    // STOPPING HTTP SERVER
-    stopHTTP() {
-        if (this.httpProcess) {
-            this.httpProcess.kill('SIGTERM');  // SIGTERM first (more secure)
-            this.httpProcess = null;
+      let ready = false;
+      
+      // STDOUT HANDLER: Monitor for server readiness signals
+      this.httpProcess.stdout.on('data', d => {
+        const t = d.toString();
+        console.log('HTTP:', t.trim());
+        if (!ready && (/Uvicorn running/.test(t) || /Application startup complete/.test(t))) {
+          ready = true;
+          resolve(true);
         }
-    }
+      });
 
-    // RESTART HTTP SERVER
-    async restartHTTP() {
-        console.log('Restarting HTTP Server...');
-        this.stopHTTP();
-        
-        // Small pause to ensure complete stop
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        return await this.startHTTP();
+      // STDERR HANDLER: Log errors without blocking startup
+      this.httpProcess.stderr.on('data', d => {
+        const t = d.toString();
+        console.error('HTTP ERR:', t.trim());
+      });
+
+      this.httpProcess.on('error', reject);
+      
+      // EXIT HANDLER: Clean up on process termination
+      this.httpProcess.on('close', code => {
+        console.log('HTTP exited:', code);
+      });
+
+      // TIMEOUT SAFETY: Prevent hanging if ready signal never arrives
+      setTimeout(() => {
+        if (!ready) {
+          console.warn('HTTP server did not show ready message — resolving as false');
+          resolve(false);
+        }
+      }, 5000);
+    });
+  }
+
+  stopHTTP() {
+    // PROCESS TERMINATION: Gracefully shutdown HTTP server
+    if (this.httpProcess) {
+      this.httpProcess.kill('SIGTERM');
+      this.httpProcess = null;
     }
+  }
+
+  async restartHTTP() {
+    // RESTART SEQUENCE: Stop, wait, then start again
+    this.stopHTTP();
+    await new Promise(r => setTimeout(r, 800));
+    return this.startHTTP();
+  }
 }
 
 module.exports = HTTPServer;

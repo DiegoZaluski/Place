@@ -40,7 +40,7 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
           <label className="
           text-xs 
           font-semibold 
-          text-c-50 
+          dark-text-primary
           uppercase 
           tracking-widest">
             LoRa
@@ -48,7 +48,7 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
         </div>
         <p className="
         text-xs 
-        text-c-50 
+        dark-text-primary 
         mb-4">
           Ajustes leves para modificar comportamento. Máximo 5 arquivos.
         </p>
@@ -62,7 +62,7 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
           px-4 
           py-2.5 
           bg-neutral-900 
-          text-c-50 
+          dark-text-primary 
           rounded-md 
           font-medium 
           text-sm 

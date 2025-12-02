@@ -1,4 +1,5 @@
 import { memo, useState, useEffect } from 'react';
+import {MessageCircle} from 'lucide-react';
 
 const TokensControl = memo(({ 
   maxTokens, 
@@ -23,7 +24,7 @@ const TokensControl = memo(({
   };
 
   return (
-    <div className={`p-5 ${className}`}>
+    <div className={`pl-5 pt-5 ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs text-neutral-500">
           {internalTokens.toLocaleString()} tokens
@@ -31,15 +32,30 @@ const TokensControl = memo(({
       </div>
 
       <div className="relative">
+        <MessageCircle size={16} stroke={document.documentElement.getAttribute('data-theme') === 'dark' ? 'white' : 'currentColor'}/>
         <input
           type="number"
           value={internalTokens}
           onChange={(e) => handleChange(parseInt(e.target.value) || 128)}
           min="128"
           max="8192"
-          className="w-full px-4 py-3 text-center bg-transparent text-white font-semibold focus:outline-none focus:border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className={`
+          absolute
+          -top-1
+          left-6
+          w-full
+          text-start 
+          bg-transparent 
+          dark-text-primary 
+          font-semibold 
+          focus:outline-none 
+          focus:border-none 
+          [appearance:textfield] 
+          [&::-webkit-outer-spin-button]:appearance-none 
+          [&::-webkit-inner-spin-button]:appearance-none
+            `}
         />
-        <div className="flex justify-between text-xs text-neutral-400 mt-2">
+        <div className="flex gap-2 text-xs text-neutral-400 mt-2">
           <span>Min: 128</span>
           <span>Max: 8,192</span>
         </div>

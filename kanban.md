@@ -3,7 +3,7 @@
 ! usar bibliotecas ou frameworks para ler comentarios e tranformar em documentação evitando trabalho manual - (baixa quando o projeto lançar)
 ! add jsons n8n 
 
-## PADORNIZAR 
+## PADRONIZAR 
 ! organizar cores dos componente react como se fossem root css 
 ! organizar classNames dos componentes em colunas para facilitar leitura - (baixa - prioridade)
 
@@ -14,7 +14,7 @@
 ## Tasks Simples 
 ! add um ancora, para quando o usuario clicar no elemento do contador do github ser levado para o respositorio 
 ! add, loggings de mundanças para o class de pesquisa do modelo 
-
+! mudar o sistema de busca na net para algo simples e direto usando fetch sem dependencia
 ## Tasks Media dificuldade
 ! debugar e testar as fallbacks do servidores
 ! organizar arquivos em pasta em (shared) 
@@ -27,8 +27,7 @@
 ### tasks pre lançamento - (quando todas forem cumpridas a versão beta é lançada)### 
     ! cria raciocicionio em loop 
     ! add raciocionio a ao switch  ou ifs depnede de qual logica sera usada 
-    ! criar menu lateral no chat add alguns config ali 
-    ! add ui para config de api de modelos esterno 
+    ! add ui para config de api de modelos esterno - mudano o menu lateral esquerdo do chat para este nova interface de configuração 
     ! add button de de troca de modelo local cloud ou local sem filtro button inteligent so aparece se houver modelo cloud codastrado
     ! criar controle de temperatura do modelos e memoria. 
     ! memoria vetorial de rapido acesso para o modelo - (vector store) 
@@ -53,3 +52,14 @@
 # BUGS 
 ! lupa aparecendo quando o modelo esta repondendo
 ! resetar estado quando sair do chat para não bugar, ou add um estado global para o button de pesquisa 
+! pesquisa mal filtrada, esta cortando palavras, o regex 
+
+
+
+# RACIOCINIO DO MODELO - ideia atual para isso: 
+para não quebrar e ter um qualidaded boa para o modelo minha ideia é 
+1. quebra texto de pesquisa em partes menores que caibam na janela de contexto do modelo 
+2. fazer um chamada para o modelo e pedir para ele resumir partes e resumir após guardar em um buffer de contexto 
+3. mandar a pesquisa do buffer que foi resuminda novamente para o modelo refinar e melhoras 
+4. indicar fontes na ui 
+***processo lento, mas com qualidade boa***

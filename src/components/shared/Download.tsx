@@ -91,7 +91,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
   // HELPER: Returns appropriate icon based on current download status
   const getIcon = (): JSX.Element => {
     if (status === 'downloaded') return <Check stroke={`white`} className="w-4 h-4 text-current" />;
-    if (status === 'downloading' || status === 'connecting') return <X className="w-4 h-4" />;
+    if (status === 'downloading' || status === 'connecting') return <X className="w-4 h-4" stroke='white'/>;
     if (status === 'error') return <AlertCircle className="w-4 h-4" />;
     if (status === 'checking') return <DownloadIcon stroke={`white`} className="w-4 h-4 animate-pulse" />;
     return <DownloadIcon stroke={`white`} className="w-4 h-4 text-current" />;

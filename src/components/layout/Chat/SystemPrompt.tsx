@@ -41,7 +41,7 @@ const SystemPrompt = memo(({
     <>
       <button
         onClick={handleToggle}
-        className={`w-full flex items-center justify-between px-4 py-3 font-medium text-sm transition-all ${className} 
+        className={`w-full flex items-center justify-between px-4 py-3 font-medium text-sm transition-all hover:bg-black/20 hover:shadow-[inset_4px_0_0_0_black] ${className} 
         ${
           internalExpanded
             ? 'text-primary border-neutral-900'
@@ -60,7 +60,7 @@ const SystemPrompt = memo(({
       </button>
 
       {internalExpanded && (
-        <div className="border border-neutral-300 rounded-lg p-4 bg-neutral-50">
+        <div className="border border-neutral-300 rounded-lg p-4 bg-neutral-50 mt-1">
           <textarea
             value={internalPrompt}
             onChange={(e) => handleChange(e.target.value)}
