@@ -53,7 +53,7 @@
 ! lupa aparecendo quando o modelo esta repondendo
 ! resetar estado quando sair do chat para não bugar, ou add um estado global para o button de pesquisa 
 ! pesquisa mal filtrada, esta cortando palavras, o regex 
-
+! FALLBACKS Inuteis no servidores 
 
 
 # RACIOCINIO DO MODELO - ideia atual para isso: 
@@ -63,3 +63,5 @@ para não quebrar e ter um qualidaded boa para o modelo minha ideia é
 3. mandar a pesquisa do buffer que foi resuminda novamente para o modelo refinar e melhoras 
 4. indicar fontes na ui 
 ***processo lento, mas com qualidade boa***
+
+

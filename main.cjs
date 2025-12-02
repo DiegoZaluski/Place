@@ -3,7 +3,7 @@ const path = require("path");
 const { COLORS } = require("./utils/ansiColors");
 
 // IMPORT SEPARATED MODULES
-const serverManager = require("./backend/CommonJS/webSocketProcessManager.cjs");
+const serverManager = require("./backend/CommonJS/Websocket/webSocketProcessManager.cjs");
 const websocketManager = require("./backend/CommonJS/Websocket/websocketManager.cjs");
 
 // ADDITIONAL SERVICES
@@ -31,7 +31,7 @@ const startSSEServer = async () => {
 
     console.log(COLORS.CYAN + 'Starting SSE Download Server...' + COLORS.RESET);
     
-    const scriptPath = path.join(__dirname, "backend", "python", "SSE", "Download_SSE.py");
+    const scriptPath = path.join(__dirname, "backend", "ScryPy", "SSE", "Download_SSE.py");
     const pythonPath = path.join(__dirname, "backend", "venv", "bin", "python");
     
     const fs = require('fs');
@@ -287,7 +287,7 @@ ipcMain.handle("downloadServer:stop", async () => {
     await stopSSEServer();
     return { success: true };
   } catch (error) {
-    console.error(colors.COLORS.RED + "IPC STOP-SERVER ERROR:" + colors.COLORS.RESET, error);
+    console.error(COLORS.RED + "IPC STOP-SERVER ERROR:" + COLORS.RESET, error);
     return { success: false, error: error.message };
   }
 });
@@ -323,7 +323,7 @@ app.on("window-all-closed", async () => {
 });
 
 app.on("before-quit", async () => {
-  console.log(colors.COLORS.CYAN + 'Limpando recursos...' + colors.COLORS.RESET);
+  console.log(COLORS.CYAN + 'Limpando recursos...' + COLORS.RESET);
   websocketManager.closeWebSocket();
   serverManager.stopPythonServer();
   await stopSSEServer();

@@ -10,7 +10,7 @@ class HTTPServer {
     return new Promise((resolve, reject) => {
       // PATH CONFIG: Locate Python virtual environment
       const pythonPath = path.join(__dirname, '..', '..', 'venv', 'bin', 'python3');
-      const cwd = path.join(__dirname, '..', '..', 'python', 'HTTP');
+      const cwd = path.join(__dirname, '..', '..', 'ScryPy', 'HTTP');
 
       // PROCESS SPAWN: Start Uvicorn server with specific configuration
       this.httpProcess = spawn(pythonPath, [

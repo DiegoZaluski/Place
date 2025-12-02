@@ -1,9 +1,10 @@
-from __init__ import logger
+from ScryPy.HTTP import logger
 from fastapi import FastAPI
 from config import PROJECT_ROOT, CONFIG_FILE, READONLY_MODELS_DIR
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from routers.switchRouters import switchRouters 
+from routers.switchRouters import switchRouters
+from routers.configsRouters import configsRouters 
 
 # MODERN LIFESPAN
 @asynccontextmanager
@@ -12,8 +13,13 @@ async def lifespan(app: FastAPI):
     logger.info(f"Project root: {PROJECT_ROOT}")
     logger.info(f"Config: {CONFIG_FILE}")
     logger.info(f"Models (readonly): {READONLY_MODELS_DIR}")
+
+    import sys
+    sys.stdout.flush()
+
     yield
     logger.info("LLM Model Manager HTTP API ending...")
+    logger.info("BYE BYE! - BIBÍ") # HTTPServer.cjs: waiting for the final string.
 
 # APPLICATION
 app = FastAPI(
@@ -34,3 +40,4 @@ app.add_middleware(
 
 # INCLUDE ROUTER
 app.include_router(switchRouters)
+app.include_router(configsRouters)

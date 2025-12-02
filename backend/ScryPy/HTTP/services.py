@@ -1,4 +1,4 @@
-from __init__ import logger 
+from ScryPy.HTTP import logger
 from config import CONFIG_FILE, READONLY_MODELS_DIR
 import aiofiles
 import json

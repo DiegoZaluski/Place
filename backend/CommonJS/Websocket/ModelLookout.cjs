@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const { COLORS } = require('../../../utils/ansiColors');
-const { restartPythonServer } = require('../webSocketProcessManager.cjs');
+const { restartPythonServer } = require('./webSocketProcessManager.cjs');
 const axios = require('axios');
 
 class ModelLookout {

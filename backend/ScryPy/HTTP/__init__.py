@@ -4,8 +4,8 @@ import sys
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
-from python import setup_logging
+from ScryPy.utilsPy import setup_logging
 # LOGGING CONFIGURATION
-logger = setup_logging('SSE_Server')
+logger = setup_logging('HTTP_Server')
 
-FALLBACK_PORTS_SSE = [ 8080, 8081, 8082, 8083, 8084, 8085, 8086, 8087, 8088, 8089, 8090]
+FALLBACK_PORTS_HTTP = [ 8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010, 8011, 8012]

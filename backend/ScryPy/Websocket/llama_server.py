@@ -11,11 +11,11 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from __init__ import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET
+from ScryPy.Websocket import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
-from python import COLORS
+from ScryPy.utilsPy import COLORS
 
 # GLOBAL CONFIGURATION 
 CONTEXT_SIZE = 4096 

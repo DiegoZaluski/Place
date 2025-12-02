@@ -14,7 +14,7 @@ class SSEServerManager {
     this.isInitialized = false;
     this.defaultConfig = {
       // port: 8000,
-      pythonPath: path.join(__dirname, "..", "venv", "bin", "python"),
+      pythonPath: path.join(__dirname, "..", "venv", "bin", "ScryPy"), // modify-here
       logLevel: 'info',
       autoRestart: true,
       maxRetries: 3,

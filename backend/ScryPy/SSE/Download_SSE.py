@@ -1,5 +1,10 @@
 import os
-from pathlib import Path
+import sys
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -10,11 +15,9 @@ import re
 from pathlib import Path
 from typing import AsyncGenerator, Dict, List
 from urllib.parse import urlparse
-import subprocess
 import os
-import sys
 import time
-from __init__ import logger, FALLBACK_PORTS_SSE
+from ScryPy.SSE import logger, FALLBACK_PORTS_SSE
 
 # SECURITY VALIDATION
 class SecurityValidator:

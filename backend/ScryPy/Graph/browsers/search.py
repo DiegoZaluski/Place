@@ -2,7 +2,7 @@ import requests
 import trafilatura
 from urllib.parse import unquote, urlparse, parse_qs
 import re
-from Graph.__init__ import logger, cleanPage
+from .. import logger, cleanPage
 from typing import Dict, List
 
 class Search:

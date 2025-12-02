@@ -1,0 +1,1 @@
+"""🔮 Hello dev, welcome to the project, just don't mind the mess --- Python package for various Python code types."""

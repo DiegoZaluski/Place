@@ -5,7 +5,7 @@ Dynamically controls system prompts based on task type.
 """
 from typing import TypedDict, List, Dict, Any, Literal
 from langgraph.graph import StateGraph, END
-from python import setup_logging
+from backend.ScryPy.utilsPy import setup_logging
 from ..browsers.search import Search
 import asyncio
 from concurrent.futures import ThreadPoolExecutor

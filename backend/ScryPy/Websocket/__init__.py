@@ -5,11 +5,11 @@ import json
 from pathlib import Path
 
 # ADD PROJECT ROOT TO PYTHONPATH
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from python import setup_logging
+from utilsPy import setup_logging
 # LOGGER CONFIGURATION
 logger = setup_logging('WEBSOCKET_Server')
 

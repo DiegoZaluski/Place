@@ -2,7 +2,7 @@ const { spawn, exec } = require('child_process');
 const net = require('net');
 const path = require('path');
 const fs = require('fs');
-const {COLORS} = require('../../utils/ansiColors');
+const {COLORS} = require('../../../utils/ansiColors'); //Working directory
 
 let pythonServerProcess = null;
 let serverRestartCount = 0;
@@ -184,11 +184,11 @@ async function startPythonServer(mainWindow) {
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // CORRECT PATH TO BACKEND FOLDER
-    const workingDir = path.join(__dirname, '..');
+    const workingDir = path.join(__dirname, '..', '..');
     console.log('Working directory:', workingDir);
     
     const pythonPath = getPythonPath(workingDir);
-    const serverPath = path.join(workingDir, 'python', 'Websocket', 'llama_server.py');
+    const serverPath = path.join(workingDir, 'ScryPy', 'Websocket', 'llama_server.py');
     console.log('Server path:', serverPath);
     
     if (!fs.existsSync(serverPath)) {

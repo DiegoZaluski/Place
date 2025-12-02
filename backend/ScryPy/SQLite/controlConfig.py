@@ -1,7 +1,9 @@
 from sqlite3 import connect
-from __init__ import logger, ID_MODEL_WHITELIST
+from .__init__ import logger, ID_MODEL_WHITELIST
 import json
-class ConfigModel:
+
+class ControlConfig:
+    # DATABASE SCHEMA
     SCHEMA = """CREATE TABLE IF NOT EXISTS configModel (
         id_model TEXT PRIMARY KEY,
         temperature REAL DEFAULT 0.7, top_p REAL DEFAULT 0.9,
@@ -12,10 +14,14 @@ class ConfigModel:
         min_p REAL DEFAULT 0.05, tfs_z REAL DEFAULT 1.0,
         mirostat_tau REAL DEFAULT 5.0, seed INTEGER, stop TEXT)"""
     
-    REQUIRED = {'id_model', 'temperature', 'top_p', 'top_k', 'tokens'}
-    FIELDS = ['temperature', 'top_p', 'top_k', 'tokens', 'repeat_penalty',
-              'frequency_penalty', 'presence_penalty', 'min_p', 'tfs_z',
-              'mirostat_tau', 'seed', 'stop']
+    # SAFE DEFAULTS: Balanced for 1B-7B+ models
+    SAFE_DEFAULTS = {
+        'temperature': 0.7, 'top_p': 0.9, 'top_k': 40, 'tokens': 512,
+        'repeat_penalty': 1.1, 'frequency_penalty': 0.0, 'presence_penalty': 0.0,
+        'min_p': 0.05, 'tfs_z': 1.0, 'mirostat_tau': 5.0, 'seed': None, 'stop': None
+    }
+    
+    # VALIDATION: Safety ranges for all parameters
     VALID = {
         'id_model': lambda v: isinstance(v, str) and v in ID_MODEL_WHITELIST,
         'temperature': lambda v: isinstance(v, (int, float)) and 0 <= v <= 2,
@@ -28,12 +34,14 @@ class ConfigModel:
         'min_p': lambda v: isinstance(v, (int, float)) and 0 <= v <= 1,
         'tfs_z': lambda v: isinstance(v, (int, float)) and 0 <= v <= 1,
         'mirostat_tau': lambda v: isinstance(v, (int, float)) and 0 <= v <= 10,
-        'seed': lambda v: isinstance(v, int) and 0 <= v <= 2**32-1,
+        'seed': lambda v: v is None or (isinstance(v, int) and 0 <= v <= 2**32-1),
         'stop': lambda v: v is None or (isinstance(v, list) and all(isinstance(s, str) for s in v)),
     }
-    DEFAULTS = {'repeat_penalty': 1.1, 'frequency_penalty': 0.0, 
-                'presence_penalty': 0.0, 'min_p': 0.05, 'tfs_z': 1.0, 
-                'mirostat_tau': 5.0}
+    
+    # FIELD ORDER: Matches database column order (excluding id_model)
+    FIELDS = ['temperature', 'top_p', 'top_k', 'tokens', 'repeat_penalty',
+              'frequency_penalty', 'presence_penalty', 'min_p', 'tfs_z',
+              'mirostat_tau', 'seed', 'stop']
     
     def __init__(self, configs=None):
         self.configs = configs or {}
@@ -55,21 +63,28 @@ class ConfigModel:
         return bool(self._db(self.SCHEMA))
     
     def add(self):
-        if self.REQUIRED - set(self.configs):
-            logger.error("Missing required fields")
+        # Only id_model is required
+        if 'id_model' not in self.configs:
             return False
         
+        if not self._valid('id_model', self.configs['id_model']):
+            return False
+        
+        # Validate only provided fields
         for k, v in self.configs.items():
-            if not self._valid(k, v):
-                logger.error(f"Invalid {k}: {v}")
+            if k != 'id_model' and not self._valid(k, v):
                 return False
         
+        # Build values with defaults for missing fields
         values = [self.configs['id_model']]
         for field in self.FIELDS:
-            if field == 'stop' and field in self.configs:
-                values.append(json.dumps(self.configs[field]))
+            if field in self.configs:
+                if field == 'stop' and self.configs[field] is not None:
+                    values.append(json.dumps(self.configs[field]))
+                else:
+                    values.append(self.configs[field])
             else:
-                values.append(self.configs.get(field, self.DEFAULTS.get(field)))
+                values.append(self.SAFE_DEFAULTS[field] if field != 'stop' else None)
         
         return bool(self._db(
             "INSERT INTO configModel VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -77,14 +92,16 @@ class ConfigModel:
         ))
     
     def update(self):
+        # Require id_model and at least one field to update
         if 'id_model' not in self.configs or len(self.configs) < 2:
             return False
         
+        # Validate only provided fields
         for k, v in self.configs.items():
             if k != 'id_model' and not self._valid(k, v):
-                logger.error(f"Invalid {k}: {v}")
                 return False
         
+        # Build dynamic update query
         updates, params = [], []
         for field in self.FIELDS:
             if field in self.configs:
@@ -114,6 +131,7 @@ class ConfigModel:
     def get(self):
         if 'id_model' not in self.configs:
             return None
+        
         cur = self._db("SELECT * FROM configModel WHERE id_model=?", 
                       (self.configs['id_model'],))
         if not cur:

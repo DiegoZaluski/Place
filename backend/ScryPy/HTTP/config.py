@@ -1,4 +1,4 @@
-from __init__ import logger
+from ScryPy.HTTP import logger
 from pathlib import Path
 from pydantic import BaseModel
 

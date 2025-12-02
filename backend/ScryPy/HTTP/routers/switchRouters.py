@@ -1,4 +1,4 @@
-from __init__ import logger
+from ScryPy.HTTP import logger
 from fastapi import APIRouter, HTTPException
 from config import CONFIG_FILE, READONLY_MODELS_DIR, ModelSwitchResponse, ModelSwitchRequest  
 from services import get_current_model, model_exists, save_current_model_config, wait_for_websocket_confirmation  
