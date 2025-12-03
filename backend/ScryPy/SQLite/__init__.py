@@ -9,7 +9,6 @@ from ScryPy.utilsPy import setup_logging
 logger = setup_logging('SQLite')
 
 
-# WHITE LIST SQL
 ID_MODEL_WHITELIST = {
     # MISTRAL
     "mistral-7b-instruct-v0.1.Q4_K_M.gguf", "mistral-7b-instruct-v0.2.Q4_K_M.gguf",
@@ -25,7 +24,7 @@ ID_MODEL_WHITELIST = {
     "llama-3-8b-instruct.Q4_K_M.gguf", "llama-3-8b-instruct.Q5_K_M.gguf",
     "llama-3-8b-instruct.Q6_K.gguf", "llama-3-8b-instruct.Q8_0.gguf", 
     "llama-3-70b-instruct.Q4_K_M.gguf", "llama-3-70b-instruct.Q5_K_M.gguf",
-    "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+    "Llama-3.2-3B-Instruct-Q4_K_M.gguf", "Llama-3.2-1B-Instruct-Q4_K_M.gguf",
     
     # LLAMA 2
     "llama-2-7b-chat.Q4_K_M.gguf", "llama-2-13b-chat.Q4_K_M.gguf",
@@ -56,7 +55,7 @@ ID_MODEL_WHITELIST = {
     "codellama-7b-instruct.Q4_K_M.gguf", "codellama-13b-instruct.Q4_K_M.gguf", 
     "codellama-34b-instruct.Q4_K_M.gguf", "deepseek-coder-6.7b-instruct.Q4_K_M.gguf",
     "deepseek-coder-33b-instruct.Q4_K_M.gguf", "codegemma-7b-it.Q4_K_M.gguf",
-    
+
     # MIXTRAL
     "mixtral-8x7b-instruct-v0.1.Q4_K_M.gguf", "mixtral-8x7b-instruct-v0.1.Q5_K_M.gguf",
     "mixtral-8x7b-instruct-v0.1.Q6_K.gguf", "mixtral-8x22b-instruct-v0.1.Q4_K_M.gguf",
@@ -71,6 +70,9 @@ ID_MODEL_WHITELIST = {
     
     # GROK (se disponível)
     "grok-1-beta.Q4_K_M.gguf", "grok-1-beta.Q5_K_M.gguf",
+    
+    # TINYLLAMA
+    "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
     
     # CLOUD MODELS (sem .gguf)
     "gpt-4", "gpt-4-turbo", "gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo",

@@ -1,10 +1,10 @@
-import React, {useState, useCallback} from "react";
+import React, {useState, useCallback, useContext} from "react";
 import { PanelLeft } from 'lucide-react';
 import {CircularDial} from '../CustomModel/CircularDial';
 import { model, TOKEN_PRESETS } from '../../../global/varsGlobal';
 import TokensControl from "../CustomModel/TokensControl";
 import SystemPrompt from "./SystemPrompt";
-
+import { AppContext } from "@/global/AppProvider";
 const ToggleButton = ({ onClick }: { onClick: () => void }) => ( 
   <button 
     onClick={onClick}
@@ -21,6 +21,9 @@ const Divider = ({ className = "" }) => (
 const SideOption = React.memo((): JSX.Element => {
   const [isVisible, setIsVisible] = useState(false);
   const [expandedPrompt, setExpandedPrompt] = useState(false);
+  const CONTEXT = useContext(AppContext);
+  const curretModel = CONTEXT.curretModel;
+  console.log(`curretModel: ${curretModel}`);
   
   // STATE: Model generation parameters
   const [state, setState] = useState({
@@ -65,10 +68,12 @@ const SideOption = React.memo((): JSX.Element => {
       
       {dials.map(dial => (
         <CircularDial
+          key={dial.key}
           label={dial.label}
           value={dial.value}
           onChange={(val) => setState(prev => ({ ...prev, [dial.key]: val }))}
           simple={true}
+          id_model={curretModel}
         />
       ))}
       
@@ -77,6 +82,7 @@ const SideOption = React.memo((): JSX.Element => {
       <TokensControl 
         maxTokens={state.maxTokens} 
         onChange={handleTokensChange}
+        id_model={curretModel}
       />
       
       <Divider className="transform -translate-y-5" />

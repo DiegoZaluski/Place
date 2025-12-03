@@ -1,5 +1,7 @@
 import React, { createContext, useState } from "react";
 import { useStorage } from "../hooks/useStorage";
+import ConfigLLMObserver from './ConfigLLMObserver';
+
 // TYPES AND INTERFACES
 type DownloadState = {
   status: 'checking' | 'idle' | 'connecting' | 'downloading' | 'downloaded' | 'error';
@@ -113,6 +115,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AppContext.Provider value={value}>
+      <ConfigLLMObserver/>
       {children}
     </AppContext.Provider>
   );

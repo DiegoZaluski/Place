@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { COLORS } from './ControlCard';
 import { Thermometer, Target, Crown, Repeat, Minus, Zap, Filter, PieChart, Gauge } from 'lucide-react'
+import { dispatchLlamaConfigEvent, LlamaConfigEventDetail } from '../../../global/eventCofigLlm'; 
+
 
 interface CircularDialProps {
   value: number;
@@ -10,7 +12,21 @@ interface CircularDialProps {
   min?: number;
   max?: number;
   step?: number;
+  id_model: string;
 }
+
+const LlamaParameterKeys: { [key: string]: keyof Omit<LlamaConfigEventDetail, 'id_model'> } = {
+    'Temp': 'temperature',
+    'Top P': 'top_p',
+    'Top K': 'top_k',
+    'Rept': 'repeat_penalty', 
+    'Freq Penalty': 'frequency_penalty',
+    'Pres Penalty': 'presence_penalty',
+    'Mirostat Tau': 'mirostat_tau',
+    'Min P': 'min_p',
+    'TFS Z': 'tfs_z',
+};
+
 
 export const CircularDial: React.FC<CircularDialProps> = ({ 
   value, 
@@ -20,6 +36,7 @@ export const CircularDial: React.FC<CircularDialProps> = ({
   min: propMin,
   max: propMax,
   step: propStep,
+  id_model,
 }) => {
   const [inputVal, setInputVal] = useState(value.toFixed(2));
   const [isDragging, setIsDragging] = useState(false);
@@ -51,6 +68,18 @@ export const CircularDial: React.FC<CircularDialProps> = ({
     const rounded = Math.round(clamped / STEP) * STEP;
     onChange(rounded);
     setInputVal(rounded.toFixed(2));
+
+    // Triggering the customized event (using the imported function)
+    if (dialRef.current && id_model) {
+        const apiFieldKey = LlamaParameterKeys[label];
+        if (apiFieldKey) {
+            const payload: LlamaConfigEventDetail = {
+                id_model: id_model,
+                [apiFieldKey]: rounded,
+            } as LlamaConfigEventDetail;
+            dispatchLlamaConfigEvent(dialRef.current, payload);
+        }
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,7 +104,10 @@ export const CircularDial: React.FC<CircularDialProps> = ({
 
   // RENDER: Simple mode (compact horizontal layout)
   if (simple) return (
-    <div className="h-10 pl-6 transform translate-y-4 hover:bg-black/20 hover:shadow-[inset_4px_0_0_0_black] flex items-center">
+    <div 
+      ref={dialRef} 
+      className="h-10 pl-6 transform translate-y-4 hover:bg-black/20 hover:shadow-[inset_4px_0_0_0_black] flex items-center"
+    >
       <div className=' ml-4 transform -translate-x-6 flex items-center gap-2'>
         {label === 'Temp' && <Thermometer size={16} className={COLORS.TEXT_SECONDARY} stroke={value > 1 ? 'red' : value <= 0.5 ? 'blue' : 'orange'}/>}
         {label === 'Top P' && <Target size={16} className={COLORS.TEXT_SECONDARY} />}

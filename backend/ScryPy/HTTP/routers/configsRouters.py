@@ -10,7 +10,7 @@ configsRouters = APIRouter(prefix="/configs")
 async def getConfigs(id_model:str) -> dict:
     control = ControlConfig({"id_model":id_model})
     if not control.get():
-        raise HTTPException(status_code=400, detail="Config not found")
+        raise HTTPException(status_code=404, detail="Config not found")
     return control.get()
 
 @configsRouters.post("/")

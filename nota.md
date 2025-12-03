@@ -36,6 +36,3 @@ pkill -f "python.*llama_server"
 print("SOCKET IN GLOBALS:", 'socket' in globals())
 print("SOCKET IN BUILTINS:", 'socket' in __builtins__.__dict__)
 
-
-
-python -m Graph.browsers.search

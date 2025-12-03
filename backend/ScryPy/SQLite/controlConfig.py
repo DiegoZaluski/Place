@@ -1,5 +1,6 @@
 from sqlite3 import connect
-from .__init__ import logger, ID_MODEL_WHITELIST
+import os
+from ScryPy.SQLite import logger, ID_MODEL_WHITELIST
 import json
 
 class ControlConfig:
@@ -45,13 +46,16 @@ class ControlConfig:
     
     def __init__(self, configs=None):
         self.configs = configs or {}
+        
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.__DB_FILE = os.path.join(current_dir, "configModel.sqlite")
     
     def _valid(self, key, value):
         return key in self.VALID and self.VALID[key](value)
     
     def _db(self, query, params=()):
         try:
-            with connect("configModel.sqlite") as conn:
+            with connect(self.__DB_FILE) as conn:
                 cur = conn.execute(query, params)
                 conn.commit()
                 return cur

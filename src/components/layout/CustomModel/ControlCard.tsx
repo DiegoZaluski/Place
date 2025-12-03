@@ -104,6 +104,7 @@ export const ControlCard: React.FC<ControlCardProps> = memo(({ model, onUpdate }
               label={config.label}
               value={state[config.key as keyof ModelState] as number}
               onChange={(value) => updateState({ [config.key]: value })}
+              id_model='Llama-3.2-3B-Instruct-Q4_K_M.gguf' // remove <-----| for exemple 
             />
           ))}
         </div>
@@ -112,6 +113,7 @@ export const ControlCard: React.FC<ControlCardProps> = memo(({ model, onUpdate }
         <TokensControl 
           maxTokens={state.maxTokens} 
           onChange={(value) => updateState({ maxTokens: value })} 
+          id_model='Llama-3.2-3B-Instruct-Q4_K_M.gguf'// remove <-----| for exemple 
         />
         
         {/* SECTION: LoRA file management */}
