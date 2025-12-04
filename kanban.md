@@ -27,11 +27,9 @@
 ### tasks pre lançamento - (quando todas forem cumpridas a versão beta é lançada)### 
     ! cria raciocicionio em loop 
     ! add raciocionio a ao switch  ou ifs depnede de qual logica sera usada 
-    ! add ui para config de api de modelos esterno - mudano o menu lateral esquerdo do chat para este nova interface de configuração 
     ! add button de de troca de modelo local cloud ou local sem filtro button inteligent so aparece se houver modelo cloud codastrado
-    ! criar controle de temperatura do modelos e memoria. 
     ! memoria vetorial de rapido acesso para o modelo - (vector store) 
-    ! ferramenta de coleta e compactação de memoria, para mandar para vector store - sanlvar de forma inteligente guaradando o minimo de garbagem 
+    ! ferramenta de coleta e compactação de memoria, para mandar para vector store - salvar de forma inteligente guaradando o minimo de garbagem 
     ! revisar qualidade, compactação de tokens, garantir que não esta sendo enviado garbagem para modelos pros, garantir economia de tokens para modelos pros 
     ! add o maximo de modelo para baixar, reforçar fallback de dowload
     ! tela de carregamente inicial do app  
@@ -53,7 +51,8 @@
 ! lupa aparecendo quando o modelo esta repondendo
 ! resetar estado quando sair do chat para não bugar, ou add um estado global para o button de pesquisa 
 ! pesquisa mal filtrada, esta cortando palavras, o regex 
-! FALLBACKS Inuteis no servidores 
+! FALLBACKS Inuteis no servidores
+! comando para parar pesquisa integrar no backend  
 
 
 # RACIOCINIO DO MODELO - ideia atual para isso: 

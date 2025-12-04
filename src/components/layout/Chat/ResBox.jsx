@@ -133,11 +133,11 @@ CodeBlock.displayName = 'CodeBlock';
 // CUSTOM COMPONENTS FOR MARKDOWN 
 const createMarkdownComponents = () => ({
   code: CodeBlock,
-  h1: (p) => <h1 className="text-2xl font-bold text-white/90 mb-4 mt-6 font-playfair" {...p} />,
-  h2: (p) => <h2 className="text-xl font-semibold text-white/85 mb-3 mt-5 font-playfair" {...p} />,
-  h3: (p) => <h3 className="text-lg font-semibold text-white/80 mb-2 mt-4 font-playfair" {...p} />,
-  p: (p) => <p className="text-white/75 mb-4 leading-relaxed break-words font-playfair" {...p} />,
-  a: ({ href, ...p }) => <a href={href} target="_blank" rel="noreferrer" className="text-amber-400 underline break-all font-playfair" {...p} />,
+  h1: (p) => <h1 className="text-4xl font-bold text-white/90 mb-5 mt-7 font-playfair" {...p} />,
+  h2: (p) => <h2 className="text-3xl font-semibold text-white/85 mb-4 mt-6 font-playfair" {...p} />,
+  h3: (p) => <h3 className="text-2xl font-semibold text-white/80 mb-3 mt-5 font-playfair" {...p} />,
+  p: (p) => <p className="text-white/75 mb-5 leading-relaxed break-words font-playfair text-[16.5px]" {...p} />,
+  a: ({ href, ...p }) => <a href={href} target="_blank" rel="noreferrer" className="text-amber-400 underline break-all font-playfair text-[16.5px]" {...p} />,
 });
 
 // USER MESSAGE DISPLAY COMPONENT 
@@ -235,7 +235,7 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
   if (processedMessages.length === 0 && !isGenerating && showWelcome) {
     return (
       <div className={`${ adaptable ? '' : 'fixed' } inset-0 flex items-center justify-center pointer-events-none ${adaptable ? 'translate-y-44 pt-20 pl-10 pr-10' : ''}`}> {/* adaptable*/}
-        <h1 className={`font-playfair text-[#F5F5DC] font-bold ${ adaptable? 'text-lg' : 'text-4xl' }`}>{adaptable? 'olá, alguma dúvida?':'Conte-me sobre o seu projeto!'}</h1> 
+        <h1 className={`font-playfair text-b-500 font-bold ${ adaptable? 'text-lg' : 'text-4xl' }`}>{adaptable? 'olá, alguma dúvida?':'Conte-me sobre o seu projeto!'}</h1> 
       </div>
     );
   }
@@ -293,8 +293,7 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
           :
           <div className='w-full h-[200px]'><SearchAnime color='white'/></div>
         )}
-
-        {/* Reference for automatic scrolling */}
+        
         <div ref={messagesEndRef} />
       </div>
     </div>

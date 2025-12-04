@@ -7,7 +7,7 @@ import { useLlama } from '../../../hooks/useLlama';
 import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from '../../shared/WindowsComponents'
 import { AppContext } from '../../../global/AppProvider';
 import SideOption from './SideOption';
-// COLORS: centralized color palette for the chat component
+// COLORS
 const COLORS = {
   BACKGROUND: `bg-chat`,
   TEXT: 'text-white',
@@ -233,7 +233,7 @@ const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
         `}
         style={{ backgroundColor: COLORS.BACKGROUND }}
         >
-          <span>Place&trade;</span>
+          <span>Scry&trade;</span>
         </footer>}
     </div>
   );

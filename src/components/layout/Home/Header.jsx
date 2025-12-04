@@ -21,11 +21,8 @@ function Header() {
       <div className="h-full grid grid-cols-3 items-center">
         {/* 1. Left Section: Tabs */}
         <HeaderTabs/>
-
-        {/* Central Section: Empty */}
-        <div className="justify-self-center flex items-center space-x-2 flex-row font-playfair"> 
-            <img src={logo} className="w-14 h-14" alt="logoPlace" />
-            <h1 className='text-2xl font-bold text-n-900 dark-text-primary '>Place</h1>
+        <div className="justify-self-center flex items-center space-x-2 flex-row"> 
+            <img src={logo} className="w-16 h-16" alt="logoPlace" />
         </div>
 
         {/* Right Section: Status, Notifications, and User Profile */}

@@ -11,24 +11,51 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from ScryPy.Websocket import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET
+from ScryPy.Websocket import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET, NAME_OF_MODEL
+from ScryPy.SQLite.controlConfig import ControlConfig 
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
-from ScryPy.utilsPy import COLORS
-
+import time
 # GLOBAL CONFIGURATION 
-CONTEXT_SIZE = 4096 
+CONTEXT_SIZE = 8000
 
 class LlamaChatServer:
     """WebSocket server for LLaMA model chat with native context optimization and async interruption support."""
+
+    _config_cache = None
+    _cache_time = 0
+    @classmethod
+    def get_config(cls):
+        """Function Global Configuration""" 
+        now = time.time()
+        if not cls._config_cache or (now - cls._cache_time) > 5:
+            control = ControlConfig({"id_model": NAME_OF_MODEL})
+            cls._config_cache = control.get()
+            cls._cache_time = now
+        
+        return cls._config_cache
+    
     def __init__(self, model_path: str, system_prompt: str = None):
         # MODEL INITIALIZATION
+        self.temperature = 0.7
+        self.top_p = 0.9
+        self.top_k = 40
+        self.tokens = 512
+        self.repeat_penalty = 1.1
+        self.frequency_penalty = 0.0
+        self.presence_penalty = 0.0
+        self.min_p = 0.05
+        self.tfs_z = 1.0
+        self.mirostat_tau = 5.0
+        self.seed = None
+        self.stop = None
+
         self.llm = Llama(
             model_path=model_path, 
             n_ctx=CONTEXT_SIZE,
             n_gpu_layers=-1,
-            seed=42,
+            seed=self.seed,
             verbose=False,
             chat_format=CHAT_FORMAT, 
             use_mlock=True,       
@@ -40,7 +67,27 @@ class LlamaChatServer:
         self.active_prompts: Set[str] = set()
         self.session_history: Dict[str, List[Dict[str, str]]] = {}
         self.system_prompt = "You are a helpful, knowledgeable, and professional AI assistant. " or system_prompt
-    
+    def update_live_config(self):
+        """Updates configuration parameters from the database."""
+        CONFIGPARAMS = self.get_config()
+        
+        if CONFIGPARAMS:
+            self.temperature = CONFIGPARAMS['temperature']
+            self.top_p = CONFIGPARAMS['top_p']
+            self.top_k = CONFIGPARAMS['top_k']
+            self.tokens = CONFIGPARAMS['tokens']
+            self.repeat_penalty = CONFIGPARAMS['repeat_penalty']
+            self.frequency_penalty = CONFIGPARAMS['frequency_penalty']
+            self.presence_penalty = CONFIGPARAMS['presence_penalty']
+            self.min_p = CONFIGPARAMS['min_p']
+            self.tfs_z = CONFIGPARAMS['tfs_z']
+            self.mirostat_tau = CONFIGPARAMS['mirostat_tau']
+            self.seed = CONFIGPARAMS['seed']
+            self.stop = CONFIGPARAMS['stop']
+            logger.info("CONFIGPARAMS: " + str(CONFIGPARAMS))
+        else:
+            logger.warning("ERROR: CONFIGPARAMS DEFAULTS")
+
     def get_session_history(self, session_id: str) -> List[Dict[str, str]]:
         """Retrieves or creates conversation history for a session."""
         if session_id not in self.session_history:
@@ -69,6 +116,7 @@ class LlamaChatServer:
         Processes a prompt using run_in_executor for separate thread execution,
         with asyncio.sleep(0) in the loop to ensure cancellation priority.
         """
+        self.update_live_config()
         logger.info(f"Processing prompt {prompt_id} for session {session_id}")
 
         history = self.get_session_history(session_id).copy()
@@ -80,21 +128,24 @@ class LlamaChatServer:
         def get_stream_sync(): 
             return self.llm.create_chat_completion(
                 history, 
-                max_tokens=512, 
+                max_tokens=self.tokens,
                 stream=True, 
-                temperature=0.7, 
-                top_p=0.9,
-                repeat_penalty=1.1,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                top_k=self.top_k,
+                repeat_penalty=self.repeat_penalty,
+                frequency_penalty=self.frequency_penalty,
+                presence_penalty=self.presence_penalty,
+                min_p=self.min_p,
+                tfs_z=self.tfs_z,
+                mirostat_tau=self.mirostat_tau,
+                stop=self.stop
             )
-
         try:
-            # Execute LLM call in thread pool
             stream = await loop.run_in_executor(None, get_stream_sync)
-            
             response_tokens = []
             
             for chunk in stream:
-                # ASYNC CONTEXT SWITCH POINT
                 await asyncio.sleep(0)
                 
             # CANCELLATION CHECK
@@ -123,7 +174,6 @@ class LlamaChatServer:
                 
                 assistant_response = "".join(response_tokens)
                 
-                # UPDATE SESSION HISTORY
                 self.get_session_history(session_id).append({"role": "user", "content": prompt_text})
                 if assistant_response:
                     self.get_session_history(session_id).append({"role": "assistant", "content": assistant_response})
@@ -144,7 +194,6 @@ class LlamaChatServer:
             await self._send_error(websocket, prompt_id, f"Server Error: {e}")
             self.active_prompts.discard(prompt_id)
     
-# CLIENT MANAGEMENT METHODS
 
     # SHUTDOWN
     async def handle_client(self, websocket: websockets.WebSocketServerProtocol, path: Optional[str] = None) -> None:
@@ -153,7 +202,6 @@ class LlamaChatServer:
         logger.info(f"New client connected: {websocket.remote_address} - Session: {session_id}")
         
         try:
-            # Sends 'ready' status and the new sessionId
             await websocket.send(json.dumps({
                 "type": "ready",
                 "message": "Model is ready",
@@ -194,7 +242,7 @@ class LlamaChatServer:
     
     async def _handle_prompt_action(self, websocket: websockets.WebSocketServerProtocol, data: dict, session_id: str) -> None:
         """Handles the 'prompt' action."""
-        prompt_text = data.get("prompt", "").strip() # HERE
+        prompt_text = data.get("prompt", "").strip()
         if not prompt_text:
             await self._send_error(websocket, None, "Empty prompt")
             return
@@ -207,7 +255,6 @@ class LlamaChatServer:
 
         self.active_prompts.add(prompt_id)
         
-        # Starts processing asynchronously in the background
         asyncio.create_task(self.router(data, prompt_id, prompt_text, session_id, websocket))
         
         await websocket.send(json.dumps({
@@ -264,7 +311,6 @@ class LlamaChatServer:
         from Graph.kernel.orchestrator import orchestrator
         
         try:
-            # Create state with client control flags
             initial_state = {
                 "session_id": sessionId,
                 "user_input": promptText,
@@ -273,16 +319,13 @@ class LlamaChatServer:
                 "think_flag": data.get("think", False),
                 "final_response": "",
                 "processing_complete": False,
-                "system_prompt": ""  # Will be set by analyzeRequest
+                "system_prompt": ""  
             }
             
-            # Execute orchestrator
             final_state = orchestrator.invoke(initial_state)
             
-            # Update system prompt in session history
             self._updateSystemPrompt(sessionId, final_state["system_prompt"])
-            
-            # Send response via WebSocket
+
             await websocket.send(json.dumps({
                 "promptId": promptId,
                 "token": final_state["final_response"],
@@ -295,7 +338,6 @@ class LlamaChatServer:
                 "type": "complete"
             }))
             
-            # Update conversation history
             if final_state["search_code"] == 100:
                 self.get_session_history(sessionId).append({"role": "user", "content": promptText})
                 self.get_session_history(sessionId).append({"role": "assistant", "content": final_state["final_response"]})
@@ -315,8 +357,6 @@ class LlamaChatServer:
                     self.session_history[session_id][i]["content"] = new_prompt
                     logger.debug(f"Updated system prompt for session {session_id}")
                     return
-            
-            # If no system message found, add one
             self.session_history[session_id].insert(0, {"role": "system", "content": new_prompt})
 
     def router(

@@ -3,14 +3,19 @@ KERNEL ORCHESTRATOR
 Professional orchestration system for WebSocket server.
 Dynamically controls system prompts based on task type.
 """
-from typing import TypedDict, List, Dict, Any, Literal
+import os
+import sys
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from typing import TypedDict, List, Dict
 from langgraph.graph import StateGraph, END
-from backend.ScryPy.utilsPy import setup_logging
+from ScryPy.utilsPy import setup_logging
 from ..browsers.search import Search
-import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
-logger = setup_logging('Orchestrator')
+logger = setup_logging('Agent_Orchestrator')
 
 class OrchestrationState(TypedDict):
     """State management for WebSocket session processing."""

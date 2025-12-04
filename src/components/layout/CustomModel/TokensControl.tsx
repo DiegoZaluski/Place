@@ -63,7 +63,7 @@ const TokensControl = memo(({
   };
 
   return (
-    <div ref={controlRef} className={`pl-5 pt-5 ${className}`}>
+    <div ref={controlRef} className={`${className}`}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs text-neutral-500">
           {internalTokens.toLocaleString()} tokens
@@ -71,7 +71,7 @@ const TokensControl = memo(({
       </div>
 
       <div className="relative">
-        <MessageCircle size={16} stroke={document.documentElement.getAttribute('data-theme') === 'dark' ? 'white' : 'currentColor'}/>
+        <MessageCircle size={20} stroke={document.documentElement.getAttribute('data-theme') === 'dark' ? 'white' : 'currentColor'}/>
         <input
           type="number"
           value={inputValue}
@@ -82,19 +82,27 @@ const TokensControl = memo(({
           absolute
           -top-1
           left-6
-          w-full
-          text-start 
-          bg-transparent 
+          w-12
+          text-center 
           dark-text-primary 
           font-semibold 
           focus:outline-none 
           focus:border-none 
+          focus:ring-none
           [appearance:textfield] 
           [&::-webkit-outer-spin-button]:appearance-none 
           [&::-webkit-inner-spin-button]:appearance-none
+          text-sm 
+          font-bold 
+          bg-white/10 border border-white/10 
+          rounded-lg 
+          pt-1 
+          pb-1 
+          transition-all 
+          duration-200
             `}
         />
-        <div className="flex gap-2 text-xs text-neutral-400 mt-2">
+        <div className="flex gap-3 text-xs text-neutral-400 mt-4">
           <span>Min: 128</span>
           <span>Max: 8,192</span>
         </div>

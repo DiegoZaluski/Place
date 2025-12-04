@@ -1,8 +1,14 @@
+import os
+import sys
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 import requests
 import trafilatura
 from urllib.parse import unquote, urlparse, parse_qs
 import re
-from .. import logger, cleanPage
+from ScryPy.Graph import logger, cleanPage
 from typing import Dict, List
 
 class Search:

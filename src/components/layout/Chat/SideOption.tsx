@@ -1,21 +1,43 @@
-import React, {useState, useCallback, useContext} from "react";
+import React, {useState, useCallback, useContext, useEffect} from "react";
 import { PanelLeft } from 'lucide-react';
 import {CircularDial} from '../CustomModel/CircularDial';
 import { model, TOKEN_PRESETS } from '../../../global/varsGlobal';
 import TokensControl from "../CustomModel/TokensControl";
 import SystemPrompt from "./SystemPrompt";
 import { AppContext } from "@/global/AppProvider";
-const ToggleButton = ({ onClick }: { onClick: () => void }) => ( 
-  <button 
-    onClick={onClick}
-    className="w-full h-10 flex items-center justify-center mt-4"
-  >
-    <PanelLeft size={20} />
-  </button>
-);
+import { CurrentConfigLlm } from "@/global/CurrentConfigLlm";
 
-const Divider = ({ className = "" }) => (
-  <div className={`border-b border-white/50 h-10 w-3/4 ml-4 ${className}`} />
+interface ModelConfigState {
+  temperature?: number;
+  topP?: number;
+  topK?: number;
+  repeatPenalty?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+  maxTokens?: number;
+  minP?: number;
+  tfsZ?: number;
+  mirostatTau?: number;
+  systemPrompt?: string;
+  loraFiles?: any; // Use a more specific type if you know what loraFiles are
+}
+
+const ToggleButton = ({ onClick }: { onClick: () => void }) => (
+  <div className="w-full flex items-center justify-center">
+    <button
+      onClick={onClick}
+      className="group relative w-14 h-10 mt-4 rounded-full overflow-hidden transition-all duration-300 ease-out"
+      aria-label="Toggle panel"
+    >
+      <div className="relative flex items-center justify-center w-full h-full">
+        <PanelLeft
+          size={20}
+          className="text-white/70 transition-all duration-300 group-active:scale-90"
+        />
+      </div>
+      <div className="absolute inset-0 bg-white/10 rounded-full scale-0 group-active:scale-100 transition-transform duration-300 origin-center" />
+    </button>
+  </div>
 );
 
 const SideOption = React.memo((): JSX.Element => {
@@ -23,10 +45,9 @@ const SideOption = React.memo((): JSX.Element => {
   const [expandedPrompt, setExpandedPrompt] = useState(false);
   const CONTEXT = useContext(AppContext);
   const curretModel = CONTEXT.curretModel;
-  console.log(`curretModel: ${curretModel}`);
-  
-  // STATE: Model generation parameters
-  const [state, setState] = useState({
+  const test = CurrentConfigLlm(curretModel);
+
+  const [state, setState] = useState<ModelConfigState>({
     temperature: 0.7,
     topP: 0.9,
     topK: 40,
@@ -41,12 +62,38 @@ const SideOption = React.memo((): JSX.Element => {
     loraFiles: [],
   });
 
-  // CALLBACK: Tokens change handler
+  useEffect(() => {
+    const modelConfig = async () => {
+      const config = await CurrentConfigLlm(curretModel);
+      if (!config || typeof config !== 'object' || Array.isArray(config)) {
+        console.error('Config not found or invalid');
+        return;
+      }
+      
+      setState((prev: ModelConfigState) => ({
+        temperature: (config as any).temperature ?? prev.temperature,
+        topP: (config as any).topP ?? prev.topP,
+        topK: (config as any).topK ?? prev.topK,
+        repeatPenalty: (config as any).repeatPenalty ?? prev.repeatPenalty,
+        frequencyPenalty: (config as any).frequencyPenalty ?? prev.frequencyPenalty,
+        presencePenalty: (config as any).presencePenalty ?? prev.presencePenalty,
+        maxTokens: (config as any).maxTokens ?? prev.maxTokens,
+        minP: (config as any).minP ?? prev.minP,
+        tfsZ: (config as any).tfsZ ?? prev.tfsZ,
+        mirostatTau: (config as any).mirostatTau ?? prev.mirostatTau,
+        systemPrompt: (config as any).systemPrompt ?? prev.systemPrompt,
+        loraFiles: (config as any).loraFiles ?? prev.loraFiles,
+      }));
+    };
+    
+    modelConfig();
+  }, [curretModel]);
+    
+
   const handleTokensChange = useCallback(() => {
     setState(prev => ({ ...prev }));
   }, []);
 
-  // CONFIG: Simple mode parameter dials
   const dials = [
     { label: 'Temp', value: state.temperature, min: 0, max: 2, step: 0.1, key: 'temperature' as const },
     { label: 'Top P', value: state.topP, min: 0, max: 1, step: 0.05, key: 'topP' as const },
@@ -63,39 +110,39 @@ const SideOption = React.memo((): JSX.Element => {
   );
 
   return (
-    <div className="h-[calc(100vh-5rem)] w-60 shadow-2xl absolute left-0 top-[5rem]">
+    <div className="h-[calc(100vh-5rem)] w-64 shadow-2xl absolute left-0 top-[5rem]">
       <ToggleButton onClick={toggleVisibility}/>
       
-      {dials.map(dial => (
-        <CircularDial
-          key={dial.key}
-          label={dial.label}
-          value={dial.value}
-          onChange={(val) => setState(prev => ({ ...prev, [dial.key]: val }))}
-          simple={true}
+      <div>
+        {dials.map(dial => (
+          <CircularDial
+            key={dial.key}
+            label={dial.label}
+            value={dial.value}
+            onChange={(val) => setState(prev => ({ ...prev, [dial.key]: val }))}
+            simple={true}
+            id_model={curretModel}
+          />
+        ))}
+      </div>
+      
+      <div className=" h-28 w-56 mt-8 ml-4 border border-neutral-200/10 rounded-3xl flex items-center justify-start pl-4 bg-white/5">
+        <TokensControl 
+          maxTokens={state.maxTokens} 
+          onChange={handleTokensChange}
           id_model={curretModel}
         />
-      ))}
+      </div>
       
-      <Divider />
+      <div className="mt-4 ml-4">
+        <SystemPrompt 
+          isExpanded={expandedPrompt} 
+          onToggle={() => setExpandedPrompt(prev => !prev)}
+        />
+      </div>
       
-      <TokensControl 
-        maxTokens={state.maxTokens} 
-        onChange={handleTokensChange}
-        id_model={curretModel}
-      />
+      <div className="mt-6"></div>
       
-      <Divider className="transform -translate-y-5" />
-      
-      <SystemPrompt 
-        isExpanded={expandedPrompt} 
-        onToggle={() => setExpandedPrompt(prev => !prev)}
-      />
-      
-      <Divider className="transform -translate-y-6"/>
-      
-      <h2 className="mt-2 mt4 ml-4 font-playfair transform -translate-y-6">History</h2>
-      <p className="mt4 ml-4 text-sm transform -translate-y-6">This is in prod...</p>
     </div>
   );
 });

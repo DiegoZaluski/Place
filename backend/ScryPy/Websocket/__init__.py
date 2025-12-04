@@ -8,12 +8,12 @@ from pathlib import Path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
-
 from utilsPy import setup_logging
+
 # LOGGER CONFIGURATION
 logger = setup_logging('WEBSOCKET_Server')
 
-# FORMAT MAPPING
+# FORMAT TO CHAT MODEL 
 MODEL_FORMATS = {
     "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf": "llama-3",
     "mistral-7b-instruct-v0.3.Q4_K_M.gguf": "mistral-instruct",
@@ -37,6 +37,7 @@ def load_config():
         config = json.load(f)
     
     model_name = config.get("model_name")
+    name_of_model = config.get("model_name")
     if not model_name:
         raise ValueError("model_name not found in JSON")
     
@@ -48,7 +49,8 @@ def load_config():
     
     return {
         "model_path": model_path,
-        "chat_format": chat_format
+        "chat_format": chat_format,
+        "name_of_model": name_of_model
     }
 
 # LOAD CONFIGURATION
@@ -56,9 +58,11 @@ try:
     CONFIG = load_config()
     MODEL_PATH = CONFIG["model_path"]
     CHAT_FORMAT = CONFIG["chat_format"]
+    NAME_OF_MODEL = CONFIG["name_of_model"]
 except Exception as e:
     logger.error(f"[INIT] FATAL ERROR loading config: {e}")
     raise
+
 
 # PORTS
 FALLBACK_PORTS_WEBSOCKET = [8765, 8766, 8767, 8768, 8769, 8770, 8771, 8772]

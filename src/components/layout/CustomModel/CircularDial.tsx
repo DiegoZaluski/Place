@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { COLORS } from './ControlCard';
-import { Thermometer, Target, Crown, Repeat, Minus, Zap, Filter, PieChart, Gauge } from 'lucide-react'
+import { Sigma, Crown, Repeat, Minus, Zap, Filter, PieChart, Gauge } from 'lucide-react'
 import { dispatchLlamaConfigEvent, LlamaConfigEventDetail } from '../../../global/eventCofigLlm'; 
-
 
 interface CircularDialProps {
   value: number;
@@ -27,7 +26,6 @@ const LlamaParameterKeys: { [key: string]: keyof Omit<LlamaConfigEventDetail, 'i
     'TFS Z': 'tfs_z',
 };
 
-
 export const CircularDial: React.FC<CircularDialProps> = ({ 
   value, 
   onChange, 
@@ -42,10 +40,9 @@ export const CircularDial: React.FC<CircularDialProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const dialRef = useRef<HTMLDivElement>(null);
 
-  // CONFIG: Default parameter definitions for Llama.cpp (fallback)
   const DEFAULT_CONFIGS = {
-    'Temp': { MIN: 0.0, MAX: 2.0, STEP: 0.1, icon: Thermometer },
-    'Top P': { MIN: 0.0, MAX: 1.0, STEP: 0.05, icon: Target },
+    'Temp': { MIN: 0.0, MAX: 2.0, STEP: 0.1, icon: Gauge },
+    'Top P': { MIN: 0.0, MAX: 1.0, STEP: 0.05, icon: Sigma },
     'Top K': { MIN: 0, MAX: 100, STEP: 1, icon: Crown },
     'Repeat': { MIN: 1.0, MAX: 2.0, STEP: 0.1, icon: Repeat },
     'Freq Penalty': { MIN: -1.0, MAX: 2.0, STEP: 0.1, icon: Minus },
@@ -55,21 +52,18 @@ export const CircularDial: React.FC<CircularDialProps> = ({
     'TFS Z': { MIN: 0.5, MAX: 1.0, STEP: 0.05, icon: PieChart },
   };
 
-  // LOGIC: Use props if provided, otherwise use defaults
   const defaultConfig = DEFAULT_CONFIGS[label] || { MIN: 0, MAX: 2, STEP: 0.01, icon: Gauge };
   const MIN = propMin !== undefined ? propMin : defaultConfig.MIN;
   const MAX = propMax !== undefined ? propMax : defaultConfig.MAX;
   const STEP = propStep !== undefined ? propStep : defaultConfig.STEP;
   const IconComponent = defaultConfig.icon;
 
-  // HELPER: Update value with clamping and rounding
   const updateValue = (newValue: number) => {
     const clamped = Math.min(Math.max(newValue, MIN), MAX);
     const rounded = Math.round(clamped / STEP) * STEP;
     onChange(rounded);
     setInputVal(rounded.toFixed(2));
 
-    // Triggering the customized event (using the imported function)
     if (dialRef.current && id_model) {
         const apiFieldKey = LlamaParameterKeys[label];
         if (apiFieldKey) {
@@ -101,24 +95,24 @@ export const CircularDial: React.FC<CircularDialProps> = ({
   }, [value]);
 
   const numberInputStyles = "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+  const SIZE = useRef(20); 
 
-  // RENDER: Simple mode (compact horizontal layout)
   if (simple) return (
     <div 
       ref={dialRef} 
-      className="h-10 pl-6 transform translate-y-4 hover:bg-black/20 hover:shadow-[inset_4px_0_0_0_black] flex items-center"
+      className="h-10 pl-8 transform translate-y-4 flex items-center text-sm transition-all duration-300 rounded-xl mb-1 border border-transparent hover:bg-white/5 hover:border-white/10 "
     >
-      <div className=' ml-4 transform -translate-x-6 flex items-center gap-2'>
-        {label === 'Temp' && <Thermometer size={16} className={COLORS.TEXT_SECONDARY} stroke={value > 1 ? 'red' : value <= 0.5 ? 'blue' : 'orange'}/>}
-        {label === 'Top P' && <Target size={16} className={COLORS.TEXT_SECONDARY} />}
-        {label === 'Top K' && <Crown size={16} className={COLORS.TEXT_SECONDARY} />}
-        {label === 'Rept' && <Repeat size={16} className={COLORS.TEXT_SECONDARY} />}
-        {label === 'Freq Penalty' && <Minus size={16} className={COLORS.TEXT_SECONDARY} />}
-        {label === 'Pres Penalty' && <Minus size={16} className={COLORS.TEXT_SECONDARY} />}
-        {label === 'Mirostat Tau' && <Zap size={16} className={COLORS.TEXT_SECONDARY} />}
-        {label === 'Min P' && <Filter size={16} className={COLORS.TEXT_SECONDARY} />}
-        {label === 'TFS Z' && <PieChart size={16} className={COLORS.TEXT_SECONDARY} />}
-        <span className={`text-xs font-medium uppercase font-semibold ${COLORS.TEXT_SECONDARY}`}>
+      <div className='ml-4 transform -translate-x-6 flex items-center gap-3'>
+        {label === 'Temp' && <Gauge size={SIZE.current} className={COLORS.TEXT_SECONDARY} stroke={value > 1 ? 'red' : value <= 0.5 ? 'var(--pur-500)' : 'white'}/>}
+        {label === 'Top P' && <Sigma size={SIZE.current} className={COLORS.TEXT_SECONDARY}/>}
+        {label === 'Top K' && <Crown size={SIZE.current} className={COLORS.TEXT_SECONDARY}/>}
+        {label === 'Rept' && <Repeat size={SIZE.current} className={COLORS.TEXT_SECONDARY}/>}
+        {label === 'Freq Penalty' && <Minus size={SIZE.current} className={COLORS.TEXT_SECONDARY}/>}
+        {label === 'Pres Penalty' && <Minus size={SIZE.current} className={COLORS.TEXT_SECONDARY}/>}
+        {label === 'Mirostat Tau' && <Zap size={SIZE.current} className={COLORS.TEXT_SECONDARY}/>}
+        {label === 'Min P' && <Filter size={SIZE.current} className={COLORS.TEXT_SECONDARY}/>}
+        {label === 'TFS Z' && <PieChart size={SIZE.current} className={COLORS.TEXT_SECONDARY}/>}
+        <span className="font-medium">
           {label}:
         </span>
         <input
@@ -128,14 +122,13 @@ export const CircularDial: React.FC<CircularDialProps> = ({
           onBlur={handleBlur}
           onFocus={(e) => e.target.select()}
           onKeyDown={(e) => e.key === 'Enter' && handleBlur()}
-          className={`w-12 text-center text-sm font-bold bg-transparent focus:outline-none bg-white/10 rounded-lg ${COLORS.TEXT_PRIMARY} ${numberInputStyles}`}
+          className={`w-12 text-center text-sm font-bold bg-white/10 border border-white/10 focus:border-none focus:ring-none focus:outline-none rounded-lg pt-1 pb-1 transition-all duration-200 ${COLORS.TEXT_PRIMARY} ${numberInputStyles}`}
         />
-        <span className="text-xs text-white mr-2">max: {MAX}</span>
+        <span className="text-xs text-white/60 mr-2 font-medium">max: {MAX}</span>
       </div>
     </div>
   );
 
-  // INTERACTION: Circular dial mouse handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -170,10 +163,8 @@ export const CircularDial: React.FC<CircularDialProps> = ({
     }
   }, [isDragging]);
 
-  // CALC: Progress percentage for circular visualization
   const percentage = ((value - MIN) / (MAX - MIN)) * 100;
 
-  // RENDER: Advanced mode (circular dial layout)
   return (
     <div className="flex flex-col items-center gap-3">
       <label className={`text-xs font-semibold uppercase tracking-widest ${COLORS.TEXT_SECONDARY}`}>
@@ -182,10 +173,11 @@ export const CircularDial: React.FC<CircularDialProps> = ({
 
       <div
         ref={dialRef}
-        className="relative w-20 h-20 lg:w-32 lg:h-32 rounded-full border-3 border-neutral-950 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+        className="relative w-20 h-20 lg:w-32 lg:h-32 rounded-full border-3 border-neutral-950 flex items-center justify-center cursor-grab active:cursor-grabbing select-none transition-transform duration-200 hover:scale-105 shadow-lg"
         onMouseDown={handleMouseDown}
       >
         <svg className="absolute w-full h-full" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="2.5" />
           <path
             d={`M 50 8 A 42 42 0 ${percentage > 50 ? 1 : 0} 1 ${50 + 42 * Math.sin((percentage / 100) * 2 * Math.PI)} ${8 + 42 * (1 - Math.cos((percentage / 100) * 2 * Math.PI))}`}
             fill="none"
@@ -195,14 +187,14 @@ export const CircularDial: React.FC<CircularDialProps> = ({
           />
         </svg>
 
-        <div className={`relative w-12 h-12 lg:w-20 lg:h-20 rounded-full border-2 border-neutral-950 flex items-center justify-center z-10 ${COLORS.PRIMARY_THEMA}`}>
+        <div className={`relative w-12 h-12 lg:w-20 lg:h-20 rounded-full border-2 border-neutral-950 flex items-center justify-center z-10 ${COLORS.PRIMARY_THEMA} shadow-inner hover:border-neutral-800 transition-all duration-200`}>
           <input
             type="number"
             value={inputVal}
             onChange={handleInputChange}
             onBlur={handleBlur}
             onFocus={(e) => e.target.select()}
-            className={`w-full h-full text-center text-sm lg:text-base font-bold bg-transparent focus:outline-none ${COLORS.TEXT_PRIMARY} ${numberInputStyles}`}
+            className={`w-full h-full text-center text-sm lg:text-base font-bold bg-transparent ${COLORS.TEXT_PRIMARY} ${numberInputStyles}`}
           />
         </div>
       </div>

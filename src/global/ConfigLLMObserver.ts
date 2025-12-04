@@ -64,7 +64,7 @@ function ConfigLLMObserver() {
             timeoutRef.current = setTimeout(() => {
                 pendingConfigsRef.current.forEach(syncConfig);
                 pendingConfigsRef.current.clear();
-            }, 1000);
+            }, 2000);
         };
         
         document.addEventListener('configLlm', handler as EventListener);

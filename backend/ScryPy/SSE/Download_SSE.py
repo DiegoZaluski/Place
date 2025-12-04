@@ -101,13 +101,13 @@ class DownloadManager:
             
             # TEST MULTIPLE PATHS
             possible_paths = [ # remove absolute path in the near future
-                "/home/zaluski/Documentos/Place/backend/config/models.json",  # New global location
+                "/home/zaluski/Documentos/Scry/backend/config/models.json",  # New global location
                 "./config/models.json",  # Relative to SSE
-                "/home/zaluski/Documentos/Place/backend/python/SSE/config/models.json",  # Old absolute path
+                "/home/zaluski/Documentos/Scry/backend/python/SSE/config/models.json",  # Old absolute path
                 "../../../transformers/llama.cpp/models/config/models.json",
                 "../config/models.json",
                 "../../util/models.json",
-                "/home/zaluski/Documentos/Place/backend/util/models.json"
+                "/home/zaluski/Documentos/Scry/backend/util/models.json"
             ]
             
             config_path = None

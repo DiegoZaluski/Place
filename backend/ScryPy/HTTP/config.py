@@ -16,7 +16,7 @@ def get_project_root() -> Path:
 PROJECT_ROOT = get_project_root()
 CONFIG_FILE = PROJECT_ROOT / "config" / "current_model.json"
 # CORRECT MODELS DIRECTORY (found by find)
-READONLY_MODELS_DIR = Path("/home/zaluski/Documentos/Place/transformers/llama.cpp/models")
+READONLY_MODELS_DIR = Path("/home/zaluski/Documentos/Scry/transformers/llama.cpp/models")
 
 logger.info(f"Project root: {PROJECT_ROOT}")
 logger.info(f"Configuration file: {CONFIG_FILE}")

@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { COLORS } = require("./utils/ansiColors");
+const { initLog } = require("./initLog.cjs");
 
 // IMPORT SEPARATED MODULES
 const serverManager = require("./backend/CommonJS/Websocket/webSocketProcessManager.cjs");
@@ -17,7 +18,7 @@ let sseServer = null;
 // SERVICE INSTANCES
 let modelLookout = null;
 let httpServerInstance = null;
-
+initLog(COLORS);
 // SSE SERVER MANAGEMENT
 const startSSEServer = async () => {
   try {
