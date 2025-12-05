@@ -1,32 +1,56 @@
-import { useCallback } from 'react';
-import { ControlCard, Model, ModelState, COLORS } from './ControlCard';
+import { useCallback, useContext, useState, useEffect } from 'react';
+import { ControlCard, COLORS } from './ControlCard';
 import GenericHeader from '../../shared/GenericHeader';
+import { AppContext } from '../../../global/AppProvider';
+import { modelCardsDetails } from '../../../global/data';
 
-// CONSTANTS
-const MODELS: Model[] = [
-  { id: 'model_001', name: 'Llama 2 7B' },
-  { id: 'model_002', name: 'Mistral 7B' },
-  { id: 'model_003', name: 'Neural Chat' },
-];
-
-
-// MAIN COMPONENT
+interface Model {
+  id: string;
+  name: string;
+}
+interface ModelState {
+  temperature?: number;
+  topP?: number;
+  topK?: number;
+  repeatPenalty?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+  maxTokens?: number;
+  minP?: number;
+  tfsZ?: number;
+  mirostatTau?: number;
+  systemPrompt?: string;
+  loraFiles?: any;
+}
 export default function CustomUI() {
+  const [MODELS, setMODELS] = useState<Model[]>([]);
+  const CONTEXT = useContext(AppContext);
+  const downloadedModels = CONTEXT.downloadedModels;
+  useEffect(() => {
+    if (downloadedModels?.length > 0) {
+      const transformed = downloadedModels.map(modelFileName => {
+        const found = modelCardsDetails.find(m => m.fullModelName === modelFileName);
+        return {
+          id: modelFileName,
+          name: found?.modelName || modelFileName
+        };
+      });
+      setMODELS(transformed);
+    }
+  }, [downloadedModels]);
+
   const handleModelUpdate = useCallback((modelId: string, state: ModelState) => {
-    // CONNECT TO SERVER HERE
     console.log(`Model ${modelId}:`, state);
   }, []);
 
   return (
     <div className={`min-h-screen p-8 ${COLORS.PRIMARY_THEMA}`}>
-      {/* HEADER: here */}
       <GenericHeader/>
       <div className="max-w-7xl mx-auto">
-        {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {MODELS.map(model => (
             <ControlCard
-              key={model.id}
+              key_model={model.id}
               model={model}
               onUpdate={handleModelUpdate}
             />

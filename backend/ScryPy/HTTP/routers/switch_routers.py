@@ -3,11 +3,10 @@ from fastapi import APIRouter, HTTPException
 from config import CONFIG_FILE, READONLY_MODELS_DIR, ModelSwitchResponse, ModelSwitchRequest  
 from services import get_current_model, model_exists, save_current_model_config, wait_for_websocket_confirmation  
 
-# CREATE INSTANCE
-switchRouters = APIRouter()
+# switchRouters
+switch_routers = APIRouter()
+@switch_routers.post("/switch-model", response_model=ModelSwitchResponse)
 
-# ENDPOINTS
-@switchRouters.post("/switch-model", response_model=ModelSwitchResponse)
 async def switch_model(request: ModelSwitchRequest):
     """Switches models - read-only for models, write only to JSON"""
     logger.info(f"Switch request for: {request.model_name}")
@@ -51,7 +50,7 @@ async def switch_model(request: ModelSwitchRequest):
             needs_restart=True
         )
 
-@switchRouters.get("/models/available")
+@switch_routers.get("/models/available")
 async def list_available_models():
     """Lists available models (READ ONLY)"""
     try:
@@ -71,7 +70,7 @@ async def list_available_models():
         logger.error(f"Error listing models: {e}")
         raise HTTPException(status_code=500, detail="Internal error listing models")
 
-@switchRouters.get("/health")
+@switch_routers.get("/health")
 async def health_check():
     """Health check"""
     current_model = await get_current_model()

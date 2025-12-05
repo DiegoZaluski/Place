@@ -41,17 +41,13 @@ const SystemPrompt = memo(({
     <>
       <button
         onClick={handleToggle}
-        className={`w-56 flex items-center justify-between px-6 py-5 font-medium text-sm transition-all duration-200 rounded-xl border border-white/10 mb-1 bg-white/5  ${className}`}
+        className={`w-full flex items-center justify-center px-6 py-5 font-medium text-sm transition-all duration-200 rounded-xl border border-white/10 mb-1 bg-white/5 active:bg-white/20 ${className}`}
         aria-expanded={internalExpanded}
       >
         <span className="flex items-center gap-2 flex-row text-neutral-300 -translate-x-2">
           <Pen size={16} />
           Prompt System
         </span>
-        <ChevronDown 
-          size={16}
-          className={`transform -translate-x-6 transition-transform duration-300 text-neutral-400 ${internalExpanded ? 'rotate-180' : ''}`}
-        />
       </button>
 
       {internalExpanded && (

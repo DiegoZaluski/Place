@@ -3,8 +3,8 @@ from fastapi import FastAPI
 from config import PROJECT_ROOT, CONFIG_FILE, READONLY_MODELS_DIR
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from routers.switchRouters import switchRouters
-from routers.configsRouters import configsRouters 
+from ScryPy.HTTP.routers.switch_routers import switch_routers
+from ScryPy.HTTP.routers.configs_routers import configs_routers 
 
 # MODERN LIFESPAN
 @asynccontextmanager
@@ -39,5 +39,5 @@ app.add_middleware(
 )
 
 # INCLUDE ROUTER
-app.include_router(switchRouters)
-app.include_router(configsRouters)
+app.include_router(switch_routers)
+app.include_router(configs_routers)

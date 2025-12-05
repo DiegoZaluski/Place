@@ -31,7 +31,7 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
 
   return (
     <div className="space-y-2">
-      <div className={`p-4 border-b`}>
+      <div className={`p-4 border-b border-white/30`}>
         <div className="
         flex 
         items-center 

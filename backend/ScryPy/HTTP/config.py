@@ -2,15 +2,14 @@ from ScryPy.HTTP import logger
 from pathlib import Path
 from pydantic import BaseModel
 
-# CONFIGURATION - CORRECT PATHS
+# CONFIGURATION 
 def get_project_root() -> Path:
     """Finds the project root reliably"""
     current_file = Path(__file__).resolve()
-    # Goes up until it finds the 'backend' folder
     for parent in current_file.parents:
         if parent.name == 'backend':
             return parent
-    # Fallback: assumes we're at the backend root
+    # Fallback
     return current_file.parent
 
 PROJECT_ROOT = get_project_root()

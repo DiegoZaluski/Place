@@ -19,7 +19,7 @@ interface ModelConfigState {
   tfsZ?: number;
   mirostatTau?: number;
   systemPrompt?: string;
-  loraFiles?: any; // Use a more specific type if you know what loraFiles are
+  loraFiles?: any;
 }
 
 const ToggleButton = ({ onClick }: { onClick: () => void }) => (
@@ -95,10 +95,10 @@ const SideOption = React.memo((): JSX.Element => {
   }, []);
 
   const dials = [
-    { label: 'Temp', value: state.temperature, min: 0, max: 2, step: 0.1, key: 'temperature' as const },
+    { label: 'Temperature', value: state.temperature, min: 0, max: 2, step: 0.1, key: 'temperature' as const },
     { label: 'Top P', value: state.topP, min: 0, max: 1, step: 0.05, key: 'topP' as const },
     { label: 'Top K', value: state.topK, min: 0, max: 100, step: 1, key: 'topK' as const },
-    { label: 'Rept', value: state.repeatPenalty, min: 1.0, max: 2.0, step: 0.1, key: 'repeatPenalty' as const },
+    { label: 'Repeat', value: state.repeatPenalty, min: 1.0, max: 2.0, step: 0.1, key: 'repeatPenalty' as const },
   ];
 
   const toggleVisibility = () => setIsVisible(prev => !prev);
