@@ -11,12 +11,13 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from ScryPy.Websocket import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET, NAME_OF_MODEL
+from ScryPy.Websocket import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET, NAME_OF_MODEL, PROMPT_SYSTEM_PATH
 from ScryPy.SQLite.controlConfig import ControlConfig 
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
 import time
+from get_prompt_system import get_prompt_system
 # GLOBAL CONFIGURATION 
 CONTEXT_SIZE = 8000
 
@@ -66,6 +67,7 @@ class LlamaChatServer:
         
         self.active_prompts: Set[str] = set()
         self.session_history: Dict[str, List[Dict[str, str]]] = {}
+        self.__path_system_prompt = PROMPT_SYSTEM_PATH
         self.system_prompt = "You are a helpful, knowledgeable, and professional AI assistant. " or system_prompt
     def update_live_config(self):
         """Updates configuration parameters from the database."""
@@ -90,11 +92,15 @@ class LlamaChatServer:
 
     def get_session_history(self, session_id: str) -> List[Dict[str, str]]:
         """Retrieves or creates conversation history for a session."""
+
+        prompt_system = get_prompt_system(self.__path_system_prompt)
+        prompt_system = prompt_system if prompt_system else self.system_prompt
+
         if session_id not in self.session_history:
             self.session_history[session_id] = [
                 {
                     "role": "system", 
-                    "content": self.system_prompt
+                    "content": prompt_system
                 }
             ]
         return self.session_history[session_id]

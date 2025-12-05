@@ -14,6 +14,7 @@ def get_project_root() -> Path:
 
 PROJECT_ROOT = get_project_root()
 CONFIG_FILE = PROJECT_ROOT / "config" / "current_model.json"
+PROMPT_SYSTEM = Path("/dev/shm/prompt_system.txt")  #temp
 # CORRECT MODELS DIRECTORY (found by find)
 READONLY_MODELS_DIR = Path("/home/zaluski/Documentos/Scry/transformers/llama.cpp/models")
 

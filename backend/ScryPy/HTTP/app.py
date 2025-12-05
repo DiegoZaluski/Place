@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from ScryPy.HTTP.routers.switch_routers import switch_routers
 from ScryPy.HTTP.routers.configs_routers import configs_routers 
+from ScryPy.HTTP.routers.prompt_router import prompt_router
 
 # MODERN LIFESPAN
 @asynccontextmanager
@@ -41,3 +42,4 @@ app.add_middleware(
 # INCLUDE ROUTER
 app.include_router(switch_routers)
 app.include_router(configs_routers)
+app.include_router(prompt_router)
