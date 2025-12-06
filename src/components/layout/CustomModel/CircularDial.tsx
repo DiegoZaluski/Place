@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { COLORS } from './ControlCard'
 import { Sparkle, Repeat, Minus, Zap, Filter, PieChart, Gauge} from 'lucide-react'
 import { dispatchLlamaConfigEvent, LlamaConfigEventDetail } from '../../../global/eventCofigLlm'
-
+// fetch
 interface CircularDialProps {
   value: number
   onChange: (value: number) => void

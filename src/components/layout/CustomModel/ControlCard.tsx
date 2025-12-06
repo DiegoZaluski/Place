@@ -2,7 +2,8 @@ import React, { useState, useCallback, memo, useEffect } from 'react';
 import { CircularDial } from './CircularDial';
 import { LoRaUpload, LoRaFile } from './LoRaUpload';
 import TokensControl from './TokensControl';
-import {CurrentConfigLlm} from '@/global/CurrentConfigLlm';
+import {GetConfigLlm} from '@/global/GetConfigLlm';
+
 export const COLORS = {
   PRIMARY_THEMA: 'dark-bg-primary',
   TEXT_PRIMARY: 'dark-text-primary',
@@ -42,7 +43,6 @@ interface ControlCardProps {
 }
 
 export const ControlCard: React.FC<ControlCardProps> = memo(({key_model, model, onUpdate }) => {
-  // STATE: Advanced mode model configuration
   const [state, setState] = useState<ModelState>({
     temperature: 0.7,
     topP: 0.9,
@@ -57,33 +57,33 @@ export const ControlCard: React.FC<ControlCardProps> = memo(({key_model, model, 
     systemPrompt: '',
     loraFiles: [],
   });
+
   useEffect(() => {
     const modelConfig = async () => {
-      const config = await CurrentConfigLlm(key_model);
+      const config = await GetConfigLlm(key_model);
       if (!config || typeof config !== 'object' || Array.isArray(config)) {
         console.error('Config not found or invalid');
         return;
       }
       setState((prev: ModelState) => ({
         temperature: (config as any).temperature ?? prev.temperature,
-        topP: (config as any).topP ?? prev.topP,
-        topK: (config as any).topK ?? prev.topK,
-        repeatPenalty: (config as any).repeatPenalty ?? prev.repeatPenalty,
-        frequencyPenalty: (config as any).frequencyPenalty ?? prev.frequencyPenalty,
-        presencePenalty: (config as any).presencePenalty ?? prev.presencePenalty,
-        maxTokens: (config as any).maxTokens ?? prev.maxTokens,
-        minP: (config as any).minP ?? prev.minP,
-        tfsZ: (config as any).tfsZ ?? prev.tfsZ,
-        mirostatTau: (config as any).mirostatTau ?? prev.mirostatTau,
+        topP: (config as any).top_p ?? prev.topP,
+        topK: (config as any).top_k ?? prev.topK,
+        repeatPenalty: (config as any).repeat_penalty ?? prev.repeatPenalty,
+        frequencyPenalty: (config as any).frequency_penalty ?? prev.frequencyPenalty,
+        presencePenalty: (config as any).presence_penalty ?? prev.presencePenalty,
+        maxTokens: (config as any).tokens ?? prev.maxTokens,
+        minP: (config as any).min_p ?? prev.minP,
+        tfsZ: (config as any).tfs_z ?? prev.tfsZ,
+        mirostatTau: (config as any).mirostat_tau ?? prev.mirostatTau,
         systemPrompt: (config as any).systemPrompt ?? prev.systemPrompt,
         loraFiles: (config as any).loraFiles ?? prev.loraFiles,
       }));
     };
     
     modelConfig();
-  }, []);
+  }, [key_model]);
 
-  // CONFIG: Advanced mode parameter controls (full parameter set)
   const ADVANCED_DIAL_CONFIGS = [
     { label: 'Temperature', value: state.temperature, key: 'temperature', min: 0, max: 2, step: 0.1 },
     { label: 'Top P', value: state.topP, key: 'topP', min: 0, max: 1, step: 0.05 },
@@ -96,7 +96,6 @@ export const ControlCard: React.FC<ControlCardProps> = memo(({key_model, model, 
     { label: 'Mirostat Tau', value: state.mirostatTau, key: 'mirostatTau', min: 0.0, max: 10.0, step: 0.1 },
   ];
 
-  // CALLBACK: Update state and notify parent
   const updateState = useCallback((updates: Partial<ModelState>) => {
     setState(prev => {
       const updated = { ...prev, ...updates };
@@ -105,27 +104,51 @@ export const ControlCard: React.FC<ControlCardProps> = memo(({key_model, model, 
     });
   }, [model.id, onUpdate]);
 
-  // CALLBACK: Add LoRA file
   const handleAddLora = useCallback((file: LoRaFile) => {
     updateState({ loraFiles: [...state.loraFiles, file] });
   }, [state.loraFiles, updateState]);
 
-  // CALLBACK: Remove LoRA file
   const handleRemoveLora = useCallback((fileId: number) => {
     updateState({ loraFiles: state.loraFiles.filter(f => f.id !== fileId) });
   }, [state.loraFiles, updateState]);
 
   return (
-    <div className={`w-28/12 rounded-lg overflow-hidden bg-white ${COLORS.PRIMARY_THEMA}`}>
-      <div className={`p-5 flex items-center justify-between ${COLORS.PRIMARY_THEMA}`}>
-        <h3 className={`text-lg font-bold font-playfair ${COLORS.TEXT_PRIMARY}`}>
+    <div className={`
+      w-28/12 
+      rounded-lg 
+      overflow-hidden 
+      bg-white 
+      ${COLORS.PRIMARY_THEMA}
+    `}>
+      <div className={`
+        p-5 
+        flex 
+        items-center 
+        justify-between 
+        ${COLORS.PRIMARY_THEMA}
+      `}>
+        <h3 className={`
+          text-lg 
+          font-bold 
+          font-playfair 
+          ${COLORS.TEXT_PRIMARY}
+        `}>
           {model.name}
         </h3>
       </div>
     
-      <div className="p-5 space-y-6">
-        {/* SECTION: Advanced parameter controls (3x3 grid) */}
-        <div className={`grid grid-cols-3 gap-6 p-4 rounded-lg ${COLORS.PRIMARY_THEMA}`}>
+      <div className="
+        p-5 
+        space-y-6
+      ">
+        <div className={`
+          grid 
+          grid-cols-3 
+          gap-6 
+          p-4 
+          rounded-lg 
+          ${COLORS.PRIMARY_THEMA}
+        `}>
           {ADVANCED_DIAL_CONFIGS.map(config => (
             <CircularDial
               key={config.key}
@@ -140,7 +163,7 @@ export const ControlCard: React.FC<ControlCardProps> = memo(({key_model, model, 
         <TokensControl 
           maxTokens={state.maxTokens} 
           onChange={(value) => updateState({ maxTokens: value })} 
-          id_model='Llama-3.2-3B-Instruct-Q4_K_M.gguf'// remove
+          id_model={key_model}
         />
         
         <LoRaUpload

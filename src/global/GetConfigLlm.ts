@@ -1,6 +1,6 @@
 const BASE_URL = 'http://localhost:8001/configs';
 
-export const CurrentConfigLlm = async (
+export const GetConfigLlm = async (
   idModel: string
 ): Promise<object | string | null> => {
   try {

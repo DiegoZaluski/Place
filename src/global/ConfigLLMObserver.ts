@@ -23,6 +23,7 @@ function ConfigLLMObserver() {
     const pendingConfigsRef = useRef<Map<string, LlamaConfig>>(new Map());
 
     const syncConfig = async (config: LlamaConfig) => {
+        console.log('Config:', config);
         const encodedId = encodeURIComponent(config.id_model);
         
         try {

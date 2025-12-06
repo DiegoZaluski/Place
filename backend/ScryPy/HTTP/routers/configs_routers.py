@@ -21,6 +21,7 @@ async def setConfigs(body:dict ) -> dict:
 
 @configs_routers.patch("/")
 async def updateConfigs(body:dict) -> dict:
+    logger.info(f'Objto to update: {body}')
     control = ControlConfig(body) 
     if not control.update():
         raise HTTPException(status_code=400, detail="Config not found")

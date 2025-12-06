@@ -5,7 +5,7 @@ import { model, TOKEN_PRESETS } from '../../../global/varsGlobal';
 import TokensControl from "../CustomModel/TokensControl";
 import SystemPrompt from "./SystemPrompt";
 import { AppContext } from "@/global/AppProvider";
-import { CurrentConfigLlm } from "@/global/CurrentConfigLlm";
+import { GetConfigLlm } from "@/global/GetConfigLlm";
 
 interface ModelConfigState {
   temperature?: number;
@@ -45,7 +45,7 @@ const SideOption = React.memo((): JSX.Element => {
   const [expandedPrompt, setExpandedPrompt] = useState(false);
   const CONTEXT = useContext(AppContext);
   const curretModel = CONTEXT.curretModel;
-  const test = CurrentConfigLlm(curretModel);
+  const test = GetConfigLlm(curretModel);
 
   const [state, setState] = useState<ModelConfigState>({
     temperature: 0.7,
@@ -64,7 +64,7 @@ const SideOption = React.memo((): JSX.Element => {
 
   useEffect(() => {
     const modelConfig = async () => {
-      const config = await CurrentConfigLlm(curretModel);
+      const config = await GetConfigLlm(curretModel);
       if (!config || typeof config !== 'object' || Array.isArray(config)) {
         console.error('Config not found or invalid');
         return;
