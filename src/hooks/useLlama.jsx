@@ -5,10 +5,10 @@ export function useLlama() {
   const [isConnected, setIsConnected] = useState(false);
   const [currentPromptId, setCurrentPromptId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
-  
+
+  //WARNING: Don't forget to add the doc strings here.
   const messageListeners = useRef({});
 
-  // Listener Cleanup (Maintained)
   useEffect(() => {
     return () => {
       Object.values(messageListeners.current).forEach(cleanup => {
@@ -97,7 +97,6 @@ export function useLlama() {
         _cleanupGenerationState(); // Clears locally in case of communication failure.
       }
     } else {
-        // If the state is inconsistent, clear it locally.
         if (isGenerating) {
             _cleanupGenerationState();
         }
@@ -121,7 +120,6 @@ export function useLlama() {
     clearMemory();
   }, [clearMemory, _cleanupGenerationState]);
 
-  // Setup event listeners
   useEffect(() => {
     if (!window.api) {
       console.warn('Window API not available yet');
@@ -145,7 +143,6 @@ export function useLlama() {
     // Conclusion (RESPONSIBLE FOR CLEANING UP THE STATUS after generation or CANCELLATION)
     messageListeners.current.complete = window.api.onComplete((promptId) => {
       console.log('Generation complete or Canceled for:', promptId);
-      // Clear the state ONLY when the server confirms.
       _cleanupGenerationState(); 
     });
 
@@ -158,7 +155,6 @@ export function useLlama() {
       _cleanupGenerationState();
     });
 
-    // Status and connection
     messageListeners.current.ready = window.api.onReady((data) => {
       console.log('Model ready:', data);
       setIsConnected(true);
@@ -171,7 +167,6 @@ export function useLlama() {
       _cleanupGenerationState();
     });
 
-    // initialization
     messageListeners.current.started = window.api.onStarted((data) => {
       console.log('Generation started:', data.promptId, 'Session:', data.sessionId);
       setCurrentPromptId(data.promptId);

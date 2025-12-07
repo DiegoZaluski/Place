@@ -36,3 +36,25 @@ pkill -f "python.*llama_server"
 print("SOCKET IN GLOBALS:", 'socket' in globals())
 print("SOCKET IN BUILTINS:", 'socket' in __builtins__.__dict__)
 
+
+/**
+ * useGesture - A comprehensive gesture control hook for draggable and zoomable elements
+ * 
+ * @example
+ * const { scale, position, isDragging, handleMouseDown, handleWheel, handleTouchMove, handleTouchEnd } = useGesture({
+ *   BASE_SIZE: 100,
+ *   MIN_SCALE: 0.5,
+ *   MAX_SCALE: 3,
+ *   SCALE_STEP: 0.05
+ * });
+ * 
+ * Apply to your component:
+ * 
+ * <div
+ *   onMouseDown={handleMouseDown}
+ *   onWheel={(e) => handleWheel(e, containerRef)}
+ *   onTouchMove={handleTouchMove}
+ *   onTouchEnd={handleTouchEnd}
+ *   style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale})` }}
+ * />
+ */

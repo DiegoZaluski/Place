@@ -7,18 +7,18 @@ import '../style/fonts.css';
 import Chat from './components/layout/Chat/Chat';
 import Home from './components/layout/Home/Home';
 import CustomUI from "./components/layout/CustomModel/CustomUI";
-import SearchAnime from './components/shared/Animations/SearchAnime';
+import Control from "./components/layout/Control/Control";
 
 
 function App() {
   return (
     <AppProvider>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-n-900">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/custom" element={<CustomUI />} />
-          <Route path="/models" element={<SearchAnime />} />
+          <Route path="/models" element={<Control />} />
         </Routes>
       </div>
     </AppProvider>

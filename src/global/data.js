@@ -3,11 +3,11 @@ export const headerTabsContent = ["Configuração", "Documentação", "Contribui
 
 // Dados com detalhes auxiliares para as caixas maiores (inalterado)
 export const topCardsDetails = [
-  { title: "Models", detail: "5 Modelos em Produção. Último treinamento: há 3 horas.", indicator: "Alto Desempenho (94% Accuracy)" },
-  { title: "Chat", detail: "21k Interações hoje. Latência média: 120ms.", indicator: "98% Satisfação do Usuário" },
-  { title: "Workflows Lib", detail: "7 Fluxos Ativos. 2 Pendentes. Próxima execução: 01:00 AM.", indicator: "Sincronização OK" },
-  { title: "customization", detail: "seu modelo no jeitinho que você quer. treinamento diretamente nos pesos do modelo.", indicator: "Personalização profunda" },
-  { title: "IDE", detail: "2 Projetos em Andamento. 48 Commits Pendentes. 1 Sessão Ativa (DevOps).", indicator: "Compilação Sucesso" },
+  { title: "Models", detail: "Hello World. TEST UI OPTIONS CARDS.", indicator: "test - I love you" },
+  { title: "Chat", detail: "Hello World. TEST UI OPTIONS CARDS.", indicator: "test - I love you" },
+  { title: "Workflows Lib", detail: "Hello World. TEST UI OPTIONS CARDS.", indicator: "test - I love you" },
+  { title: "customization", detail: "Hello World. TEST UI OPTIONS CARDS.", indicator: "test - I love you" },
+  { title: "IDE", detail: "Hello World. TEST UI OPTIONS CARDS.", indicator: "test - I love you" },
 ];
 
 export const modelCardsDetails = [

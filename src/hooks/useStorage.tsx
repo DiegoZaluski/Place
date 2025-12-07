@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+ //WARNING: Don't forget to add the doc strings here.
 export function useStorage<T>(key: string, defaultValue: T) {
     const [value, setValue] = useState<T>(() => {
         try {
