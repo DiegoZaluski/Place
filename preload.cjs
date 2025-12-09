@@ -107,7 +107,7 @@ if (typeof window !== 'undefined') {
       },
       
       /**
-       * Inicia o servidor SSE
+       * Init: the SSE server
        * @returns {Promise<{success: boolean, info?: object, error?: string}>}
        */
       start: () => {
@@ -129,7 +129,10 @@ if (typeof window !== 'undefined') {
       stop: () => {
         return ipcRenderer.invoke('downloadServer:stop');
       }
-    }
+    },
+    // TEST
+    sendContentSize: (width, height) => 
+      ipcRenderer.invoke('control-content-size', width, height)
   });
 
   // WINDOW CONTROL (do not remove)

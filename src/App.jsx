@@ -7,18 +7,19 @@ import '../style/fonts.css';
 import Chat from './components/layout/Chat/Chat';
 import Home from './components/layout/Home/Home';
 import CustomUI from "./components/layout/CustomModel/CustomUI";
-import Control from "./components/layout/Control/Control";
+import Control from './second-window/components/layout/control/Control';
 
 
 function App() {
   return (
     <AppProvider>
-      <div className="min-h-screen bg-n-900">
+      <div className="min-h-screen">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/custom" element={<CustomUI />} />
-          <Route path="/models" element={<Control />} />
+          <Route path="/models" element={<Home />} />
+          <Route path="/control" element={<Control />} />
         </Routes>
       </div>
     </AppProvider>

@@ -13,8 +13,10 @@ const HTTPServer = require("./backend/CommonJS/HTTP/HTTPServer.cjs");
 
 // SSE DOWNLOAD SERVER
 const { downloadManager } = require("./backend/CommonJS/SSE/initSSEDownload.cjs");
-let sseServer = null;
 
+const { createControlWindow, closeControlWindow,  getControlWindow } = require("./backend/CommonJS/second-window/control-window.cjs");
+
+let sseServer = null;
 // SERVICE INSTANCES
 let modelLookout = null;
 let httpServerInstance = null;
@@ -169,7 +171,6 @@ const createWindow = async () => {
   });
 };
 
-
 // IPC HANDLERS - WINDOW CONTROLS
 ipcMain.handle("window:minimize", () => {
   if (mainWindow) mainWindow.minimize();
@@ -293,10 +294,22 @@ ipcMain.handle("downloadServer:stop", async () => {
   }
 });
 
+// TEST
+ipcMain.handle('control-content-size', (_event, width, height) => {
+  const cWindow = getControlWindow();
+  if (cWindow) {
+    cWindow.setSize(Math.ceil(width), Math.ceil(height));
+  }
+  return { success: true };
+});
+
 // ELECTRON EVENT HANDLERS
 app.whenReady().then(async () => {
   await createWindow();
   
+  // CREATE CONTROL WINDOW
+  createControlWindow(mainWindow);
+
   // START SSE SERVER AFTER WINDOW
   setTimeout(async () => {
     try {
@@ -308,6 +321,7 @@ app.whenReady().then(async () => {
 });
 
 app.on("window-all-closed", async () => {
+  closeControlWindow();
   websocketManager.closeWebSocket();
   serverManager.stopPythonServer();
   await stopSSEServer();

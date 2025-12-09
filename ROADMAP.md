@@ -36,8 +36,8 @@
 ## Phase 1: Standardization and Organization
 
 ### Code Standardization (P2)
+- Rename folders and files following conventions, correcting where the path is used
 - Organize React component colors as root CSS
-- Organize component classNames in columns for better readability
 
 ### File Organization (P2)
 - Organize files into "shared" folder

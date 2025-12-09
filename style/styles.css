@@ -27,3 +27,18 @@
   display: grid!important; 
   grid-row-start: auto!important;
 }
+
+.drag-handle {
+    -webkit-app-region: drag; 
+    cursor: default; 
+}
+
+.window-control-button { 
+    -webkit-app-region: no-drag; 
+    cursor: pointer;
+}
+
+.auto-fit {
+  width: fit-content;
+  height: fit-content;
+}
