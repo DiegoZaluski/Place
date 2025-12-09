@@ -11,6 +11,8 @@ const COLORS = {
   text: 'text-white',
   caret: 'caret-white',
   border: 'border-black border-b-2',
+  newWindowBorder: 'border-white/50 border-b-2 ', //leave space at the end
+  newWindowBg: 'bg-white/5',
   button: {
     base: 'bg-[#F5F5DC]',
     hover: 'hover:bg-white',
@@ -71,6 +73,7 @@ interface MessageInputProps {
   isGenerating: boolean;
   stopGeneration: () => void;
   adaptable: boolean;
+  newWindow: boolean;
 }
 
 const MessageInput = React.memo(({ 
@@ -87,6 +90,7 @@ const MessageInput = React.memo(({
   isGenerating, 
   stopGeneration, 
   adaptable,
+  newWindow
 }: MessageInputProps) => {
   const [beenGenerated, setBeenGenerated] = useState<boolean>(isGenerating);
 
@@ -164,11 +168,12 @@ const MessageInput = React.memo(({
             className={`
               ${COLORS.background}
               w-full
-              ${adaptable ? `min-h-[6rem] max-h-20 ${Move.Generate}` : 'min-h-[9rem] max-h-40'}
+              ${adaptable ? `min-h-[6rem] max-h-20 ${Move.Generate}` : `min-h-[9rem] max-h-40`}
+              ${newWindow ? `min-h-[6rem] max-h-20 `: `min-h-[9rem] max-h-40`}
               outline-none
               ${COLORS.caret}
               ${COLORS.text}
-              ${COLORS.border}
+              ${newWindow ? COLORS.newWindowBorder + COLORS.newWindowBg: COLORS.border}
               rounded-3xl 
               p-4
               pr-12

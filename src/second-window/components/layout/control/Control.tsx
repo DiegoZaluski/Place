@@ -1,22 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-
+import Chat from '@/components/layout/Chat/Chat'
 const Control = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const api = (window as any).api;
   const containerRef = useRef<HTMLDivElement>(null);
+  const [chat, setChat] = useState<boolean>(false); 
 
   const buttons = [
-    { id: 1, action: 'minimize' },
+    { id: 1, action: '!setChat' },
     { id: 2, action: 'maximize' },
-    { id: 3, action: 'close' },
-    { id: 4, action: 'custom' },
+    { id: 3, action: 'close'},
   ];
 
-  const handleWindowAction = (action: string) => {
-    api?.sendControlAction?.(action);
-  };
+  const roundedDecoration = [1,2,3]
+
 
   const handleBallClick = () => {
+    setChat(!setChat)
     setIsMinimized(!isMinimized);
   };
 
@@ -29,16 +29,14 @@ const Control = () => {
       }
     };
 
-    // chama de início
     updateSize();
 
-    // observa mudanças na div pai
     const resizeObserver = new ResizeObserver(updateSize);
     if (containerRef.current) resizeObserver.observe(containerRef.current);
 
     return () => resizeObserver.disconnect();
   }, [isMinimized, api]);
-
+  // Values ​​sent to the backend for dynamic redirection. 75px w 355px
   return (
     <div
       ref={containerRef}
@@ -46,37 +44,42 @@ const Control = () => {
       style={{
         display: 'flex',
         flexDirection: 'row',
-        alignItems: 'center',
+        flexWrap: 'wrap',
+        alignItems: 'start',
+        alignContent: 'start',
         padding: 0,
         margin: 0,
-        gap: 0,
+        gap: 0,   
         overflow: 'visible',
-        background: 'rgba(255,0,0,0.5)',
         transition: 'all 300ms ease-in-out',
-        height: isMinimized ? '55px' : '85px', 
-        width: isMinimized ? '90px':'455px'
+        height: isMinimized ? '55px' : chat ? '800px':' auto', 
+        width: isMinimized ? '90px':'500px'
       }}
     >
       <div
-        className="flex flex-row items-center border-2 border-white/30 drag-handle"
+        className={`flex flex-row items-center border-2 border-black/5 drag-handle bg-white/30`}
         style={{
-          width: isMinimized ? '0px' : '400px',
-          height: '80px',
-          borderRadius: isMinimized ? '50%' : '24px',
+          width: isMinimized ? '0px' : '440px',
+          height: '70px',
+          borderRadius: isMinimized ? '50%' : '0.75rem',
           transition: 'width 300ms ease-in-out, border-radius 300ms ease-in-out, opacity 300ms ease-in-out',
           boxSizing: 'border-box',
           padding: 0,
           margin: 0,
           overflow: 'hidden',
           opacity: isMinimized ? 0 : 1,
-          background: 'rgba(0,255,0,0.5)',
+          background: '',
         }}
       >
+        {!isMinimized && roundedDecoration.map((rd) => (
+          <div className={`w-8 h-8 rounded-full ml-1 ${rd === 1 ? 'bg-red-500': rd === 2 ? 'bg-yellow-500': rd === 3 && 'bg-green-500'}`}></div>
+        ))}
+
         {!isMinimized && buttons.map((op) => (
           <button
             key={op.id}
-            className="window-control-button w-20 h-16 border border-white/30 ml-3 rounded-2xl flex-shrink-0"
-            onClick={() => handleWindowAction(op.action)}
+            className="window-control-button w-14 h-12 border border-white/30 ml-3 rounded-2xl flex-shrink-0 bg-white/50 translate-x-28"
+            onClick={() => op.id === 1 && setChat(prev => !prev)}
             title={op.action.charAt(0).toUpperCase() + op.action.slice(1)}
           />
         ))}
@@ -84,17 +87,23 @@ const Control = () => {
 
       {isMinimized && (
         <div
-          className="w-8 h-8 rounded-full border-2 border-white/40 drag-handle flex-shrink-0"
-          style={{ background: 'rgba(0,0,255,0.5)' }}
+          className="w-8 h-8 rounded-full border-2 border-white/40 drag-handle flex-shrink-0 bg-black/30"
         />
       )}
 
       <div
-        className="w-12 h-12 rounded-full border-4 border-white/50 cursor-move flex-shrink-0 translate-x-1"
-        style={{ background: 'rgba(255,255,0,0.5)' }}
+        className={`
+        w-12 h-12 rounded-full border-4 border-white/50
+        cursor-move flex-shrink-0 translate-x-1 bg-black/30`}
         onClick={handleBallClick}
       />
-    </div>
+      { chat && <div        
+        style={{ 
+          order: '1'
+          }} 
+        className='flex-wrap h-[730px] w-full'><Chat newWindow={true} adaptable={false}></Chat></div>}
+      </div>
+   
   );
 };
 

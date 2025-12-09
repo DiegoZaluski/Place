@@ -88,10 +88,10 @@ const ChatHeader = React.memo(() => (
 ));
   
 type AdaptableProps = true | false;
-
+type NewWindow = true | false;
 type typeSearchCode = 100 | 200 | 300;
 // COMPONENT: MAIN CHAT CONTAINER
-const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
+const Chat = ({ adaptable, newWindow }: {adaptable: AdaptableProps, newWindow?: NewWindow }) => {
   // TRANSLATION: initialize localization with auth namespace
   const { t, ready } = useTranslation(['auth']);
 
@@ -173,13 +173,14 @@ const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
       m-0
       paddEnv
       noScroll
-      ${COLORS.BACKGROUND}
+      ${newWindow ? 'bg-black/50' : COLORS.BACKGROUND}
       ${COLORS.TEXT}
-      ${adaptable ? 'h-full' : 'h-screen'}
+      ${adaptable ? 'h-full' : newWindow? `h-full rounded-xl` : 'h-screen'}
     `}
-    >
-    { adaptable ? null : <SideOption/>} 
-    { adaptable ? null : <ChatHeader />}    
+    > 
+    { adaptable || newWindow ? null : <SideOption/>} 
+    { adaptable || newWindow ? null : <ChatHeader/>} 
+
       <div
         className={`
           flex
@@ -201,6 +202,7 @@ const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
             showTypingIndicator={isGenerating}
             showWelcome={messages.length === 0}
             adaptable={adaptable? true : false}
+            newWindow={newWindow? true : false}
           />
         </div>
         
@@ -218,6 +220,7 @@ const Chat = ({adaptable}: {adaptable: AdaptableProps}) => {
           isGenerating={isGenerating} 
           stopGeneration={stopGeneration}
           adaptable={adaptable? true : false}
+          newWindow = {newWindow? true: false}
         />
       </div>
 

@@ -158,7 +158,7 @@ const OBJTADAPTABLE = {
 }
 
 // RESBOX COMPONENT 
-const ResBox = memo(({ messages = [], isGenerating = false, className = '', showTypingIndicator = true, showWelcome = true, adaptable = false }) => {
+const ResBox = memo(({ messages = [], isGenerating = false, className = '', showTypingIndicator = true, showWelcome = true, adaptable = false, newWindow = false }) => {
   const messagesEndRef = useRef(null);
   const CONTEXT = useContext(AppContext);
   const searchCode = (CONTEXT.searchCode === 200 || CONTEXT.searchCode === 300 ) ? true : false;
@@ -235,10 +235,15 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
   if (processedMessages.length === 0 && !isGenerating && showWelcome) {
     return (
       <div className={`${ adaptable ? '' : 'fixed' } inset-0 flex items-center justify-center pointer-events-none ${adaptable ? 'translate-y-44 pt-20 pl-10 pr-10' : ''}`}> {/* adaptable*/}
-        <h1 className={`font-playfair text-b-500 font-bold ${ adaptable? 'text-lg' : 'text-4xl' }`}>{adaptable? 'olá, alguma dúvida?':'Conte-me sobre o seu projeto!'}</h1> 
-      </div>
-    );
-  }
+        <h1 className={`font-playfair text-b-500 font-bold ${ adaptable? 'text-lg' : newWindow ? 'text-2xl': 'text-4xl' }`}>
+        {adaptable && !newWindow 
+              ? 'olá, alguma dúvida?' 
+              : newWindow 
+                ? 'bom dia, como posso ajudar?' 
+                : 'Conte-me sobre o seu projeto!'}</h1> 
+          </div>
+        );
+      }
 
   return (
     <div

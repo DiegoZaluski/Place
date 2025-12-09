@@ -53,8 +53,8 @@ const createControlWindow = (mainWindow) => {
     movable: true,
     show: false,
     hasShadow: false,
-    transparent:true,
-    // backgroundColor: 'rgba(18, 61, 201, 1)'
+    // transparent:true,
+    backgroundColor: 'rgba(18, 61, 201, 1)'
   });
 
   controlWindow.webContents.on('did-fail-load', () => {
