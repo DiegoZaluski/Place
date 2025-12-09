@@ -251,7 +251,7 @@ const ResBox = memo(({ messages = [], isGenerating = false, className = '', show
       style={{ zIndex: 1, pointerEvents: 'none' }}
       >
       <div
-        className="relative w-full max-w-4xl p-4 pointer-events-auto scrollbar-hide text-white/80"
+        className={`relative w-full max-w-4xl p-4 pointer-events-auto scrollbar-hide text-white/80`}
         style={{ maxHeight: '65vh', overflowY: 'auto' }}
       >
         {/* Display conversation messages */}

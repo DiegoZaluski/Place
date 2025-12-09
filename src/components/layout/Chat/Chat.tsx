@@ -1,4 +1,3 @@
-// components/Chat.ts
 import React, { useRef, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import MessageInput from './MessageInput';
