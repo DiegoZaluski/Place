@@ -1,14 +1,25 @@
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
 const { COLORS } = require('../../../utils/ansiColors');
+const { BrowserWindow } = require('electron');
+
+// STATE VARIABLES
 let wsClient = null;
 let isConnecting = false;
 let reconnectTimeout = null;
 
-// Connects to the Python WebSocket server
-function connectToPythonServer(mainWindow) {
+// BROADCAST MESSAGE TO ALL WINDOWS
+function broadcast(channel, data) {
+  BrowserWindow.getAllWindows().forEach(win => {
+    win.webContents.send(channel, data);
+  });
+}
+
+// WEBSOCKET CONNECTION MANAGEMENT
+function connectToPythonServer() {
   if (isConnecting) return;
   
+  // CLEANUP EXISTING CONNECTION
   if (wsClient) {
     wsClient.removeAllListeners();
     if (wsClient.readyState === WebSocket.OPEN) {
@@ -17,14 +28,15 @@ function connectToPythonServer(mainWindow) {
   }
 
   isConnecting = true;
-  console.log("Connecting to Python WebSocket server..."); //test here!
+  console.log("Connecting to Python WebSocket server...");
 
   wsClient = new WebSocket("ws://localhost:8765");
 
+  // HANDLE CONNECTION OPENED
   wsClient.on("open", () => {
     console.log("Connected to Python WebSocket server");
     isConnecting = false;
-    mainWindow?.webContents.send("model:ready", { status: "connected" });
+    broadcast("model:ready", { status: "connected" });
     
     if (reconnectTimeout) {
       clearTimeout(reconnectTimeout);
@@ -32,6 +44,7 @@ function connectToPythonServer(mainWindow) {
     }
   });
 
+  // HANDLE INCOMING MESSAGES
   wsClient.on("message", (message) => {
     try {
       const data = JSON.parse(message.toString());
@@ -39,51 +52,59 @@ function connectToPythonServer(mainWindow) {
       
       const { promptId, token, complete, error, type, status, sessionId } = data;
 
+      // PROCESS TOKEN MESSAGE
       if (type === "token" && token) {
-        mainWindow?.webContents.send("model:new-token", { promptId, token });
+        broadcast("model:new-token", { promptId, token });
+      // PROCESS COMPLETION MESSAGE
       } else if (type === "complete" && complete) {
-        mainWindow?.webContents.send("model:complete", promptId);
+        broadcast("model:complete", promptId);
+      // PROCESS ERROR MESSAGE
       } else if (type === "error" && error) {
-        mainWindow?.webContents.send("model:error", { promptId, error });
+        broadcast("model:error", { promptId, error });
+      // PROCESS STATUS MESSAGE
       } else if (type === "status") {
         if (status === "started") {
-          mainWindow?.webContents.send("model:started", { promptId, sessionId });
+          broadcast("model:started", { promptId, sessionId });
         } else if (status === "canceled") {
-          mainWindow?.webContents.send("model:canceled", promptId);
+          broadcast("model:canceled", promptId);
         } else if (status === "memory_cleared") {
-          mainWindow?.webContents.send("model:memory-cleared", sessionId);
+          broadcast("model:memory-cleared", sessionId);
         }
       }
 
+    // ERROR HANDLING FOR MESSAGE PARSING
     } catch (e) {
       console.error(`${COLORS.RED}Failed to parse WS message:${COLORS.RESET}`, e);
     }
   });
 
+  // HANDLE CONNECTION CLOSED
   wsClient.on("close", (code, reason) => {
     console.log(`${COLORS.RED}WebSocket connection closed: ${code} - ${reason}${COLORS.RESET}`);
     isConnecting = false;
-    mainWindow?.webContents.send("model:disconnected");
+    broadcast("model:disconnected");
     
+    // SCHEDULE RECONNECTION ATTEMPT
     if (!reconnectTimeout) {
       reconnectTimeout = setTimeout(() => {
         console.log(`${COLORS.YELLOW}Attempting to reconnect...${COLORS.RESET}`);
-        connectToPythonServer(mainWindow);
+        connectToPythonServer();
       }, 3000);
     }
   });
 
+  // HANDLE CONNECTION ERROR
   wsClient.on("error", (err) => {
     console.error(`${COLORS.RED}WebSocket error:${COLORS.RESET}`, err.message);
     isConnecting = false;
-    mainWindow?.webContents.send("model:error", { 
+    broadcast("model:error", { 
       promptId: null, 
       error: `Connection error: ${err.message}` 
     });
   });
 }
 
-// SENDS PROMPT TO THE SERVER
+// SEND PROMPT TO PYTHON SERVER
 function sendPrompt(userMessage) {
   if (!wsClient || wsClient.readyState !== WebSocket.OPEN) {
     console.log(`${COLORS.YELLOW}WebSocket not connected, attempting connection...${COLORS.RESET}`);
@@ -91,48 +112,53 @@ function sendPrompt(userMessage) {
   }
 
   const promptId = uuidv4();
+  // PARSE AND SEND MESSAGE
   try {
     let message = JSON.parse(userMessage);
     message.promptId = promptId;
     wsClient.send(JSON.stringify(message));
     console.log(`${COLORS.BLUE}SEND PROMPT:${COLORS.RESET}`, promptId);
     return promptId;
+  // ERROR HANDLING FOR SEND OPERATION
   } catch (err) {
     console.error(`${COLORS.RED}Error sending prompt:${COLORS.RESET}`, err);
     return null;
   }
 }
 
-// CANCELA UM PROMPT EM ANDAMENTO
+// CANCEL PROMPT EXECUTION
 function cancelPrompt(promptId) {
   if (wsClient && wsClient.readyState === WebSocket.OPEN && promptId) {
     try {
       wsClient.send(JSON.stringify({ action: "cancel", promptId }));
       console.log(`${COLORS.MAGENTA}Sent cancel for prompt: ${promptId}${COLORS.RESET}`);
+    // ERROR HANDLING FOR CANCEL OPERATION
     } catch (err) {
       console.error(`${COLORS.RED}Error canceling prompt:${COLORS.RESET}`, err);
     }
   }
 }
 
-// CLEARS THE MODEL'S MEMORY
+// CLEAR MODEL MEMORY
 function clearMemory() {
   if (wsClient && wsClient.readyState === WebSocket.OPEN) {
     try {
       wsClient.send(JSON.stringify({ action: "clear_memory" }));
       console.log(`${COLORS.BLUE}Sent clear memory request${COLORS.RESET}`);
+    // ERROR HANDLING FOR CLEAR MEMORY OPERATION
     } catch (err) {
       console.error(`${COLORS.RED}Error clearing memory:${COLORS.RESET}`, err);
     }
   }
 }
 
-// CLOSES THE WEBSOCKET CONNECTION
+// CLOSE WEBSOCKET CONNECTION
 function closeWebSocket() {
   if (wsClient) {
     wsClient.close();
     wsClient = null;
   }
+  // CLEANUP RECONNECTION TIMEOUT
   if (reconnectTimeout) {
     clearTimeout(reconnectTimeout);
     reconnectTimeout = null;

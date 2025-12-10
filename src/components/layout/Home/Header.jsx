@@ -18,11 +18,12 @@ function Header() {
    const { isDark } = appContext;
   return (
     <header className="w-full h-20 px-8 bg-p-50 dark-bg-primary shadow-2xl sticky top-0 z-10 transition-colors duration-200">
+      <div className='w-screen h-4 bg-white drag-handle absolute left-0 dark-bg-primary'>{/* adjust here */}</div>
       <div className="h-full grid grid-cols-3 items-center">
         {/* 1. Left Section: Tabs */}
         <HeaderTabs/>
         <div className="justify-self-center flex items-center space-x-2 flex-row"> 
-            <img src={logo} className="w-16 h-16" alt="logoPlace" />
+            <img src={logo} className="w-full h-16 " alt="logoPlace" />
         </div>
 
         {/* Right Section: Status, Notifications, and User Profile */}

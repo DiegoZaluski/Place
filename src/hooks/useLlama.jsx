@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+
+const generateInstanceId = () => `llama-instance-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+
 export function useLlama() {
   const [messages, setMessages] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -6,189 +9,230 @@ export function useLlama() {
   const [currentPromptId, setCurrentPromptId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
 
-  //WARNING: Don't forget to add the doc strings here.
   const messageListeners = useRef({});
+  const apiAvailable = useRef(false);
+  const instanceId = useRef(generateInstanceId());
+  const instancePromptMap = useRef(new Map());
+  const isGeneratingRef = useRef(false);
+  const pendingPromptRef = useRef(null);
 
+  // Sync ref with state to avoid stale closures
   useEffect(() => {
-    return () => {
-      Object.values(messageListeners.current).forEach(cleanup => {
-        if (typeof cleanup === 'function') {
-          cleanup();
-        }
-      });
-    };
+    isGeneratingRef.current = isGenerating;
+  }, [isGenerating]);
+
+  const cleanupPromptMapping = useCallback((promptId) => {
+    if (promptId) {
+      instancePromptMap.current.delete(promptId);
+    }
   }, []);
 
-  // Internal function to clear the generation state (for internal and safe use).
-  const _cleanupGenerationState = useCallback(() => {
+  const cleanupGenerationState = useCallback(() => {
     setIsGenerating(false);
+    isGeneratingRef.current = false;
     setCurrentPromptId(null);
+    pendingPromptRef.current = null;
+  }, []);
+
+  const terminateGeneration = useCallback((promptId) => {
+    cleanupPromptMapping(promptId);
+    cleanupGenerationState();
+  }, [cleanupPromptMapping, cleanupGenerationState]);
+
+  useEffect(() => {
+    apiAvailable.current = Boolean(window.api?.sendPrompt);
+  }, []);
+
+  const updateAssistantMessage = useCallback((token) => {
+    setMessages(prev => {
+      const lastIndex = prev.length - 1;
+      if (lastIndex >= 0 && prev[lastIndex].role === 'assistant') {
+        const newMessages = [...prev];
+        newMessages[lastIndex] = {
+          ...newMessages[lastIndex],
+          content: newMessages[lastIndex].content + token
+        };
+        return newMessages;
+      }
+      return prev;
+    });
   }, []);
 
   const sendPrompt = useCallback(async (prompt) => {
-    if (!prompt?.trim()) {
-      console.error('Prompt is empty');
+    const trimmedPrompt = prompt?.trim();
+    if (!trimmedPrompt) {
+      console.error('Empty prompt');
       return;
     }
-    
-    if (!window.api?.sendPrompt) {
-      console.error('API not available');
+
+    if (!apiAvailable.current) {
       setMessages(prev => [...prev, { 
         role: 'error', 
-        content: 'API not available - check connection' 
+        content: 'API unavailable' 
       }]);
       return;
     }
 
-    // If it's already generating, try stopping the current prompt first.
     if (isGenerating && currentPromptId) {
-        console.warn('Already generating, stopping current generation before sending new prompt');
-        try {
-            await window.api.stopPrompt(currentPromptId);
-        } catch (err) {
-             console.error('Error sending stop signal to previous prompt:', err);
-             _cleanupGenerationState();
-        }
+      try {
+        await window.api.stopPrompt(currentPromptId);
+        terminateGeneration(currentPromptId);
+      } catch (err) {
+        console.error('Error stopping previous generation:', err);
+        terminateGeneration(currentPromptId);
+      }
     }
 
-    // Prepare and send the new prompt. study here 
-    setMessages(prev => {
-      try {
-        const prompData = JSON.parse(prompt);
-        const userMessage = prompData.prompt || prompt;
-        return [...prev, { role: 'user', content: userMessage.trim() }];
-      } catch {
-        return [...prev, { role: 'user', content: prompt.trim() }];
-      }
-    });
+    let userContent;
+    try {
+      const parsed = JSON.parse(trimmedPrompt);
+      userContent = parsed.prompt || trimmedPrompt;
+    } catch {
+      userContent = trimmedPrompt;
+    }
 
+    setMessages(prev => [...prev, { role: 'user', content: userContent.trim() }]);
     setIsGenerating(true);
+    isGeneratingRef.current = true;
+    pendingPromptRef.current = { instanceId: instanceId.current, timestamp: Date.now() };
 
     try {
-      const result = await window.api.sendPrompt(prompt.trim());
+      const result = await window.api.sendPrompt(trimmedPrompt);
       
       if (result.success) {
-        setCurrentPromptId(result.promptId); 
-        console.log('Prompt sent successfully:', result.promptId);
+        setCurrentPromptId(result.promptId);
+        instancePromptMap.current.set(result.promptId, instanceId.current);
         setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+        pendingPromptRef.current = null;
       } else {
-        throw new Error(result.error || 'Failed to send prompt');
+        throw new Error(result.error || 'Prompt submission failed');
       }
     } catch (err) {
-      console.error('Error sending prompt:', err);
+      console.error('Send prompt error:', err);
       setMessages(prev => [
         ...prev,
-        { role: 'error', content: `Error sending prompt: ${err.message}` }
+        { role: 'error', content: `Error: ${err.message}` }
       ]);
-      _cleanupGenerationState();
+      terminateGeneration(currentPromptId);
     }
-  }, [isGenerating, currentPromptId, _cleanupGenerationState]);
+  }, [isGenerating, currentPromptId, terminateGeneration]);
 
-
-  // FLOW KEY CORRECTION: Sends the command, but the actual cleanup is done by the onComplete listener.
   const stopGeneration = useCallback(async () => {
-    if (currentPromptId && window.api?.stopPrompt) {
+    if (!isGenerating) return;
+
+    if (currentPromptId && apiAvailable.current) {
       try {
-        await window.api.stopPrompt(currentPromptId); 
-        console.log('Stop signal sent for:', currentPromptId);
-        // It doesn't clear the state here. The server confirmation (onComplete) will do that.
+        await window.api.stopPrompt(currentPromptId);
       } catch (err) {
-        console.error('Error stopping generation (comm failed):', err);
-        _cleanupGenerationState(); // Clears locally in case of communication failure.
+        console.error('Stop generation error:', err);
       }
-    } else {
-        if (isGenerating) {
-            _cleanupGenerationState();
-        }
     }
-  }, [currentPromptId, isGenerating, _cleanupGenerationState]);
+    terminateGeneration(currentPromptId);
+  }, [currentPromptId, isGenerating, terminateGeneration]);
 
   const clearMemory = useCallback(async () => {
-    try {
-      if (window.api?.clearMemory) {
-        await window.api.clearMemory();
-        console.log('Memory cleared');
+    if (apiAvailable.current) {
+      try {
+        await window.api.clearMemory?.();
+      } catch (err) {
+        console.error('Clear memory error:', err);
       }
-    } catch (err) {
-      console.error('Error clearing memory:', err);
     }
   }, []);
 
   const clearMessages = useCallback(() => {
     setMessages([]);
-    _cleanupGenerationState();
+    terminateGeneration(currentPromptId);
     clearMemory();
-  }, [clearMemory, _cleanupGenerationState]);
+  }, [clearMemory, terminateGeneration, currentPromptId]);
+
+  useEffect(() => {
+    return () => {
+      instancePromptMap.current.clear();
+    };
+  }, []);
 
   useEffect(() => {
     if (!window.api) {
-      console.warn('Window API not available yet');
+      console.warn('Window API unavailable');
       return;
     }
 
-    // New token (Maintained, ensures that only the current prompt is updated)
-    messageListeners.current.newToken = window.api.onNewToken((promptId, token) => {
-      setMessages(prev => {
-        const lastMessage = prev[prev.length - 1];
-        if (lastMessage?.role === 'assistant' && promptId === currentPromptId) {
-          return [
-            ...prev.slice(0, -1),
-            { ...lastMessage, content: lastMessage.content + token }
-          ];
-        } 
-        return prev;
-      });
-    });
+    const eventHandlers = {
+      newToken: window.api.onNewToken((promptId, token) => {
+        if (instancePromptMap.current.get(promptId) === instanceId.current) {
+          updateAssistantMessage(token);
+        }
+      }),
 
-    // Conclusion (RESPONSIBLE FOR CLEANING UP THE STATUS after generation or CANCELLATION)
-    messageListeners.current.complete = window.api.onComplete((promptId) => {
-      console.log('Generation complete or Canceled for:', promptId);
-      _cleanupGenerationState(); 
-    });
+      complete: window.api.onComplete((promptId) => {
+        terminateGeneration(promptId);
+      }),
 
-    messageListeners.current.error = window.api.onError((promptId, error) => {
-      console.error('Model error:', { promptId, error });
-      setMessages(prev => [
-        ...prev,
-        { role: 'error', content: `Error: ${error || 'Unknown error'}` }
-      ]);
-      _cleanupGenerationState();
-    });
+      error: window.api.onError((promptId, error) => {
+        if (instancePromptMap.current.get(promptId) === instanceId.current) {
+          console.error('Model error:', { promptId, error });
+          setMessages(prev => [
+            ...prev,
+            { role: 'error', content: `Error: ${error || 'Unknown'}` }
+          ]);
+          terminateGeneration(promptId);
+        }
+      }),
 
-    messageListeners.current.ready = window.api.onReady((data) => {
-      console.log('Model ready:', data);
-      setIsConnected(true);
-      if (data.sessionId) setSessionId(data.sessionId);
-    });
+      ready: window.api.onReady((data) => {
+        setIsConnected(true);
+        if (data.sessionId) setSessionId(data.sessionId);
+      }),
 
-    messageListeners.current.disconnected = window.api.onDisconnected(() => {
-      console.log('Model disconnected');
-      setIsConnected(false);
-      _cleanupGenerationState();
-    });
+      disconnected: window.api.onDisconnected(() => {
+        setIsConnected(false);
+        terminateGeneration(currentPromptId);
+        instancePromptMap.current.clear();
+      }),
 
-    messageListeners.current.started = window.api.onStarted((data) => {
-      console.log('Generation started:', data.promptId, 'Session:', data.sessionId);
-      setCurrentPromptId(data.promptId);
-      if (data.newSessionId) {
-        setSessionId(data.newSessionId);
-      }
-      setIsGenerating(true); 
-    });
+      started: window.api.onStarted((data) => {
+        const { promptId, newSessionId } = data;
+        const mappedInstanceId = instancePromptMap.current.get(promptId);
+        
+        if (mappedInstanceId) {
+          if (mappedInstanceId === instanceId.current) {
+            setCurrentPromptId(promptId);
+            if (newSessionId) setSessionId(newSessionId);
+            setIsGenerating(true);
+          }
+        } else {
+          const hasPendingPrompt = pendingPromptRef.current !== null;
+          const isCurrentlyGenerating = isGeneratingRef.current;
+          
+          if (hasPendingPrompt || isCurrentlyGenerating) {
+            instancePromptMap.current.set(promptId, instanceId.current);
+            setCurrentPromptId(promptId);
+            if (newSessionId) setSessionId(newSessionId);
+            setIsGenerating(true);
+            pendingPromptRef.current = null;
+          }
+        }
+      }),
 
-    messageListeners.current.memoryCleared = window.api.onMemoryCleared((clearedSessionId) => {
-      console.log('Memory cleared for session:', clearedSessionId);
+      memoryCleared: window.api.onMemoryCleared((clearedSessionId) => {
+        if (clearedSessionId === sessionId) {
+          console.log('Memory cleared for current session');
+        }
+      })
+    };
+
+    Object.entries(eventHandlers).forEach(([key, cleanup]) => {
+      messageListeners.current[key] = cleanup;
     });
 
     return () => {
       Object.values(messageListeners.current).forEach(cleanup => {
-        if (typeof cleanup === 'function') {
-          cleanup();
-        }
+        if (typeof cleanup === 'function') cleanup();
       });
       messageListeners.current = {};
     };
-  }, [currentPromptId, _cleanupGenerationState]);
+  }, [currentPromptId, terminateGeneration, updateAssistantMessage, sessionId]);
 
   return {
     messages,

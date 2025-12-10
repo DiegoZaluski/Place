@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext } from 'react';
+import React, { useRef, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import MessageInput from './MessageInput';
 import ResBox from './ResBox';

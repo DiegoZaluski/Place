@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { COLORS } = require("./utils/ansiColors");
 const { initLog } = require("./initLog.cjs");
-
+//send
 // IMPORT SEPARATED MODULES
 const serverManager = require("./backend/CommonJS/Websocket/webSocketProcessManager.cjs");
 const websocketManager = require("./backend/CommonJS/Websocket/websocketManager.cjs");

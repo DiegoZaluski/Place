@@ -5,7 +5,7 @@ if (typeof window !== 'undefined') {
   // MODEL API
   contextBridge.exposeInMainWorld('api', {
     
-    // --- Prompt Operations ---
+    // PROMPT OPERATIONS
     sendPrompt: (prompt) => {
       if (!prompt || typeof prompt !== 'string') {
         return Promise.reject(new Error('Prompt must be a non-empty string'));
@@ -24,7 +24,7 @@ if (typeof window !== 'undefined') {
       return ipcRenderer.invoke('model:clear-memory');
     },
     
-    // --- Model Event Listeners ---
+    // MODEL EVENT LISTENERS
     onNewToken: (callback) => {
       const listener = (event, data) => {
         if (data && typeof data.promptId === 'string' && typeof data.token === 'string') {
@@ -91,51 +91,19 @@ if (typeof window !== 'undefined') {
       return () => ipcRenderer.removeListener('model:memory-cleared', listener);
     },
     
-    // --- N8N Window --- 
-    openN8NWindow: () => ipcRenderer.invoke('n8n-window:open'),
-    closeN8NWindow: () => ipcRenderer.invoke('n8n-window:close'),
-    getN8NStatus: () => ipcRenderer.invoke('n8n-window:status'),
-    
-    // DOWNLOAD SERVER (SSE) API:
+    // DOWNLOAD SERVER (SSE)
     downloadServer: {
-      /**
-       * Retrieves the status of the SSE server
-       * @returns {Promise<{success: boolean, status?: object, error?: string}>}
-       */
-      getStatus: () => {
-        return ipcRenderer.invoke('downloadServer:getStatus');
-      },
-      
-      /**
-       * Init: the SSE server
-       * @returns {Promise<{success: boolean, info?: object, error?: string}>}
-       */
-      start: () => {
-        return ipcRenderer.invoke('downloadServer:start');
-      },
-      
-      /**
-       * Obtém informações do servidor
-       * @returns {Promise<{success: boolean, info?: {url: string, isRunning: boolean}, error?: string}>}
-       */
-      getInfo: () => {
-        return ipcRenderer.invoke('downloadServer:getInfo');
-      },
-      
-      /**
-       * Para o servidor SSE
-       * @returns {Promise<{success: boolean, error?: string}>}
-       */
-      stop: () => {
-        return ipcRenderer.invoke('downloadServer:stop');
-      }
+      getStatus: () => ipcRenderer.invoke('downloadServer:getStatus'),
+      start: () => ipcRenderer.invoke('downloadServer:start'),
+      getInfo: () => ipcRenderer.invoke('downloadServer:getInfo'),
+      stop: () => ipcRenderer.invoke('downloadServer:stop')
     },
+    
     // TEST
-    sendContentSize: (width, height) => 
-      ipcRenderer.invoke('control-content-size', width, height)
+    sendContentSize: (width, height) => ipcRenderer.invoke('control-content-size', width, height)
   });
 
-  // WINDOW CONTROL (do not remove)
+  // WINDOW CONTROL
   contextBridge.exposeInMainWorld('electron', {
     invoke: (channel, data) => ipcRenderer.invoke(channel, data)
   });
