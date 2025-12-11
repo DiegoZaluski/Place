@@ -4,17 +4,17 @@ const { COLORS } = require("./utils/ansiColors");
 const { initLog } = require("./initLog.cjs");
 //send
 // IMPORT SEPARATED MODULES
-const serverManager = require("./backend/CommonJS/Websocket/webSocketProcessManager.cjs");
-const websocketManager = require("./backend/CommonJS/Websocket/websocketManager.cjs");
+const serverManager = require("./backend/rulers/Websocket/webSocketProcessManager.cjs");
+const websocketManager = require("./backend/rulers/Websocket/websocketManager.cjs");
 
 // ADDITIONAL SERVICES
-const ModelLookout = require("./backend/CommonJS/Websocket/ModelLookout.cjs");
-const HTTPServer = require("./backend/CommonJS/HTTP/HTTPServer.cjs");
+const ModelLookout = require("./backend/rulers/Websocket/ModelLookout.cjs");
+const HTTPServer = require("./backend/rulers/HTTP/HTTPServer.cjs");
 
 // SSE DOWNLOAD SERVER
-const { downloadManager } = require("./backend/CommonJS/SSE/initSSEDownload.cjs");
+const { downloadManager } = require("./backend/rulers/SSE/initSSEDownload.cjs");
 
-const { createControlWindow, closeControlWindow,  getControlWindow } = require("./backend/CommonJS/second-window/control-window.cjs");
+const { createControlWindow, closeControlWindow,  getControlWindow } = require("./backend/second-window/control-window.cjs");
 
 let sseServer = null;
 // SERVICE INSTANCES

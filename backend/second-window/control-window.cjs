@@ -6,10 +6,10 @@ let controlWindow = null;
 
 // URL RESOLUTION
 const getWindowURL = () => {
-  const correctPath = path.join(process.cwd(), '../../index.html');
+  const correctPath = path.join(process.cwd(), '../index.html');
   const testPaths = [
     correctPath,
-    path.join(__dirname, '../../../../index.html'),
+    path.join(__dirname, '../../../index.html'),
   ];
   for (const testPath of testPaths) {
     if (fs.existsSync(testPath)) {
@@ -25,7 +25,7 @@ const createControlWindow = (mainWindow) => {
     return controlWindow;
   }
 
-  const preloadPath = path.join(__dirname, '../../../preload.cjs');
+  const preloadPath = path.join(__dirname, '../../preload.cjs');
   console.log('Preload path:', preloadPath);
   console.log('Preload exists:', fs.existsSync(preloadPath));
 
@@ -54,6 +54,8 @@ const createControlWindow = (mainWindow) => {
     show: false,
     hasShadow: false,
     transparent:true,
+    vibrancy: "sidebar", //bluer macOS
+    backgroundMaterial: "acrylic", //bluer windows 10/11 os
     // backgroundColor: 'rgba(18, 61, 201, 1)'
   });
 

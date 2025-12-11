@@ -1,4 +1,3 @@
-// src/types/electron.d.ts
 export {};
 
 declare global {

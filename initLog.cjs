@@ -33,11 +33,6 @@ Platform:    ${process.platform} ${process.arch}
 Electron:    ${process.versions.electron}
 Time:        ${new Date().toLocaleString()}
 --------------------------------------------------------------------------------
-
-"Code is like humor. When you have to explain it, it's bad."
-- Cory House
-
---------------------------------------------------------------------------------
 ` + COLORS.MAGENTA);
 }
 

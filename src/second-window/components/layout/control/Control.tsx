@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Chat from '@/components/layout/Chat/Chat';
-import { GalleryHorizontalEnd, MessageSquareText } from 'lucide-react';
+import { GalleryHorizontalEnd, MessageCircle } from 'lucide-react';
 
 // SIZE CONSTANTS
 const MIN_HEIGHT = 300;
@@ -237,14 +237,14 @@ const Control = () => {
         gap: 0,   
         overflow: 'visible',
         transition: isDragging.current ? 'none' : 'all 300ms ease-in-out',
-        height: isMinimized ? '55px' : chat ? `${size.height}px` : 'auto',
+        height: isMinimized ? '65px' : chat ? `${size.height}px` : 'auto',
         width: isMinimized ? '90px' : `${size.width}px`
       }}
       onMouseDown={handleMouseDown}
     >
       {/* CONTROL BAR SECTION */}
       <div 
-        className={`flex flex-row items-center border-2 border-black/5 drag-handle bg-white/30`}
+        className={`flex flex-row items-center border-2 border-black/5 drag-handle bg-white/5`}
         style={{
           width: isMinimized ? '0px' : `${proportionalSizes.controlBarWidth}px`,
           height: `${proportionalSizes.controlBarHeight}px`,
@@ -276,7 +276,7 @@ const Control = () => {
         {!isMinimized && buttons.map((op) => (
           <button
             key={op.id}
-            className="window-control-button border border-white/30 rounded-2xl flex-shrink-0 bg-white/50 flex items-center justify-center"
+            className={`window-control-button rounded-full flex-shrink-0 flex items-center justify-center bg-white/5 hover:bg-white/75`}
             style={{
               width: `${proportionalSizes.buttonWidth}px`,
               height: `${proportionalSizes.buttonHeight}px`,
@@ -286,22 +286,22 @@ const Control = () => {
             }}
             onClick={() => op.id === 1 && setChat(prev => !prev)}
             title={op.action.charAt(0).toUpperCase() + op.action.slice(1)}
-          > {op.id === 1 ? <MessageSquareText stroke='#4b484880' />:''}</button>
+          > {op.id === 1 ? <MessageCircle stroke='#6d6d6d9a'/>:''}</button>
         ))}
       </div>
 
       {/* MINIMIZED BALL */}
       {isMinimized && (
         <div
-          className="w-8 h-8 rounded-full border-2 border-white/40 drag-handle flex-shrink-0 bg-black/30"
+          className="w-8 h-8 rounded-full drag-handle flex-shrink-0 bg-black/30"
         />
       )}
 
       {/* MAIN BALL BUTTON */}
       <div
         className={`
-        rounded-full border-4 border-white/50 
-        cursor-move flex-shrink-0 translate-x-1 bg-black/30 flex items-center justify-center z-10`}
+        rounded-full bg-black/30 flex items-center justify-center 
+        cursor-move flex-shrink-0 translate-x-1 z-10`}
         style={{
           width: `${proportionalSizes.ballSize}px`,
           height: `${proportionalSizes.ballSize}px`,
@@ -311,7 +311,7 @@ const Control = () => {
         onClick={handleBallClick}
       > 
         <GalleryHorizontalEnd 
-          stroke='#FFFFFF80'
+          stroke='#585191'
           size={proportionalSizes.ballIconSize}
         />
       </div>
