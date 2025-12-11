@@ -1,6 +1,6 @@
 {
-  "download_path": "../../../transformers/llama.cpp/models",
-  "temp_path": "../../../transformers/llama.cpp/models/.tmp",
+  "download_path": "../../../llama.cpp/models",
+  "temp_path": "../../../llama.cpp/models/.tmp",
   "log_path": "./logs",
   "timeout": 7200,
   "allowed_domains": [

@@ -4,15 +4,15 @@ const { COLORS } = require("./utils/ansiColors");
 const { initLog } = require("./initLog.cjs");
 //send
 // IMPORT SEPARATED MODULES
-const serverManager = require("./backend/rulers/Websocket/webSocketProcessManager.cjs");
-const websocketManager = require("./backend/rulers/Websocket/websocketManager.cjs");
+const serverManager = require("./backend/rulers/ruler-ws/process-ws.cjs");
+const websocketManager = require("./backend/rulers/ruler-ws/manager-ws.cjs");
 
 // ADDITIONAL SERVICES
-const ModelLookout = require("./backend/rulers/Websocket/ModelLookout.cjs");
-const HTTPServer = require("./backend/rulers/HTTP/HTTPServer.cjs");
+const ModelLookout = require("./backend/rulers/ruler-ws/vigilant.cjs");
+const HTTPRun = require("./backend/rulers/ruler-http/run-http.cjs");
 
 // SSE DOWNLOAD SERVER
-const { downloadManager } = require("./backend/rulers/SSE/initSSEDownload.cjs");
+const { downloadManager } = require("./backend/rulers/ruler-sse/run-download.cjs");
 
 const { createControlWindow, closeControlWindow,  getControlWindow } = require("./backend/second-window/control-window.cjs");
 
@@ -34,7 +34,7 @@ const startSSEServer = async () => {
 
     console.log(COLORS.CYAN + 'Starting SSE Download Server...' + COLORS.RESET);
     
-    const scriptPath = path.join(__dirname, "backend", "ScryPy", "SSE", "Download_SSE.py");
+    const scriptPath = path.join(__dirname, "backend", "ScryPy", "scry_sse", "download_model.py");
     const pythonPath = path.join(__dirname, "backend", "venv", "bin", "python");
     
     const fs = require('fs');
@@ -89,7 +89,7 @@ const stopSSEServer = async () => {
 const startHTTPServer = async () => {
   try {
     console.log(COLORS.CYAN + 'Starting HTTP Server...' + COLORS.RESET);
-    httpServerInstance = new HTTPServer();
+    httpServerInstance = new HTTPRun();
     await httpServerInstance.startHTTP();
     console.log(COLORS.GREEN + 'HTTP Server started on port 8001' + COLORS.RESET);
     return true;

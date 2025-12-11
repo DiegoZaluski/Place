@@ -33,10 +33,10 @@ export default defineConfig(({ mode }) => {
     
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src'),
-        '@assets': resolve(__dirname, 'src/assets'),
-        '@components': resolve(__dirname, 'src/components'),
-        '@styles': resolve(__dirname, 'src'),
+        '@': resolve(__dirname, 'front-end'),
+        '@assets': resolve(__dirname, 'front-end/assets'),
+        '@components': resolve(__dirname, 'front-end/components'),
+        '@styles': resolve(__dirname, 'front-end'),
       },
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     },
