@@ -45,8 +45,9 @@ export const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // STATE MANAGEMENT - WITH THEME INITIALIZATION
   const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
+    if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('data-theme');
+    if (saved === null) return true;
     return saved === 'dark';
   });
   

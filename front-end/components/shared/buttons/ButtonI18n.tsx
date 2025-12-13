@@ -63,6 +63,7 @@ const ButtonI18n = ({className}: {className?: string}) => {
     hover:outline-[#605c4e]
     decoration-none
     shadow-md
+    no-drag-handle
     `
   }
   

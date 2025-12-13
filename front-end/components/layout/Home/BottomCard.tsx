@@ -1,7 +1,7 @@
 import React from 'react';
-import { Download } from '../../shared/Download';
-import DownloadProgress from '../../shared/DownloadProgress';
-import {MountModel} from '../../shared/MountModel';
+import { Download } from '../../shared/download/Download';
+import DownloadProgress from '../../shared/download/DownloadProgress';
+import {MountModel} from '../../shared/buttons/MountModel';
 const COLORS = {
   text: `text-white`,
 } as const;

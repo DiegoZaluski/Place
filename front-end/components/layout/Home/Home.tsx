@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Header from './Header.jsx';
+import Header from '../../shared/header/Header.js';
 import TopCardsModel from './TopCardsModel.tsx';
 import Chat from '../Chat/Chat.tsx';
-import { ChevronRight, Bot } from 'lucide-react'
-import SearchBar from '../../shared/Search/SearchBar.tsx';
-import SearchController from '../../shared/Search/SearchController.tsx';
+import SearchBar from '../../shared/search/SearchBar.tsx';
+import SearchController from '../../shared/search/SearchController.tsx';
 import { modelCardsDetails } from '../../../global/data';
 import BottomCard from './BottomCard.tsx';
 

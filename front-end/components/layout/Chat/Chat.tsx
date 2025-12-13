@@ -3,17 +3,17 @@ import { useTranslation } from 'react-i18next';
 import MessageInput from './MessageInput';
 import ResBox from './ResBox';
 import { useLlama } from '../../../hooks/useLlama';
-import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from '../../shared/WindowsComponents'
+import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from '../../shared/buttons/CtrlWindow'
 import { AppContext } from '../../../global/AppProvider';
 import SideOption from './SideOption';
-// COLORS
+import Header from '@/components/shared/header/Header';
+
 const COLORS = {
   BACKGROUND: `bg-chat`,
   TEXT: 'text-white',
   SHADOW: 'shadow-b-md',
 } as const;
 
-// HOOK: CUSTOM TOOLTIP MANAGEMENT
 const useTooltip = () => {
   const tooltipRef = useRef(null);
   
@@ -28,7 +28,6 @@ const useTooltip = () => {
   return { tooltipRef, showTooltip, hideTooltip };
 };
 
-// HOOK: TEXTAREA AUTO-RESIZE FUNCTIONALITY
 const useAutoResize = () => {
   const textareaRef = useRef(null);
   
@@ -42,56 +41,12 @@ const useAutoResize = () => {
   
   return { textareaRef, adjustHeight };
 };
-
-// COMPONENT: ISOLATED HEADER SECTION
-const ChatHeader = React.memo(() => (
-  <header className={`
-    h-20
-    w-full
-    flex
-    items-center
-    ${COLORS.TEXT}
-    ${COLORS.SHADOW}
-    z-10
-  `}>
-    <div className={`
-      flex
-      items-center
-      ml-8
-      flex-1
-    `}>
-      <BackBtn whiteFixed={true} />
-    </div>
-    
-    <div className={`
-      flex-1
-      flex
-      justify-center
-    `}>
-      {/* FUTURE: content placeholder for header expansion */}
-    </div>
-    
-    <div className={`
-      flex
-      items-center
-      justify-end
-      gap-4
-      mr-10
-      flex-1
-    `}>
-      <MinimizeBtn whiteFixed={true} />
-      <MaximizeBtn whiteFixed={true} />
-      <CloseBtn whiteFixed={true} />
-    </div>
-  </header>
-));
   
 type AdaptableProps = true | false;
 type NewWindow = true | false;
-type typeSearchCode = 100 | 200 | 300;
-// COMPONENT: MAIN CHAT CONTAINER
+
 const Chat = ({ adaptable, newWindow }: {adaptable: AdaptableProps, newWindow?: NewWindow }) => {
-  // TRANSLATION: initialize localization with auth namespace
+  // TRANSLATION
   const { t, ready } = useTranslation(['auth']);
 
   const CONTEXT = useContext(AppContext);
@@ -108,13 +63,8 @@ const Chat = ({ adaptable, newWindow }: {adaptable: AdaptableProps, newWindow?: 
     clearMessages
   } = useLlama();
   
-  // STATE: message input management
   const [message, setMessage] = React.useState('');
-  
-  // TOOLTIP: custom tooltip hook instance
   const { tooltipRef, showTooltip, hideTooltip } = useTooltip();
-  
-  // TEXTAREA: auto-resize hook instance
   const { textareaRef, adjustHeight } = useAutoResize();
   
   // HANDLER: send message to llama
@@ -130,14 +80,12 @@ const Chat = ({ adaptable, newWindow }: {adaptable: AdaptableProps, newWindow?: 
     }));
     setMessage('');
   };
-  
-  // HANDLER: update message state from input
+
   const updateMessage = (e: React.ChangeEvent<HTMLTextAreaElement> | string) => {
     const value = typeof e === 'string' ? e : e?.target?.value || '';
     setMessage(value);
   };
-  
-  // HANDLER: clear message input field
+
   const clearMessage = () => setMessage('');
   
   // LOADING: render loading state until translation ready
@@ -157,7 +105,6 @@ const Chat = ({ adaptable, newWindow }: {adaptable: AdaptableProps, newWindow?: 
       </div>
     );
   }
-  
   // RENDER: main chat interface
   return (
     <div 
@@ -178,7 +125,7 @@ const Chat = ({ adaptable, newWindow }: {adaptable: AdaptableProps, newWindow?: 
     `}
     > 
     { adaptable || newWindow ? null : <SideOption/>} 
-    { adaptable || newWindow ? null : <ChatHeader/>} 
+    { adaptable || newWindow ? null : <Header home={false}/>} 
 
       <div
         className={`
@@ -240,8 +187,4 @@ const Chat = ({ adaptable, newWindow }: {adaptable: AdaptableProps, newWindow?: 
     </div>
   );
 };
-
-Chat.displayName = 'Chat';
-ChatHeader.displayName = 'ChatHeader';
-
 export default Chat;

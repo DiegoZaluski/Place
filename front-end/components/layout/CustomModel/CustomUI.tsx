@@ -1,6 +1,6 @@
 import { useCallback, useContext, useState, useEffect } from 'react';
 import { ControlCard, COLORS } from './ControlCard';
-import GenericHeader from '../../shared/GenericHeader';
+import Header from '../../shared/header/Header';
 import { AppContext } from '../../../global/AppProvider';
 import { modelCardsDetails } from '../../../global/data';
 
@@ -44,8 +44,8 @@ export default function CustomUI() {
   }, []);
 
   return (
-    <div className={`min-h-screen p-8 ${COLORS.PRIMARY_THEMA}`}>
-      <GenericHeader/>
+    <div className={`min-h-screen ${COLORS.PRIMARY_THEMA} scrollbar-hide w-full`}>
+      <Header home={false}/>
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {MODELS.map(model => (

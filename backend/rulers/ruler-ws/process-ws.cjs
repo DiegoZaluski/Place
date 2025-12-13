@@ -52,7 +52,7 @@ async function killExistingPythonServers() {
     if (platform === 'win32') {
       command = `tasklist | findstr python`;
     } else {
-      command = `ps aux | grep -i "llama_server\\|python.*llama" | grep -v grep`;
+      command = `ps aux | grep -i "call_llama.cpp\\|python.*llama" | grep -v grep`;
     }
     
     exec(command, (error, stdout) => {
@@ -187,7 +187,7 @@ async function startPythonServer(mainWindow) {
     console.log('Working directory:', workingDir);
     
     const pythonPath = getPythonPath(workingDir);
-    const serverPath = path.join(workingDir, 'ScryPy', 'scry_ws', 'llama_server.py');
+    const serverPath = path.join(workingDir, 'ScryPy', 'scry_ws', 'call_llama.cpp.py');
     console.log('Server path:', serverPath);
     
     if (!fs.existsSync(serverPath)) {

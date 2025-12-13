@@ -275,7 +275,7 @@ const Control = () => {
         {!isMinimized && buttons.map((op) => (
           <button
             key={op.id}
-            className={`window-control-button rounded-full flex-shrink-0 flex items-center justify-center bg-white/5 hover:bg-white/75`}
+            className={`no-drag-handle rounded-full flex-shrink-0 flex items-center justify-center bg-white/5 hover:bg-white/75`}
             style={{
               width: `${proportionalSizes.buttonWidth}px`,
               height: `${proportionalSizes.buttonHeight}px`,

@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef, RefObject } from 'react';
+import React, { useCallback, useState, useEffect, RefObject } from 'react';
 import { ArrowUp, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SearchButton from './SearchButton';

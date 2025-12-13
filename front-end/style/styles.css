@@ -33,7 +33,7 @@
     cursor: default; 
 }
 
-.window-control-button { 
+.no-drag-handle { 
     -webkit-app-region: no-drag; 
     cursor: pointer;
 }

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { AppContext } from '../../global/AppProvider';
+import { AppContext } from '../../../global/AppProvider';
 
 // COLORS (ROOT CSS)
 const COLORS = {

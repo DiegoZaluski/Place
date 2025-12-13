@@ -255,7 +255,7 @@ ipcMain.handle("downloadServer:getStatus", async () => {
 ipcMain.handle("downloadServer:start", async () => {
   try {
     if (sseServer && sseServer.isRunning) {
-      console.log(COLORS.YELLOW + 'Server ja esta rodando' + COLORS.RESET);
+      console.log(COLORS.YELLOW + 'The server is already running' + COLORS.RESET);
       return { success: true, info: sseServer.getServerInfo() };
     }
     
@@ -294,7 +294,7 @@ ipcMain.handle("downloadServer:stop", async () => {
   }
 });
 
-// TEST
+// SECOND WINDOW
 ipcMain.handle('control-content-size', (_event, width, height) => {
   const cWindow = getControlWindow();
   if (cWindow) {

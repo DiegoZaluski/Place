@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { Orbit, Check, X } from 'lucide-react';
-import { useStorage } from '../../hooks/useStorage';
-import { AppContext } from '../../global/AppProvider';
+import { useStorage } from '../../../hooks/useStorage';
+import { AppContext } from '../../../global/AppProvider';
 
 interface MountModelProps {
   modelName: string;

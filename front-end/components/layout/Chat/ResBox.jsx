@@ -6,7 +6,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check } from 'lucide-react';
-import SearchAnime from '../../shared/Animations/SearchAnime';
+import SearchAnime from '../../shared/animations/SearchAnime';
 import {AppContext} from '../../../global/AppProvider';
 
 // Syntax Highlighter Imports 
