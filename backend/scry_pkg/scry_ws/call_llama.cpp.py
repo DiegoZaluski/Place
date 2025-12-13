@@ -11,8 +11,8 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from ScryPy.scry_ws import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET, NAME_OF_MODEL, PROMPT_SYSTEM_PATH
-from ScryPy.scry_sqlite.control_config import ControlConfig 
+from scry_pkg.scry_ws import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET, NAME_OF_MODEL, PROMPT_SYSTEM_PATH
+from scry_pkg.scry_sqlite.control_config import ControlConfig 
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
@@ -313,7 +313,7 @@ class LlamaChatServer:
         sessionId: str, 
         websocket: websockets.WebSocketServerProtocol
     ) -> None:
-        from ScryPy.utils.search.run_search import RunSearch   
+        from scry_pkg.utils.search.run_search import RunSearch   
         try:
             search_code = data.get("search", 100)
             think_flag = data.get("think", False)

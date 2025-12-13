@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 // TYPE DEFINITIONS
 interface WindowControlsProps {
-  whiteFixed?: boolean;
+  stroke:string
   className?:string;
 }
 
@@ -17,7 +17,7 @@ declare global {
 }
 
 // BACK BUTTON COMPONENT
-export function BackBtn({className, whiteFixed = false }: WindowControlsProps) {
+export function BackBtn({className, stroke }: WindowControlsProps) {
     const navigate = useNavigate();
     
     const handleBack = () => {
@@ -37,15 +37,15 @@ export function BackBtn({className, whiteFixed = false }: WindowControlsProps) {
       >
         <ArrowLeft
           size={16} 
-          stroke={whiteFixed ? 'white' : 'currentColor'}
-          className={whiteFixed ? '' : 'text-black dark:text-white'} 
+          stroke={stroke}
+          className={stroke} 
         />
       </button>
     );
 }
 
 // MINIMIZE BUTTON COMPONENT
-export function MinimizeBtn({ whiteFixed = false }: WindowControlsProps) {
+export function MinimizeBtn({ stroke}: WindowControlsProps) {
   return (
     <button
       onClick={() => window.electron?.invoke('window:minimize')}
@@ -54,15 +54,14 @@ export function MinimizeBtn({ whiteFixed = false }: WindowControlsProps) {
     >
       <Minus
        size={16} 
-       stroke={whiteFixed ? 'white' : 'currentColor'}
-       className={whiteFixed ? '' : 'text-black dark:text-white'} 
+       stroke={stroke}
        />
     </button>
   );
 }
 
 // MAXIMIZE BUTTON COMPONENT
-export function MaximizeBtn({ whiteFixed = false }: WindowControlsProps) {
+export function MaximizeBtn({stroke}: WindowControlsProps) {
   return (
     <button
       onClick={() => window.electron?.invoke('window:maximize')}
@@ -71,15 +70,14 @@ export function MaximizeBtn({ whiteFixed = false }: WindowControlsProps) {
     >
       <Square 
       size={14} 
-      stroke={whiteFixed ? 'white' : 'currentColor'}
-      className={whiteFixed ? '' : 'text-black dark:text-white'} 
+      stroke={stroke}
       />
     </button>
   );
 }
 
 // CLOSE BUTTON COMPONENT
-export function CloseBtn({ whiteFixed = false }: WindowControlsProps) {
+export function CloseBtn({ stroke }: WindowControlsProps) {
   return (
     <button
       onClick={() => window.electron?.invoke('window:close')}
@@ -87,8 +85,7 @@ export function CloseBtn({ whiteFixed = false }: WindowControlsProps) {
       aria-label="Fechar"
     >
       <X size={16} 
-      stroke={whiteFixed ? 'white' : 'currentColor'}
-      className={whiteFixed ? '' : 'text-black dark:text-white'} 
+      stroke={stroke}
       />
     </button>
   );

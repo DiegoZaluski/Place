@@ -125,7 +125,7 @@ const Chat = ({ adaptable, newWindow }: {adaptable: AdaptableProps, newWindow?: 
     `}
     > 
     { adaptable || newWindow ? null : <SideOption/>} 
-    { adaptable || newWindow ? null : <Header home={false}/>} 
+    { adaptable || newWindow ? null : <Header isChat={true}/>} 
 
       <div
         className={`

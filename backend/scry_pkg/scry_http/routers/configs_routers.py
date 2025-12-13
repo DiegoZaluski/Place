@@ -1,6 +1,6 @@
-from ScryPy.scry_http import logger
+from scry_pkg.scry_http import logger
 from fastapi import APIRouter, HTTPException
-from ScryPy.scry_sqlite.control_config import ControlConfig
+from scry_pkg.scry_sqlite.control_config import ControlConfig
 
 configs_routers = APIRouter(prefix="/configs")
 

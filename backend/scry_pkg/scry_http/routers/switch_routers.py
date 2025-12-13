@@ -1,6 +1,7 @@
-from ScryPy.scry_http import logger
+from scry_pkg.scry_http import logger
 from fastapi import APIRouter, HTTPException
-from config import CONFIG_FILE, READONLY_MODELS_DIR, ModelSwitchResponse, ModelSwitchRequest  
+from config import ModelSwitchResponse, ModelSwitchRequest  
+from scry_pkg.config.paths import CONFIG_FILE, READONLY_MODELS_DIR 
 from services import get_current_model, model_exists, save_current_model_config, wait_for_websocket_confirmation  
 
 # switchRouters

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Body
-from scry_http.config import PROMPT_SYSTEM
+from scry_pkg.config.paths import PROMPT_SYSTEM
 import aiofiles
 
 prompt_router = APIRouter(prefix="/prompt_system")

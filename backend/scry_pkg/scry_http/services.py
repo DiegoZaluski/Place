@@ -1,5 +1,5 @@
-from ScryPy.scry_http import logger
-from config import CONFIG_FILE, READONLY_MODELS_DIR
+from scry_pkg.scry_http import logger
+from scry_pkg.config.paths import CONFIG_FILE, READONLY_MODELS_DIR
 import aiofiles
 import json
 from itertools import chain

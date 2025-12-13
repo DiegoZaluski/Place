@@ -45,7 +45,7 @@ export default function CustomUI() {
 
   return (
     <div className={`min-h-screen ${COLORS.PRIMARY_THEMA} scrollbar-hide w-full`}>
-      <Header home={false}/>
+      <Header/>
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {MODELS.map(model => (

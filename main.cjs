@@ -34,7 +34,7 @@ const startSSEServer = async () => {
 
     console.log(COLORS.CYAN + 'Starting SSE Download Server...' + COLORS.RESET);
     
-    const scriptPath = path.join(__dirname, "backend", "ScryPy", "scry_sse", "download_model.py");
+    const scriptPath = path.join(__dirname, "backend", "scry_pkg", "scry_sse", "download_model.py");
     const pythonPath = path.join(__dirname, "backend", "venv", "bin", "python");
     
     const fs = require('fs');

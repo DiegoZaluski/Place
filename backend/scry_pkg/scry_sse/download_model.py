@@ -17,8 +17,8 @@ from typing import AsyncGenerator, Dict, List
 from urllib.parse import urlparse
 import os
 import time
-from ScryPy.scry_sse import logger, FALLBACK_PORTS_SSE
-
+from scry_pkg.scry_sse import logger, FALLBACK_PORTS_SSE
+from scry_pkg.config.paths import possible_paths
 # SECURITY VALIDATION
 class SecurityValidator:
     
@@ -98,18 +98,7 @@ class DownloadManager:
     def load_config(self):
         try:
             logger.info(" Attempting to load configuration...")
-            
-            # TEST MULTIPLE PATHS
-            possible_paths = [ # remove absolute path in the near future
-                "/home/zaluski/Documentos/Scry/backend/config/models.json",  # New global location
-                "./config/models.json",  # Relative to SSE
-                "/home/zaluski/Documentos/Scry/backend/python/SSE/config/models.json",  # Old absolute path
-                "../../../llama.cpp/models/config/models.json",
-                "../config/models.json",
-                "../../util/models.json",
-                "/home/zaluski/Documentos/Scry/backend/util/models.json"
-            ]
-            
+            # TEST MULTIPLE PATHS  - test remove fallback   
             config_path = None
             for path in possible_paths:
                 if os.path.exists(path):

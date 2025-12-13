@@ -155,5 +155,3 @@ def cleanPage(html_content: str) -> str:
     content = re.sub(r'\s+(\d+)\s+', r' \1 ', content)
 
     return content.strip()
-
-logger = setup_logging('utils_in_ScryPy')

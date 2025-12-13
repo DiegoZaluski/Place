@@ -101,7 +101,7 @@ function Home() {
       h-16
       z-20
       `}>
-      <Header />
+      <Header isHome={true}/>
     </header>
     <section
       className={`

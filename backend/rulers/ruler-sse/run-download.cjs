@@ -11,8 +11,8 @@ const { COLORS } = require('../../../utils/ansiColors');
 class ModelDownloadServerManager {
   constructor(options = {}) {
     this.options = {
-      pythonPath: options.pythonPath || 'ScryPy',
-      scriptPath: options.scriptPath || path.join(__dirname, '..', 'ScryPy', 'scry_sse', 'download_model.py'),
+      pythonPath: options.pythonPath || 'scry_pkg',
+      scriptPath: options.scriptPath || path.join(__dirname, '..', 'scry_pkg', 'scry_sse', 'download_model.py'),
       host: options.host || '127.0.0.1',
       port: options.port || 8080,
       timeout: options.timeout || 90000,

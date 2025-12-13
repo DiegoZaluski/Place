@@ -4,7 +4,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from ScryPy.scry_http import logger, FALLBACK_PORTS_HTTP
+from scry_pkg.scry_http import logger, FALLBACK_PORTS_HTTP
 from app import app
 import uvicorn
 import socket

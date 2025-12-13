@@ -5,14 +5,16 @@ import {simpleModel} from '../../../global/data';
 import { AppContext } from '../../../global/AppProvider';
 
 interface ThinkButtonProps {
-    className?: string 
+    deepSearch: string,
+    className?: string
 }
-const ThinkButton = (deepSearch: ThinkButtonProps, className?: string ) => {
-    const CONTEXT = useContext(AppContext); 
 
+const ThinkButton = ( { deepSearch, className }:ThinkButtonProps ) => {
+    const CONTEXT = useContext(AppContext); 
     const currentModel = CONTEXT.curretModel;
     const noThink = simpleModel.includes(currentModel); 
     const { thinking ,setThinking} = CONTEXT 
+
     const HandlerClick = (): void => {
         setThinking(!thinking)
     }

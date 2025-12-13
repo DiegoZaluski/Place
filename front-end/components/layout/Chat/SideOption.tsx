@@ -40,7 +40,7 @@ const ToggleButton = ({ onClick }: { onClick: () => void }) => (
   </div>
 );
 
-const SideOption = React.memo((): JSX.Element => {
+const SideOption = React.memo(() => {
   const [isVisible, setIsVisible] = useState(false);
   const [expandedPrompt, setExpandedPrompt] = useState(false);
   const CONTEXT = useContext(AppContext);

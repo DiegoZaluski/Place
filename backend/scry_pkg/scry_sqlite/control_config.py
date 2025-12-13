@@ -1,6 +1,6 @@
 from sqlite3 import connect
 import os
-from ScryPy.scry_sqlite import logger, ID_MODEL_WHITELIST
+from scry_pkg.scry_sqlite import logger, ID_MODEL_WHITELIST
 import json
 
 class ControlConfig:
