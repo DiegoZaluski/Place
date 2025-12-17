@@ -1,0 +1,6 @@
+build/
+node_modules/
+*.cjs
+postcss.config.js
+tailwind.config.js
+*.min.js

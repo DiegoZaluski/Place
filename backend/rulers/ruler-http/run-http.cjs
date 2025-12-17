@@ -2,8 +2,8 @@ const { spawn } = require('child_process');
 const path = require('path');
 
 class HTTPRun {
-  constructor() { 
-    this.httpProcess = null; 
+  constructor() {
+    this.httpProcess = null;
   }
 
   startHTTP() {
@@ -13,17 +13,16 @@ class HTTPRun {
       const cwd = path.join(__dirname, '..', '..', 'scry_pkg', 'scry_http');
 
       // PROCESS SPAWN: Start Uvicorn server with specific configuration
-      this.httpProcess = spawn(pythonPath, [
-        '-m', 'uvicorn',
-        'main:app',
-        '--host', '0.0.0.0',
-        '--port', '8001'
-      ], { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
+      this.httpProcess = spawn(
+        pythonPath,
+        ['-m', 'uvicorn', 'main:app', '--host', '0.0.0.0', '--port', '8001'],
+        { cwd, stdio: ['ignore', 'pipe', 'pipe'] },
+      );
 
       let ready = false;
-      
+
       // STDOUT HANDLER: Monitor for server readiness signals
-      this.httpProcess.stdout.on('data', d => {
+      this.httpProcess.stdout.on('data', (d) => {
         const t = d.toString();
         console.log('HTTP:', t.trim());
         if (!ready && (/Uvicorn running/.test(t) || /Application startup complete/.test(t))) {
@@ -33,15 +32,15 @@ class HTTPRun {
       });
 
       // STDERR HANDLER: Log errors without blocking startup
-      this.httpProcess.stderr.on('data', d => {
+      this.httpProcess.stderr.on('data', (d) => {
         const t = d.toString();
         console.error('HTTP ERR:', t.trim());
       });
 
       this.httpProcess.on('error', reject);
-      
+
       // EXIT HANDLER: Clean up on process termination
-      this.httpProcess.on('close', code => {
+      this.httpProcess.on('close', (code) => {
         console.log('HTTP exited:', code);
       });
 
@@ -66,7 +65,7 @@ class HTTPRun {
   async restartHTTP() {
     // RESTART SEQUENCE: Stop, wait, then start again
     this.stopHTTP();
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 800));
     return this.startHTTP();
   }
 }

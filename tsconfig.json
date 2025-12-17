@@ -16,11 +16,12 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["./front-end/*"],
-      "@assets/*": ["./front-end/assets/*"],
-      "@components/*": ["./front-end/components/*"]
+      "@/*": ["./frontend/*"],
+      "@assets/*": ["./frontend/assets/*"],
+      "@components/*": ["./frontend/components/*"]
     }
   },
-  "include": ["front-end", "**/*.ts", "**/*.tsx", "utils/ansi_colors.js"],
+  "include": ["frontend", "**/*.ts", "**/*.tsx", "utils/ansi_colors.js", "tests/test.js"],
   "exclude": ["node_modules", "dist", "build"]
 }
+// adjust here

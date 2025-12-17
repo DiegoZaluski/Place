@@ -1,6 +1,3 @@
-import os
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from scry_pkg.scry_ws import PROMPT_SYSTEM_PATH
 def get_prompt_system(prompt): 
     try:

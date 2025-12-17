@@ -3,10 +3,7 @@
   "temp_path": "../../../llama.cpp/models/.tmp",
   "log_path": "./logs",
   "timeout": 7200,
-  "allowed_domains": [
-    "huggingface.co",
-    "hf.co"
-  ],
+  "allowed_domains": ["huggingface.co", "hf.co"],
   "models": [
     {
       "id": "Llama-3.2-3B-Instruct-Q4_K_M.gguf",

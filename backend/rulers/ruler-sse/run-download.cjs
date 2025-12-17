@@ -6,13 +6,15 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const net = require('net');
-const { COLORS } = require('../../../utils/ansiColors');
+const { COLORS } = require('../../../utils/ansiColors.cjs');
 
 class ModelDownloadServerManager {
   constructor(options = {}) {
     this.options = {
       pythonPath: options.pythonPath || 'scry_pkg',
-      scriptPath: options.scriptPath || path.join(__dirname, '..', 'scry_pkg', 'scry_sse', 'download_model.py'),
+      scriptPath:
+        options.scriptPath ||
+        path.join(__dirname, '..', 'scry_pkg', 'scry_sse', 'download_model.py'),
       host: options.host || '127.0.0.1',
       port: options.port || 8080,
       timeout: options.timeout || 90000,
@@ -20,7 +22,7 @@ class ModelDownloadServerManager {
       maxRestarts: options.maxRestarts || 3,
       restartDelay: options.restartDelay || 5000,
       logLevel: options.logLevel || 'info',
-      ...options
+      ...options,
     };
 
     this.process = null;
@@ -35,16 +37,23 @@ class ModelDownloadServerManager {
     this._initializationLock = null;
   }
 
-
   _createLogger() {
     const levels = { error: 0, warn: 1, info: 2, debug: 3 };
     const currentLevel = levels[this.options.logLevel] || 2;
 
     return {
-      error: (...args) => currentLevel >= 0 && console.error(`${COLORS.RED}[SSEDownload:ERROR]${COLORS.RESET}`, ...args),
-      warn: (...args) => currentLevel >= 1 && console.warn(`${COLORS.YELLOW}[SSEDownload:WARN]${COLORS.RESET}`, ...args),
-      info: (...args) => currentLevel >= 2 && console.log(`${COLORS.GREEN}[SSEDownload:INFO]${COLORS.RESET}`, ...args),
-      debug: (...args) => currentLevel >= 3 && console.log(`${COLORS.CYAN}[SSEDownload:DEBUG]${COLORS.RESET}`, ...args)
+      error: (...args) =>
+        currentLevel >= 0 &&
+        console.error(`${COLORS.RED}[SSEDownload:ERROR]${COLORS.RESET}`, ...args),
+      warn: (...args) =>
+        currentLevel >= 1 &&
+        console.warn(`${COLORS.YELLOW}[SSEDownload:WARN]${COLORS.RESET}`, ...args),
+      info: (...args) =>
+        currentLevel >= 2 &&
+        console.log(`${COLORS.GREEN}[SSEDownload:INFO]${COLORS.RESET}`, ...args),
+      debug: (...args) =>
+        currentLevel >= 3 &&
+        console.log(`${COLORS.CYAN}[SSEDownload:DEBUG]${COLORS.RESET}`, ...args),
     };
   }
 
@@ -59,7 +68,9 @@ class ModelDownloadServerManager {
       await this._execCommand(this.options.pythonPath, ['--version']);
       this.logger.debug('Python found');
     } catch (error) {
-      throw new Error(`${COLORS.RED}Python not found in PATH. Install Python 3.8+ or configure pythonPath${COLORS.RESET}`);
+      throw new Error(
+        `${COLORS.RED}Python not found in PATH. Install Python 3.8+ or configure pythonPath${COLORS.RESET}`,
+      );
     }
 
     // Check if the port is available
@@ -74,7 +85,7 @@ class ModelDownloadServerManager {
   _isPortAvailable(port) {
     return new Promise((resolve) => {
       const server = net.createServer();
-      
+
       server.once('error', (err) => {
         if (err.code === 'EADDRINUSE') {
           resolve(false);
@@ -99,12 +110,12 @@ class ModelDownloadServerManager {
   _execCommand(command, args) {
     return new Promise((resolve, reject) => {
       const proc = spawn(command, args, { stdio: 'pipe' });
-      
+
       let stdout = '';
       let stderr = '';
 
-      proc.stdout.on('data', (data) => stdout += data.toString());
-      proc.stderr.on('data', (data) => stderr += data.toString());
+      proc.stdout.on('data', (data) => (stdout += data.toString()));
+      proc.stderr.on('data', (data) => (stderr += data.toString()));
 
       proc.on('close', (code) => {
         if (code === 0) {
@@ -126,19 +137,23 @@ class ModelDownloadServerManager {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (this.isShuttingDown) {
         // Server initialization canceled: server is shutting down
-        throw new Error(`${COLORS.RED}Initialization canceled: server is shutting down${COLORS.RESET}`);
+        throw new Error(
+          `${COLORS.RED}Initialization canceled: server is shutting down${COLORS.RESET}`,
+        );
       }
 
       try {
-        const response = await this._httpGet(`http://${this.options.host}:${this.options.port}/health`);
-        
+        const response = await this._httpGet(
+          `http://${this.options.host}:${this.options.port}/health`,
+        );
+
         if (response && response.status === 'ok') {
           const elapsed = Date.now() - startTime;
           this.logger.info(`Server ready in ${elapsed}ms`);
           return true;
         }
       } catch (error) {
-        // {...} 
+        // {...}
       }
 
       await this._sleep(checkInterval);
@@ -150,23 +165,26 @@ class ModelDownloadServerManager {
     return new Promise((resolve, reject) => {
       const urlObj = new URL(url);
       const http = require('http');
-      
-      const request = http.get({
-        hostname: urlObj.hostname,
-        port: urlObj.port,
-        path: urlObj.pathname,
-        timeout: 5000
-      }, (res) => {
-        let data = '';
-        res.on('data', (chunk) => data += chunk);
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch {
-            resolve({ status: 'ok' });
-          }
-        });
-      });
+
+      const request = http.get(
+        {
+          hostname: urlObj.hostname,
+          port: urlObj.port,
+          path: urlObj.pathname,
+          timeout: 5000,
+        },
+        (res) => {
+          let data = '';
+          res.on('data', (chunk) => (data += chunk));
+          res.on('end', () => {
+            try {
+              resolve(JSON.parse(data));
+            } catch {
+              resolve({ status: 'ok' });
+            }
+          });
+        },
+      );
 
       request.on('error', reject);
       request.on('timeout', () => {
@@ -177,7 +195,7 @@ class ModelDownloadServerManager {
   }
 
   _sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -214,19 +232,23 @@ class ModelDownloadServerManager {
       // UVICORN COMMAND (DYNAMICALLY EXTRACTS SCRIPT NAME)
       const scriptName = path.basename(this.options.scriptPath, '.py');
       const args = [
-        '-m', 'uvicorn',
+        '-m',
+        'uvicorn',
         `${scriptName}:app`,
-        '--host', this.options.host,
-        '--port', this.options.port.toString(),
-        '--log-level', 'warning'
+        '--host',
+        this.options.host,
+        '--port',
+        this.options.port.toString(),
+        '--log-level',
+        'warning',
       ];
 
-      // START 
+      // START
       this.process = spawn(this.options.pythonPath, args, {
         cwd: path.dirname(this.options.scriptPath),
         stdio: ['pipe', 'pipe', 'pipe'],
 
-        detached: false
+        detached: false,
       });
 
       this.lastStartTime = Date.now();
@@ -269,10 +291,9 @@ class ModelDownloadServerManager {
       this.logger.info(`Download server started: ${info.url}`);
 
       return info;
-
     } catch (error) {
       this.logger.error('Failed to start server:', error.message);
-      
+
       if (this.process) {
         this.process.kill();
         this.process = null;
@@ -293,7 +314,9 @@ class ModelDownloadServerManager {
     }
 
     this.restartCount++;
-    this.logger.info(`Auto-restart ${this.restartCount}/${this.options.maxRestarts} in ${this.options.restartDelay}ms`);
+    this.logger.info(
+      `Auto-restart ${this.restartCount}/${this.options.maxRestarts} in ${this.options.restartDelay}ms`,
+    );
 
     await this._sleep(this.options.restartDelay);
 
@@ -394,7 +417,7 @@ class ModelDownloadServerManager {
       port: this.options.port,
       pid: this.process ? this.process.pid : null,
       uptime: this.lastStartTime ? Date.now() - this.lastStartTime : 0,
-      restartCount: this.restartCount
+      restartCount: this.restartCount,
     };
   }
 
@@ -410,11 +433,13 @@ class ModelDownloadServerManager {
     }
 
     try {
-      const response = await this._httpGet(`http://${this.options.host}:${this.options.port}/health`);
+      const response = await this._httpGet(
+        `http://${this.options.host}:${this.options.port}/health`,
+      );
       return {
         ...info,
         healthy: true,
-        activeDownloads: response.active_downloads || 0
+        activeDownloads: response.active_downloads || 0,
       };
     } catch (error) {
       return { ...info, healthy: false };
@@ -428,13 +453,13 @@ class ModelDownloadServerSingleton {
     if (ModelDownloadServerSingleton.instance) {
       return ModelDownloadServerSingleton.instance;
     }
-    
+
     this._manager = null;
     this._options = null;
     ModelDownloadServerSingleton.instance = this;
   }
 
-// INITIALIZES THE SINGLETON WITH OPTIONS (ONLY ONCE)
+  // INITIALIZES THE SINGLETON WITH OPTIONS (ONLY ONCE)
   initialize(options = {}) {
     if (this._manager) {
       console.warn('[Singleton] Manager already initialized. Ignoring new options.');
@@ -446,7 +471,7 @@ class ModelDownloadServerSingleton {
     return this._manager;
   }
 
-// GETS THE MANAGER INSTANCE
+  // GETS THE MANAGER INSTANCE
   getManager() {
     if (!this._manager) {
       throw new Error('[Singleton] Manager not initialized. Call initialize() first.');
@@ -454,12 +479,12 @@ class ModelDownloadServerSingleton {
     return this._manager;
   }
 
-// CHECKS IF IT IS INITIALIZED
+  // CHECKS IF IT IS INITIALIZED
   isInitialized() {
     return !!this._manager;
   }
 
-// Destroys the instance (only for tests)
+  // Destroys the instance (only for tests)
   destroy() {
     if (this._manager) {
       this._manager.stop().catch(console.error);
@@ -486,5 +511,5 @@ module.exports = {
   downloadManager: downloadServerSingleton,
   createModelDownloadServer,
   cleanupModelDownloadServer,
-  ModelDownloadServerManager
+  ModelDownloadServerManager,
 };

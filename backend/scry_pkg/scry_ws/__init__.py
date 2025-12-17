@@ -1,14 +1,7 @@
 """Model settings for the Websocket package"""
-import os
-import sys
 import json
 from pathlib import Path
-
-# ADD PROJECT ROOT TO PYTHONPATH
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
-from utils import setup_logging
+from scry_pkg.utils import setup_logging
 
 # LOGGER CONFIGURATION
 logger = setup_logging('WEBSOCKET_Server')

@@ -1,0 +1,43 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.local {
+  background-attachment: fixed;
+  background-attachment: local;
+}
+
+.text-left {
+  display: grid !important;
+  grid-row-start: auto !important;
+}
+
+.drag-handle {
+  -webkit-app-region: drag;
+  cursor: default;
+}
+
+.no-drag-handle {
+  -webkit-app-region: no-drag;
+  cursor: pointer;
+}
+
+.auto-fit {
+  width: fit-content;
+  height: fit-content;
+}

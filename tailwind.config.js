@@ -1,11 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ['class'],
-  content: [
-    "./index.html",
-    "./app.html",
-    "./front-end/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './app.html', './frontend/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       fontFamily: {
@@ -18,5 +14,4 @@ export default {
     preflight: true,
   },
   plugins: [],
-}
-
+};

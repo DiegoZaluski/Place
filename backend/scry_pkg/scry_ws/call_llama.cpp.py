@@ -1,44 +1,33 @@
-# backend
 import asyncio
 import json
 import uuid
-import os
-import sys
+import time
 from typing import List, Dict, Optional, Any, Set
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-# ADD PROJECT ROOT TO PYTHONPATH
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
-
 from scry_pkg.scry_ws import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET, NAME_OF_MODEL, PROMPT_SYSTEM_PATH
-from scry_pkg.scry_sqlite.control_config import ControlConfig 
+from scry_pkg.scry_sqlite.control_config import ControlConfig
 from llama_cpp import Llama, LlamaCache
 import websockets
 from websockets.exceptions import ConnectionClosedOK
-import time
 from get_prompt_system import get_prompt_system
-# GLOBAL CONFIGURATION 
+
 CONTEXT_SIZE = 8000
 
-class LlamaChatServer:
-    """WebSocket server for LLaMA model chat with native context optimization and async interruption support."""
 
+class LlamaChatServer:
+    # Cache for dynamic configuration
     _config_cache = None
     _cache_time = 0
+
     @classmethod
     def get_config(cls):
-        """Function Global Configuration""" 
         now = time.time()
         if not cls._config_cache or (now - cls._cache_time) > 5:
-            control = ControlConfig({"id_model": NAME_OF_MODEL})
-            cls._config_cache = control.get()
+            cls._config_cache = ControlConfig({"id_model": NAME_OF_MODEL}).get()
             cls._cache_time = now
-        
         return cls._config_cache
-    
-    def __init__(self, model_path: str, system_prompt: str = None):
-        # MODEL INITIALIZATION
+
+    def __init__(self, model_path: str, system_prompt: Optional[str] = None):
+        # Default LLM parameters
         self.temperature = 0.7
         self.top_p = 0.9
         self.top_k = 40
@@ -52,90 +41,60 @@ class LlamaChatServer:
         self.seed = None
         self.stop = None
 
+        # Initialize LLaMA model
         self.llm = Llama(
-            model_path=model_path, 
+            model_path=model_path,
             n_ctx=CONTEXT_SIZE,
             n_gpu_layers=-1,
             seed=self.seed,
             verbose=False,
-            chat_format=CHAT_FORMAT, 
-            use_mlock=True,       
+            chat_format=CHAT_FORMAT,
+            use_mlock=True,
             use_mmap=True
         )
-        
         self.llm.set_cache(LlamaCache())
-        
+
         self.active_prompts: Set[str] = set()
         self.session_history: Dict[str, List[Dict[str, str]]] = {}
         self.__path_system_prompt = PROMPT_SYSTEM_PATH
-        self.system_prompt = "You are a helpful, knowledgeable, and professional AI assistant. " or system_prompt
+        self.system_prompt = system_prompt or "You are a helpful, knowledgeable, and professional AI assistant."
+
     def update_live_config(self):
-        """Updates configuration parameters from the database."""
-        CONFIGPARAMS = self.get_config()
-        
-        if CONFIGPARAMS:
-            self.temperature = CONFIGPARAMS['temperature']
-            self.top_p = CONFIGPARAMS['top_p']
-            self.top_k = CONFIGPARAMS['top_k']
-            self.tokens = CONFIGPARAMS['tokens']
-            self.repeat_penalty = CONFIGPARAMS['repeat_penalty']
-            self.frequency_penalty = CONFIGPARAMS['frequency_penalty']
-            self.presence_penalty = CONFIGPARAMS['presence_penalty']
-            self.min_p = CONFIGPARAMS['min_p']
-            self.tfs_z = CONFIGPARAMS['tfs_z']
-            self.mirostat_tau = CONFIGPARAMS['mirostat_tau']
-            self.seed = CONFIGPARAMS['seed']
-            self.stop = CONFIGPARAMS['stop']
-            logger.info("CONFIGPARAMS: " + str(CONFIGPARAMS))
+        # Update LLM parameters from database
+        config = self.get_config()
+        if config:
+            for key, value in config.items():
+                setattr(self, key, value)
+            logger.info(f"CONFIGPARAMS: {config}")
         else:
-            logger.warning("ERROR: CONFIGPARAMS DEFAULTS")
+            logger.warning("CONFIGPARAMS DEFAULTS USED")
 
     def get_session_history(self, session_id: str) -> List[Dict[str, str]]:
-        """Retrieves or creates conversation history for a session."""
-
-        prompt_system = get_prompt_system(self.__path_system_prompt)
-        prompt_system = prompt_system if prompt_system else self.system_prompt
-
+        # Retrieve or initialize session conversation
+        prompt_system = get_prompt_system(self.__path_system_prompt) or self.system_prompt
         if session_id not in self.session_history:
-            self.session_history[session_id] = [
-                {
-                    "role": "system", 
-                    "content": prompt_system
-                }
-            ]
+            self.session_history[session_id] = [{"role": "system", "content": prompt_system}]
         return self.session_history[session_id]
-    
-    def cleanup_session(self, session_id: str) -> None:
-        """Removes a session and clears its conversation history."""
-        if session_id in self.session_history:
-            del self.session_history[session_id]
+
+    def cleanup_session(self, session_id: str):
+        self.session_history.pop(session_id, None)
         logger.info(f"Session cleanup complete for {session_id}")
-    
-    async def handle_prompt(
-        self, 
-        prompt_id: str, 
-        prompt_text: str, 
-        session_id: str, 
-        websocket: websockets.WebSocketServerProtocol
-    ) -> None:
-        """
-        Processes a prompt using run_in_executor for separate thread execution,
-        with asyncio.sleep(0) in the loop to ensure cancellation priority.
-        """
+
+    async def handle_prompt(self, prompt_id: str, prompt_text: str, session_id: str, websocket: websockets.WebSocketServerProtocol):
         self.update_live_config()
         logger.info(f"Processing prompt {prompt_id} for session {session_id}")
 
         history = self.get_session_history(session_id).copy()
         history.append({"role": "user", "content": prompt_text})
-        
+
         loop = asyncio.get_event_loop()
-        
-        # SYNCHRONOUS LLM CALL WRAPPER
-        def get_stream_sync(): 
+
+        def get_stream_sync():
+            # Synchronous LLM call wrapped for executor
             return self.llm.create_chat_completion(
-                history, 
+                history,
                 max_tokens=self.tokens,
-                stream=True, 
+                stream=True,
                 temperature=self.temperature,
                 top_p=self.top_p,
                 top_k=self.top_k,
@@ -147,76 +106,48 @@ class LlamaChatServer:
                 mirostat_tau=self.mirostat_tau,
                 stop=self.stop
             )
+
         try:
             stream = await loop.run_in_executor(None, get_stream_sync)
             response_tokens = []
-            
+
             for chunk in stream:
-                await asyncio.sleep(0)
-                
-            # CANCELLATION CHECK
+                await asyncio.sleep(0)  # yield control for cancellation
+
                 if prompt_id not in self.active_prompts:
-                    logger.info(f"Prompt {prompt_id} canceled by user request")
-                    await websocket.send(json.dumps({
-                        "promptId": prompt_id, 
-                        "complete": True,
-                        "type": "complete"
-                    }))
-                    return 
+                    await websocket.send(json.dumps({"promptId": prompt_id, "complete": True, "type": "complete"}))
+                    return
 
                 token = chunk["choices"][0]["delta"].get("content", "")
-                
                 if token:
                     response_tokens.append(token)
-                    await websocket.send(json.dumps({
-                        "promptId": prompt_id, 
-                        "token": token,
-                        "type": "token"
-                    }))
+                    await websocket.send(json.dumps({"promptId": prompt_id, "token": token, "type": "token"}))
 
-            # COMPLETION HANDLER
+            # Append final response to session
             if prompt_id in self.active_prompts:
                 self.active_prompts.remove(prompt_id)
-                
                 assistant_response = "".join(response_tokens)
-                
                 self.get_session_history(session_id).append({"role": "user", "content": prompt_text})
                 if assistant_response:
                     self.get_session_history(session_id).append({"role": "assistant", "content": assistant_response})
-                    
-                await websocket.send(json.dumps({
-                    "promptId": prompt_id, 
-                    "complete": True,
-                    "type": "complete"
-                }))
-                
+                await websocket.send(json.dumps({"promptId": prompt_id, "complete": True, "type": "complete"}))
                 logger.info(f"Prompt {prompt_id} complete. History length: {len(self.get_session_history(session_id))}")
 
         except ConnectionClosedOK:
-            logger.info(f"Connection closed normally during processing of {prompt_id}")
             self.active_prompts.discard(prompt_id)
         except Exception as e:
             logger.error(f"Fatal error during prompt {prompt_id}: {type(e).__name__}: {e}", exc_info=True)
             await self._send_error(websocket, prompt_id, f"Server Error: {e}")
             self.active_prompts.discard(prompt_id)
-    
 
-    # SHUTDOWN
-    async def handle_client(self, websocket: websockets.WebSocketServerProtocol, path: Optional[str] = None) -> None:
-        """Manages client connection and processes messages."""
+    async def handle_client(self, websocket: websockets.WebSocketServerProtocol, path: Optional[str] = None):
         session_id = str(uuid.uuid4())[:8]
         logger.info(f"New client connected: {websocket.remote_address} - Session: {session_id}")
-        
+
         try:
-            await websocket.send(json.dumps({
-                "type": "ready",
-                "message": "Model is ready",
-                "sessionId": session_id
-            }))
-            
+            await websocket.send(json.dumps({"type": "ready", "message": "Model is ready", "sessionId": session_id}))
             async for message in websocket:
                 await self._process_client_message(websocket, message, session_id)
-                
         except ConnectionClosedOK:
             logger.info(f"Client disconnected gracefully - Session: {session_id}")
         except Exception as e:
@@ -224,14 +155,11 @@ class LlamaChatServer:
             await self._send_error(websocket, None, f"Connection failure: {e}")
         finally:
             self.cleanup_session(session_id)
-    
-    async def _process_client_message(self, websocket: websockets.WebSocketServerProtocol, message: str, session_id: str) -> None:
-        """Processes an individual client message."""
+
+    async def _process_client_message(self, websocket, message, session_id):
         try:
             data = json.loads(message)
-            print(f'\033[31m[DEBUG]: {data} \033[m')
             action = data.get("action")
-
             if action == "prompt":
                 await self._handle_prompt_action(websocket, data, session_id)
             elif action == "cancel":
@@ -240,189 +168,111 @@ class LlamaChatServer:
                 await self._handle_clear_history_action(websocket, session_id)
             else:
                 await self._send_error(websocket, None, f"Unknown action: {action}")
-
-        except json.JSONDecodeError as e:
-            await self._send_error(websocket, None, f"Invalid JSON: {e}")
         except Exception as e:
             await self._send_error(websocket, None, f"Error processing message: {e}")
-    
-    async def _handle_prompt_action(self, websocket: websockets.WebSocketServerProtocol, data: dict, session_id: str) -> None:
-        """Handles the 'prompt' action."""
+
+    async def _handle_prompt_action(self, websocket, data, session_id):
         prompt_text = data.get("prompt", "").strip()
         if not prompt_text:
             await self._send_error(websocket, None, "Empty prompt")
             return
-            
+
         prompt_id = data.get("promptId") or str(uuid.uuid4())
-        
         if len(self.active_prompts) > 5:
-             await self._send_error(websocket, prompt_id, "Too many active prompts. Wait for current ones to finish.")
-             return
+            await self._send_error(websocket, prompt_id, "Too many active prompts. Wait for current ones to finish.")
+            return
 
         self.active_prompts.add(prompt_id)
-        
         asyncio.create_task(self.router(data, prompt_id, prompt_text, session_id, websocket))
-        
-        await websocket.send(json.dumps({
-            "promptId": prompt_id, 
-            "sessionId": session_id,
-            "status": "started",
-            "type": "started"
-        }))
-    
-    async def _handle_cancel_action(self, websocket: websockets.WebSocketServerProtocol, data: dict) -> None:
-        """Processes a cancel action."""
-        prompt_id = data.get("promptId")
-        if prompt_id and prompt_id in self.active_prompts:
-            self.active_prompts.discard(prompt_id) # Signals the stop of the LLM loop
-            await websocket.send(json.dumps({
-                "promptId": prompt_id,
-                "status": "canceled", 
-                "type": "status"
-            }))
-            print(f"[SERVER] Signal sent to cancel prompt {prompt_id}")
-        
-    async def _handle_clear_history_action(self, websocket: websockets.WebSocketServerProtocol, session_id: str) -> None:
-        """Processes the action of clearing history."""
-        self.session_history[session_id] = [
-            {"role": "system", "content": "You are a helpful and polite assistant. Always respond in the user's language."}
-        ]
-        
-        await websocket.send(json.dumps({
-            "sessionId": session_id,
-            "status": "history_cleared", 
-            "type": "memory_cleared"
-        }))
-        logger.info(f"[SERVER] Session history reset for {session_id}")
-    
-    async def _send_error(self, websocket: websockets.WebSocketServerProtocol, prompt_id: Optional[str], error_msg: str) -> None:
-        """Sends an error message to the client."""
-        error_data = {"error": error_msg, "type": "error"}
-        if prompt_id:
-            error_data["promptId"] = prompt_id
-        try:
-            await websocket.send(json.dumps(error_data))
-        except Exception as e:
-            logger.error(f"[SERVER] Could not send error message: {e}")
+        await websocket.send(json.dumps({"promptId": prompt_id, "sessionId": session_id, "status": "started", "type": "started"}))
 
-    async def bridges(
-        self,
-        data: Dict, 
-        promptId: str, 
-        promptText: str, 
-        sessionId: str, 
-        websocket: websockets.WebSocketServerProtocol
-    ) -> None:
-        from scry_pkg.utils.search.run_search import RunSearch   
+    async def _handle_cancel_action(self, websocket, data):
+        prompt_id = data.get("promptId")
+        if prompt_id:
+            self.active_prompts.discard(prompt_id)
+            await websocket.send(json.dumps({"promptId": prompt_id, "status": "canceled", "type": "status"}))
+
+    async def _handle_clear_history_action(self, websocket, session_id):
+        # Reset session conversation
+        self.session_history[session_id] = [{"role": "system", "content": "You are a helpful and polite assistant. Always respond in the user's language."}]
+        await websocket.send(json.dumps({"sessionId": session_id, "status": "history_cleared", "type": "memory_cleared"}))
+        logger.info(f"Session history reset for {session_id}")
+
+    async def _send_error(self, websocket, prompt_id, error_msg):
+        data = {"error": error_msg, "type": "error"}
+        if prompt_id:
+            data["promptId"] = prompt_id
+        try:
+            await websocket.send(json.dumps(data))
+        except Exception as e:
+            logger.error(f"Could not send error message: {e}")
+
+    async def bridges(self, data, promptId, promptText, sessionId, websocket):
+        # Specialized processing (search or thinking)
+        from scry_pkg.scry_tools.search.run_search import RunSearch
         try:
             search_code = data.get("search", 100)
             think_flag = data.get("think", False)
-            
-            if search_code == 200 or search_code == 300:
-                run = RunSearch()
-                response = run._search(promptText)
-                
-                await websocket.send(json.dumps({
-                    "promptId": promptId,
-                    "token": response,
-                    "type": "token"
-                }))
+
+            if search_code in (200, 300):
+                response = RunSearch()._search(promptText)
             else:
-                if think_flag:
-                    response = f"Thinking analysis for: {promptText}"
-                else:
-                    response = f"Chat response to: {promptText}"
-                
-                await websocket.send(json.dumps({
-                    "promptId": promptId,
-                    "token": response,
-                    "type": "token"
-                }))
-                
+                response = f"Thinking analysis for: {promptText}" if think_flag else f"Chat response to: {promptText}"
                 if search_code == 100:
                     self.get_session_history(sessionId).append({"role": "user", "content": promptText})
                     self.get_session_history(sessionId).append({"role": "assistant", "content": response})
-            
-            await websocket.send(json.dumps({
-                "promptId": promptId,
-                "complete": True,
-                "type": "complete"
-            }))
-            
-            logger.info(f"Processing complete for {promptId}")
-            
+
+            await websocket.send(json.dumps({"promptId": promptId, "token": response, "type": "token"}))
+            await websocket.send(json.dumps({"promptId": promptId, "complete": True, "type": "complete"}))
         except Exception as e:
             logger.error(f"Bridge error: {e}")
-            await websocket.send(json.dumps({
-                "promptId": promptId,
-                "error": f"Processing failed: {e}",
-                "type": "error"
-            }))
+            await websocket.send(json.dumps({"promptId": promptId, "error": f"Processing failed: {e}", "type": "error"}))
 
-    def _updateSystemPrompt(self, session_id: str, new_prompt: str) -> None:
-        """Update system prompt in session history."""
+    def _updateSystemPrompt(self, session_id, new_prompt):
+        # Update system prompt for a session
         if session_id in self.session_history:
-            # Find and update system message
-            for i, message in enumerate(self.session_history[session_id]):
-                if message.get("role") == "system":
-                    self.session_history[session_id][i]["content"] = new_prompt
-                    logger.debug(f"Updated system prompt for session {session_id}")
+            for msg in self.session_history[session_id]:
+                if msg.get("role") == "system":
+                    msg["content"] = new_prompt
                     return
             self.session_history[session_id].insert(0, {"role": "system", "content": new_prompt})
 
-    def router(
-        self,
-        data: Dict, 
-        promptId: str, 
-        promptText: str, 
-        sessionId: str, 
-        websocket: websockets.WebSocketServerProtocol) -> Any:
-        """
-        Routing logic for enhanced processing modes.
-        Returns None for standard processing flow.
-        """
-
+    def router(self, data, promptId, promptText, sessionId, websocket):
+        # Route between standard chat and bridges
         searchCode = data.get("search", 100)
         thinkFlag = data.get("think", False)
-
         if searchCode == 100 and not thinkFlag:
-            return self.handle_prompt(promptId, promptText, sessionId, websocket)   
-        else:
-            return self.bridges(data, promptId, promptText, sessionId, websocket)   
-        
-async def main() -> None:
-    """Main function of the server."""
+            return self.handle_prompt(promptId, promptText, sessionId, websocket)
+        return self.bridges(data, promptId, promptText, sessionId, websocket)
+
+
+async def main():
     logger.info("Initializing LLaMA model...")
-    ws_server = None
     try:
         server = LlamaChatServer(MODEL_PATH)
     except Exception as e:
-        logger.error(f"FATAL: Failed to load LLaMA model at {MODEL_PATH}. Check path and dependencies.")
-        logger.error(f"Error: {e}")
+        logger.error(f"FATAL: Failed to load LLaMA model at {MODEL_PATH}: {e}")
         return
-    
+
+    ws_server = None
     for port in FALLBACK_PORTS_WEBSOCKET:
         try:
             ws_server = await websockets.serve(
-                server.handle_client,
-                "0.0.0.0",
-                port,
-                ping_interval=20,   
-                ping_timeout=10,     
-                close_timeout=10 
-                )
-            logger.info(f"WebSocket LLaMA server running on ws://0.0.0.0:{port}") 
+                server.handle_client, "0.0.0.0", port, ping_interval=20, ping_timeout=10, close_timeout=10
+            )
+            logger.info(f"WebSocket LLaMA server running on ws://0.0.0.0:{port}")
             break
         except OSError as e:
             logger.error(f"WebSocket error: {e}")
-            continue
+
     if not ws_server:
         logger.error("WebSocket server failed to start.")
         return
+
     try:
         await asyncio.Future()
     except KeyboardInterrupt:
-        logger.info(f"\nServer shutting down...")
+        logger.info("Server shutting down...")
         ws_server.close()
         await ws_server.wait_closed()
 

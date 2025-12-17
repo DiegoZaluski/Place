@@ -7,10 +7,7 @@ let controlWindow = null;
 // URL RESOLUTION
 const getWindowURL = () => {
   const correctPath = path.join(process.cwd(), '../index.html');
-  const testPaths = [
-    correctPath,
-    path.join(__dirname, '../../../index.html'),
-  ];
+  const testPaths = [correctPath, path.join(__dirname, '../../../index.html')];
   for (const testPath of testPaths) {
     if (fs.existsSync(testPath)) {
       return `file://${testPath}#/control`;
@@ -53,9 +50,9 @@ const createControlWindow = (mainWindow) => {
     movable: true,
     show: false,
     hasShadow: false,
-    transparent:true,
-    vibrancy: "sidebar", //bluer macOS
-    backgroundMaterial: "acrylic", //bluer windows 10/11 os
+    transparent: true,
+    vibrancy: 'sidebar', //bluer macOS
+    backgroundMaterial: 'acrylic', //bluer windows 10/11 os
     // backgroundColor: 'rgba(18, 61, 201, 1)'
   });
 
@@ -66,7 +63,7 @@ const createControlWindow = (mainWindow) => {
   controlWindow.setAlwaysOnTop(true, 'screen-saver');
   controlWindow.setVisibleOnAllWorkspaces(true, {
     visibleOnFullScreen: true,
-    skipTransformProcessType: true
+    skipTransformProcessType: true,
   });
 
   const url = getWindowURL();

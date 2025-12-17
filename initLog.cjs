@@ -1,5 +1,7 @@
 function initLog(COLORS) {
-    return console.log(COLORS.MAGENTA+ `
+  return console.log(
+    COLORS.MAGENTA +
+      `
 --------------------------------------------------------------------------------
 
   ███████╗ ██████╗██████╗ ██╗   ██╗ ██╗                    
@@ -33,8 +35,9 @@ Platform:    ${process.platform} ${process.arch}
 Electron:    ${process.versions.electron}
 Time:        ${new Date().toLocaleString()}
 --------------------------------------------------------------------------------
-` + COLORS.MAGENTA);
+` +
+      COLORS.MAGENTA,
+  );
 }
 
 module.exports = { initLog };
- 
