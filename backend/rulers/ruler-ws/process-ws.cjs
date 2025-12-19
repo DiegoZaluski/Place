@@ -155,10 +155,10 @@ function handleServerCrash(mainWindow) {
 // FINDS THE PYTHON PATH INSIDE THE VENV
 function getPythonPath(workingDir) {
   const possiblePaths = [
-    path.join(workingDir, 'venv', 'bin', 'python'),
-    path.join(workingDir, 'venv', 'bin', 'python3'),
-    path.join(workingDir, 'venv', 'Scripts', 'python.exe'),
-    path.join(workingDir, 'venv', 'Scripts', 'python3.exe'),
+    path.join(workingDir, 'fullpy', 'venv', 'bin', 'python'),
+    path.join(workingDir, 'fullpy', 'venv', 'bin', 'python3'),
+    path.join(workingDir, 'fullpy', 'venv', 'Scripts', 'python.exe'),
+    path.join(workingDir, 'fullpy', 'venv', 'Scripts', 'python3.exe'),
   ];
 
   for (const pythonPath of possiblePaths) {
@@ -193,7 +193,7 @@ async function startPythonServer(mainWindow) {
     console.log('Working directory:', workingDir);
 
     const pythonPath = getPythonPath(workingDir);
-    const serverPath = path.join(workingDir, 'scry_pkg', 'scry_ws', 'call_llama.cpp.py');
+    const serverPath = path.join(workingDir, 'fullpy', 'scry_pkg', 'scry_ws', 'call_llama.cpp.py');
     console.log('Server path:', serverPath);
 
     if (!fs.existsSync(serverPath)) {

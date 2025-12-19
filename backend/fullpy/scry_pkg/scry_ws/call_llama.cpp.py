@@ -1,14 +1,14 @@
-import asyncio
+import time
 import json
 import uuid
-import time
-from typing import List, Dict, Optional, Any, Set
-from scry_pkg.scry_ws import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET, NAME_OF_MODEL, PROMPT_SYSTEM_PATH
-from scry_pkg.scry_sqlite.control_config import ControlConfig
-from llama_cpp import Llama, LlamaCache
+import asyncio
 import websockets
-from websockets.exceptions import ConnectionClosedOK
+from llama_cpp import Llama, LlamaCache
+from typing import List, Dict, Optional, Set
 from get_prompt_system import get_prompt_system
+from websockets.exceptions import ConnectionClosedOK
+from scry_pkg.scry_sqlite.control_config import ControlConfig
+from scry_pkg.scry_ws import MODEL_PATH, CHAT_FORMAT, logger, FALLBACK_PORTS_WEBSOCKET, NAME_OF_MODEL, PROMPT_SYSTEM_PATH
 
 CONTEXT_SIZE = 8000
 
@@ -275,7 +275,6 @@ async def main():
         logger.info("Server shutting down...")
         ws_server.close()
         await ws_server.wait_closed()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,7 +1,6 @@
-import { useState, useContext } from 'react';
+import { useContext } from 'react';
 import { useLlama } from '../../../hooks/useLlama';
 import { FaLightbulb } from 'react-icons/fa';
-import { simpleModel } from '../../../global/data';
 import { AppContext } from '../../../global/AppProvider';
 
 interface ThinkButtonProps {
@@ -12,7 +11,7 @@ interface ThinkButtonProps {
 const ThinkButton = ({ deepSearch, className }: ThinkButtonProps) => {
   const CONTEXT = useContext(AppContext);
   const currentModel = CONTEXT.curretModel;
-  const noThink = simpleModel.includes(currentModel);
+  // const noThink = simpleModel.includes(currentModel);
   const { thinking, setThinking } = CONTEXT;
 
   const HandlerClick = (): void => {

@@ -30,7 +30,6 @@ const SideOption = React.memo(() => {
   const [expandedPrompt, setExpandedPrompt] = useState(false);
   const CONTEXT = useContext(AppContext);
   const curretModel = CONTEXT.curretModel;
-  const test = GetConfigLlm(curretModel);
 
   const [stateModel, setStateModel] = useState<config_model>({
     temperature: 0.7,

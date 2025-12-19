@@ -21,7 +21,7 @@ const SystemPrompt = memo(
     const [internalExpanded, setInternalExpanded] = useState(externalExpanded);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const sendSystemPrompt = async (promptToSend: string) => {
+    const sendSystemPrompt = async (_promptToSend: string) => {
       try {
         const response = await fetch('http://localhost:8001/prompt_system', {
           method: 'POST',

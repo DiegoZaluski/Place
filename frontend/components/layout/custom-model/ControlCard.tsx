@@ -3,7 +3,7 @@ import { CircularDial } from './CircularDial';
 import { LoRaUpload, LoRaFile } from './LoRaUpload';
 import TokensControl from './TokensControl';
 import { GetConfigLlm } from '@/global/GetConfigLlm';
-import { config_model } from '@/global/global'
+import { config_model } from '@/global/global';
 
 export const COLORS = {
   PRIMARY_THEMA: 'dark-bg-primary',
@@ -71,50 +71,15 @@ export const ControlCard: React.FC<ControlCardProps> = memo(({ key_model, model,
   }, [key_model]);
 
   const ADVANCED_DIAL_CONFIGS = [
-    {
-      label: 'Temperature',
-      value: state.temperature,
-      key: 'temperature',
-      min: 0,
-      max: 2,
-      step: 0.1,
-    },
-    { label: 'Top P', value: state.top_p, key: 'topP', min: 0, max: 1, step: 0.05 },
-    { label: 'Top K', value: state.top_k, key: 'topK', min: 0, max: 100, step: 1 },
-    {
-      label: 'Repeat',
-      value: state.repeat_penalty,
-      key: 'repeatPenalty',
-      min: 1.0,
-      max: 2.0,
-      step: 0.1,
-    },
-    {
-      label: 'Freq Penalty',
-      value: state.frequency_penalty,
-      key: 'frequencyPenalty',
-      min: -2.0,
-      max: 2.0,
-      step: 0.1,
-    },
-    {
-      label: 'Pres Penalty',
-      value: state.presence_penalty,
-      key: 'presencePenalty',
-      min: -2.0,
-      max: 2.0,
-      step: 0.1,
-    },
-    { label: 'Min P', value: state.min_p, key: 'minP', min: 0.0, max: 1.0, step: 0.05 },
-    { label: 'TFS Z', value: state.tfs_z, key: 'tfsZ', min: 0.0, max: 1.0, step: 0.05 },
-    {
-      label: 'Mirostat Tau',
-      value: state.mirostat_tau,
-      key: 'mirostatTau',
-      min: 0.0,
-      max: 10.0,
-      step: 0.1,
-    },
+    {label: 'Temperature',value: state.temperature, key: 'temperature', min: 0, max: 2, step: 0.1, },
+    { label: 'Top P', value: state.top_p, key: 'top_p', min: 0, max: 1, step: 0.05 },
+    { label: 'Top K', value: state.top_k, key: 'top_k', min: 0, max: 100, step: 1 },
+    { label: 'Repeat', value: state.repeat_penalty, key: 'repeat_penalty', min: 1.0, max: 2.0, step: 0.1, }, 
+    { label: 'Freq Penalty', value: state.frequency_penalty, key: 'frequency_penalty', min: -2.0, max: 2.0, step: 0.1, },
+    { label: 'Pres Penalty', value: state.presence_penalty, key: 'presence_penalty', min: -2.0, max: 2.0, step: 0.1, },
+    { label: 'Min P', value: state.min_p, key: 'min_p', min: 0.0, max: 1.0, step: 0.05 },
+    { label: 'TFS Z', value: state.tfs_z, key: 'tfs_z', min: 0.0, max: 1.0, step: 0.05 },
+    { label: 'Mirostat Tau', value: state.mirostat_tau, key: 'mirostat_tau', min: 0.0, max: 10.0,step: 0.1,}, 
   ];
 
   const updateState = useCallback(

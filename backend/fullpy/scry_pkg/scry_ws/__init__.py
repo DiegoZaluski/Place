@@ -21,8 +21,8 @@ def load_config():
     
     # PATH IS SIMILAR TO YOUR EXAMPLE
     current_file = Path(__file__).resolve()
-    config_path = current_file.parent.parent.parent / "config" / "current_model.json"
-    
+    config_path = current_file.parents[3] / "config" / "current_model.json"
+
     if not config_path.exists():
         raise FileNotFoundError(f"Configuration file not found: {config_path}")
     

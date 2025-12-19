@@ -12,4 +12,8 @@ pip freeze > requirements.txt
 
 # venv
 
-source /home/zaluski/Documentos/Scry/backend/venv/bin/activate
+source /home/zaluski/Documentos/Scry/backend/fullpy/venv/bin/activate
+
+
+# requires 
+node-llama-cpp - create your own cpp library

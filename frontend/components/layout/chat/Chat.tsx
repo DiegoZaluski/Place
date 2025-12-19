@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import MessageInput from './MessageInput';
 import ResBox from './ResBox';
 import { useLlama } from '../../../hooks/useLlama';
-import { BackBtn, MinimizeBtn, MaximizeBtn, CloseBtn } from '../../shared/buttons/CtrlWindow';
 import { AppContext } from '../../../global/AppProvider';
 import SideOption from './SideOption';
 import Header from '@/components/shared/header/Header';
@@ -55,7 +54,7 @@ const Chat = ({ adaptable, newWindow }: { adaptable: AdaptableProps; newWindow?:
   console.log(searchCode, thinking);
 
   // LLAMA: use real llama hook for messaging functionality
-  const { messages, isGenerating, sendPrompt, stopGeneration, clearMessages } = useLlama();
+  const { messages, isGenerating, sendPrompt, stopGeneration } = useLlama();
 
   const [message, setMessage] = React.useState('');
   const { tooltipRef, showTooltip, hideTooltip } = useTooltip();

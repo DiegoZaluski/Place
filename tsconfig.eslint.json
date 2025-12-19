@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "frontend/**/*.ts",
+    "frontend/**/*.tsx",
+    "utils/**/*.ts",
+    "utils/**/*.tsx",
+    "i18n/**/*" 
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "backend",
+    "**/venv/**",
+    "**/site-packages/**",
+    "llama.cpp"
+  ]
+}

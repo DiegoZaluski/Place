@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {config_model} from './global'
+import {config_model} from './global';
 
 const BASE_URL = 'http://localhost:8001/configs';
 

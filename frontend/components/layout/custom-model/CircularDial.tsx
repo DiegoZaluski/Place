@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { COLORS } from './ControlCard';
 import { Sparkle, Repeat, Minus, Zap, Filter, PieChart, Gauge } from 'lucide-react';
 import { dispatchLlamaConfigEvent, LlamaConfigEventDetail } from '../../../global/eventCofigLlm';
@@ -77,6 +77,47 @@ export const CircularDial = ({
       }
     }
   };
+  
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || !dialRef.current) return;
+
+    const rect = dialRef.current.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const x = e.clientX - rect.left - centerX;
+    const y = e.clientY - rect.top - centerY;
+
+    const angle = Math.atan2(y, x) + Math.PI / 2;
+    let normalized = (angle / (2 * Math.PI)) % 1;
+    if (normalized < 0) normalized += 1;
+
+    updateValue(MIN + normalized * (MAX - MIN));
+  }, [isDragging, MAX, MIN, updateValue]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging]);
+  
+  const percentage = ((value - MIN) / (MAX - MIN)) * 100;
+  const angle = (percentage / 100) * 2 * Math.PI;
+  const x = 50 + 42 * Math.sin(angle);
+  const y = 8 + 42 * (1 - Math.cos(angle));
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputVal(e.target.value);
@@ -95,41 +136,44 @@ export const CircularDial = ({
     setInputVal(value.toFixed(2));
   }, [value]);
 
-  const numberInputStyles =
-    '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none';
+  const numberInputStyles = 
+  `[appearance:textfield] 
+  [&::-webkit-outer-spin-button]:appearance-none 
+  [&::-webkit-inner-spin-button]:appearance-none`;
+
   const SIZE = 20;
 
-  if (simple)
+  if (simple) {
     return (
       <div
         ref={dialRef}
         className="
-        h-10
-        pl-8 
-        transform 
-        translate-y-4 
-        flex 
-        items-center 
-        text-sm 
-        transition-all 
-        duration-300 
-        rounded-xl 
-        mb-1 
-        border 
-        border-transparent 
-        hover:bg-white/5 
-        hover:border-white/10
-      "
+          h-10
+          pl-8 
+          transform 
+          translate-y-4 
+          flex 
+          items-center 
+          text-sm 
+          transition-all 
+          duration-300 
+          rounded-xl 
+          mb-1 
+          border 
+          border-transparent 
+          hover:bg-white/5 
+          hover:border-white/10
+        "
       >
         <div
           className="
-        ml-4 
-        transform 
-        -translate-x-6 
-        flex 
-        items-center 
-        gap-3
-      "
+            ml-4 
+            transform 
+            -translate-x-6 
+            flex 
+            items-center 
+            gap-3
+          "
         >
           {label === 'Temperature' && <Gauge size={SIZE} className={COLORS.TEXT_SECONDARY} />}
           {label === 'Top P' && <Sparkle size={SIZE} className={COLORS.TEXT_SECONDARY} />}
@@ -154,14 +198,12 @@ export const CircularDial = ({
             text-sm 
             font-bold 
             bg-white/10 
-            border 
-            border-white/10 
+            border border-white/10 
             focus:border-none 
             focus:ring-none 
             focus:outline-none 
             rounded-lg 
-            pt-1 
-            pb-1 
+            pt-1 pb-1 
             transition-all 
             duration-200 
             ${COLORS.TEXT_PRIMARY} 
@@ -180,46 +222,8 @@ export const CircularDial = ({
           </span>
         </div>
       </div>
-    );
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || !dialRef.current) return;
-
-    const rect = dialRef.current.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const x = e.clientX - rect.left - centerX;
-    const y = e.clientY - rect.top - centerY;
-
-    const angle = Math.atan2(y, x) + Math.PI / 2;
-    let normalized = (angle / (2 * Math.PI)) % 1;
-    if (normalized < 0) normalized += 1;
-
-    updateValue(MIN + normalized * (MAX - MIN));
-  };
-
-  const handleMouseUp = () => setIsDragging(false);
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging]);
-
-  const percentage = ((value - MIN) / (MAX - MIN)) * 100;
-  const angle = (percentage / 100) * 2 * Math.PI;
-  const x = 50 + 42 * Math.sin(angle);
-  const y = 8 + 42 * (1 - Math.cos(angle));
+    ); 
+  }
 
   return (
     <div
@@ -268,10 +272,10 @@ export const CircularDial = ({
       >
         <svg
           className="
-          absolute 
-          w-full 
-          h-full
-        "
+            absolute 
+            w-full 
+            h-full
+          "
           viewBox="0 0 100 100"
         >
           <circle
@@ -293,24 +297,24 @@ export const CircularDial = ({
 
         <div
           className={`
-          relative 
-          w-12 
-          h-12 
-          lg:w-20 
-          lg:h-20 
-          rounded-full 
-          border-2 
-          border-neutral-950 
-          flex 
-          items-center 
-          justify-center 
-          z-10 
-          ${COLORS.PRIMARY_THEMA} 
-          shadow-inner 
-          hover:border-neutral-800 
-          transition-all 
-          duration-200
-        `}
+            relative 
+            w-12 
+            h-12 
+            lg:w-20 
+            lg:h-20 
+            rounded-full 
+            border-2 
+            border-neutral-950 
+            flex 
+            items-center 
+            justify-center 
+            z-10 
+            ${COLORS.PRIMARY_THEMA} 
+            shadow-inner 
+            hover:border-neutral-800 
+            transition-all 
+            duration-200
+          `}
         >
           <input
             type="number"

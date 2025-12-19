@@ -24,4 +24,3 @@
   "include": ["frontend", "**/*.ts", "**/*.tsx", "utils/ansi_colors.js", "tests/test.js"],
   "exclude": ["node_modules", "dist", "build"]
 }
-// adjust here

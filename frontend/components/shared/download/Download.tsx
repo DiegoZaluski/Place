@@ -126,7 +126,6 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
   // EFFECT: Initializes download server connection and checks model status
   useEffect(() => {
     mountedRef.current = true;
-    let initTimeout: NodeJS.Timeout;
 
     const initialize = async () => {
       try {
@@ -206,7 +205,7 @@ export const Download = ({ modelId, className = '' }: DownloadButtonProps) => {
       }
     };
 
-    initTimeout = setTimeout(initialize, 1500);
+    const initTimeout: ReturnType<typeof setTimeout> = setTimeout(initialize, 1500);
 
     return () => {
       mountedRef.current = false;
