@@ -1,4 +1,3 @@
-import React from 'react';
 import { headerTabsContent } from '../../../global/data';
 import { useTranslation } from 'react-i18next';
 

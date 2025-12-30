@@ -1,11 +1,11 @@
-from scry_pkg.scry_http import logger
 from fastapi import FastAPI
-from scry_pkg.config.paths import PROJECT_ROOT, CONFIG_FILE, READONLY_MODELS_DIR
-from fastapi.middleware.cors import CORSMiddleware
+from scry_pkg.scry_http import logger
 from contextlib import asynccontextmanager
-from scry_pkg.scry_http.routers.switch_routers import switch_routers
-from scry_pkg.scry_http.routers.configs_routers import configs_routers 
+from fastapi.middleware.cors import CORSMiddleware
 from scry_pkg.scry_http.routers.prompt_router import prompt_router
+from scry_pkg.scry_http.routers.switch_routers import switch_routers 
+from scry_pkg.scry_http.routers.configs_routers import configs_routers
+from scry_pkg.config.paths import PROJECT_ROOT, CONFIG_FILE, READONLY_MODELS_DIR
 
 # MODERN LIFESPAN
 @asynccontextmanager

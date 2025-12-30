@@ -1,11 +1,11 @@
-import { useContext, useRef } from 'react';
+import { useContext} from 'react';
 import { AppContext } from '../../../global/AppProvider';
 import HeaderTabs from './HeaderTabs';
 import StatusBox from './StatusBox';
 import ButtonTheme from '../buttons/ButtonTheme';
 import { MinimizeBtn, MaximizeBtn, CloseBtn, BackBtn } from '../buttons/CtrlWindow';
 import ButtonI18n from '../buttons/ButtonI18n';
-import logo from '../../../../public/images/logo.png';
+import { SiHuggingface as Huggingface } from 'react-icons/si';
 
 interface headerProps {
   isHome?: boolean;
@@ -40,7 +40,7 @@ function Header({ isHome = false, isChat = false }: headerProps) {
             className="justify-self-center flex items-center 
         space-x-2 flex-row"
           >
-            <img src={logo} className="w-full h-16" alt="logoPlace" />
+            <Huggingface size={36} className='text-yellow-500'/>
           </div>
         ) : (
           <div className="justify-self-center flex items-center space-x-2 flex-row w-full h-16"></div>

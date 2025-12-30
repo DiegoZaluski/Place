@@ -1,4 +1,3 @@
-import React from 'react';
 import { topCardsDetails } from '../../../global/data';
 import TopCard from './TopCard';
 

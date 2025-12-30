@@ -1,7 +1,5 @@
-// Dados para os elementos (inalterado)
 export const headerTabsContent = ['Configuração', 'Documentação', 'Contribuições'];
 
-// Dados com detalhes auxiliares para as caixas maiores (inalterado)
 export const topCardsDetails = [
   {
     title: 'Models',

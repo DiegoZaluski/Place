@@ -1,5 +1,5 @@
 import { Download as DownloadIcon, X, Check, AlertCircle } from 'lucide-react';
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { AppContext } from '../../../global/AppProvider';
 
 // CONSTANTS: Color mapping for consistent styling across the component

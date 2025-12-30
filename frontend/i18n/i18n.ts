@@ -3,7 +3,6 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 
-//----------------> Translation config
 i18n
   .use(Backend)
   .use(LanguageDetector)
@@ -23,17 +22,17 @@ i18n
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage', 'cookie'],
-      lookupLocalStorage: 'i18nextLng', // não funcionou
+      lookupLocalStorage: 'i18nextLng',
     },
     // <--------------------------------
     interpolation: {
       escapeValue: false,
     },
-    saveMissing: false, // <--- salva as chaves que não existem
+    saveMissing: false, 
     react: {
-      bindI18n: 'languageChanged loaded', // para atualizar a interface quando a linguagem muda
+      bindI18n: 'languageChanged loaded', 
       bindI18nStore: 'added',
-      useSuspense: true, // Avisa que o componente vai usar o Suspense
+      useSuspense: true, 
     },
   });
 
