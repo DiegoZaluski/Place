@@ -1,5 +1,4 @@
 # kill python process
-
 ps aux | grep python
 pkill -f "python.\*llama_server"
 
@@ -11,9 +10,14 @@ print("SOCKET IN BUILTINS:", 'socket' in **builtins**.**dict**)
 pip freeze > requirements.txt
 
 # venv
-
-source /home/zaluski/Documentos/Scry/backend/fullpy/venv/bin/activate
+source /home/zaluski/Documentos/HugLab/backend/fullpy/venv/bin/activate
 
 
 # requires 
 node-llama-cpp - create your own cpp library
+
+# feature:
+1. create loading screen x
+2. organize main.cjs 
+3. resolve theme problem 
+4. change the name of the python packages files 

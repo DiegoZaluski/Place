@@ -6,7 +6,8 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const net = require('net');
-const { COLORS } = require('../../../utils/ansiColors.cjs');
+// const { once } = 'node:events';
+const { COLORS } = require('../../../utils/ansiColors.cjs'); 
 
 class ModelDownloadServerManager {
   constructor(options = {}) {
@@ -57,52 +58,6 @@ class ModelDownloadServerManager {
     };
   }
 
-  async _validateEnvironment() {
-    // Check if the Python script exists
-    if (!fs.existsSync(this.options.scriptPath)) {
-      throw new Error(`${COLORS.RED}Script not found: ${this.options.scriptPath}${COLORS.RESET}`);
-    }
-
-    // Check if Python is available
-    try {
-      await this._execCommand(this.options.pythonPath, ['--version']);
-      this.logger.debug('Python found');
-    } catch (error) {
-      throw new Error(
-        `${COLORS.RED}Python not found in PATH. Install Python 3.8+ or configure pythonPath${COLORS.RESET}`,
-      );
-    }
-
-    // Check if the port is available
-    const portAvailable = await this._isPortAvailable(this.options.port);
-    if (!portAvailable) {
-      throw new Error(`${COLORS.RED}Port ${this.options.port} is already in use${COLORS.RESET}`);
-    }
-
-    this.logger.debug('Environment validated successfully');
-  }
-
-  _isPortAvailable(port) {
-    return new Promise((resolve) => {
-      const server = net.createServer();
-
-      server.once('error', (err) => {
-        if (err.code === 'EADDRINUSE') {
-          resolve(false);
-        } else {
-          resolve(false);
-        }
-      });
-
-      server.once('listening', () => {
-        server.close();
-        resolve(true);
-      });
-
-      server.listen(port, '127.0.0.1');
-    });
-  }
-
   /**
    * Executes a command and returns a Promise
    * @private
@@ -127,6 +82,48 @@ class ModelDownloadServerManager {
 
       proc.on('error', reject);
     });
+  }
+
+  _isPortAvailable(port) {
+    return new Promise((resolve) => {
+      const server = net.createServer();
+
+      server.once('error', (err) => {
+        resolve(false);
+      });
+
+      server.once('listening', () => {
+        server.close();
+        resolve(true);
+      });
+
+      server.listen(port, '127.0.0.1');
+    });
+  }
+
+  async _validateEnvironment() {
+    // Check if the Python script exists
+    if (!fs.existsSync(this.options.scriptPath)) {
+      throw new Error(`${COLORS.RED}Script not found: ${this.options.scriptPath}${COLORS.RESET}`);
+    }
+
+    // Check if Python is available
+    try {
+      await this._execCommand(this.options.pythonPath, ['--version']);
+      this.logger.debug('Python found');
+    } catch (error) {
+      throw new Error(
+        `${COLORS.RED}Python not found in PATH. Install Python 3.8+ or configure pythonPath${COLORS.RESET}`,
+      );
+    }
+
+    // Check if the port is available
+    const portAvailable = await this._isPortAvailable(this.options.port);
+    if (!portAvailable) {
+      throw new Error(`${COLORS.RED}Port ${this.options.port} is already in use${COLORS.RESET}`);
+    }
+
+    this.logger.debug('Environment validated successfully');
   }
 
   async _waitForServer() {
@@ -447,7 +444,7 @@ class ModelDownloadServerManager {
   }
 }
 
-// STRONG SINGLETON - Only one instance allowed
+// STRONG SINGLETON 
 class ModelDownloadServerSingleton {
   constructor() {
     if (ModelDownloadServerSingleton.instance) {
