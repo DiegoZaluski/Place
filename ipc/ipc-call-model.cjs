@@ -1,7 +1,6 @@
-const { ipcMain } = require('electron')
 const { COLORS } = require('../utils/ansiColors.cjs');
 
-function ctrlCallModel(websocketManager, serverManager, mainWindow){
+function ctrlCallModel(websocketManager, serverManager, mainWindow, ipcMain){
     // IPC HANDLERS - SERVER OPERATIONS
   ipcMain.handle('server:restart', async () => {
     return await serverManager.restartPythonServer(mainWindow);

@@ -1,5 +1,4 @@
 const path = require('path');
-const { ipcMain } = require('electron');
 const { COLORS } = require('../utils/ansiColors.cjs');
 const { downloadManager } = require('../backend/rulers/ruler-sse/run-download.cjs'); // SSE DOWNLOAD SERVER
 let sseServer = null;
@@ -68,7 +67,7 @@ const stopSSEServer = async () => {
 };
 
 // IPC HANDLERS - SSE DOWNLOAD SERVER
- function ipcDownloadModel () {
+ function ipcDownloadModel ( ipcMain ) {
 
   ipcMain.handle('downloadServer:getStatus', async () => {
     try {

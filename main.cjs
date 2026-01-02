@@ -126,8 +126,8 @@ ipcMain.handle('control-content-size', (_event, width, height) => {
 
 // -------------------------------- // 
 
-ctrlCallModel(websocketManager, serverManager, mainWindow);
-ipcDownloadModel();
+ctrlCallModel(websocketManager, serverManager, mainWindow, ipcMain);
+ipcDownloadModel( ipcMain );
 
 // -------------------------------- // 
 
