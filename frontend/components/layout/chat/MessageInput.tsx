@@ -1,8 +1,8 @@
 import React, { useCallback, useState, useEffect, RefObject } from 'react';
 import { ArrowUp, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import SearchButton from './SearchButton';
-import ThinkButton from './ThinkButton';
+// import SearchButton from './SearchButton';
+// import ThinkButton from './ThinkButton';
 import ClearButton from './ClearButton';
 
 // Color constants
@@ -186,12 +186,11 @@ const MessageInput = React.memo(
               ${COLORS.text}
               ${newWindow ? COLORS.newWindowBorder + COLORS.newWindowBg : COLORS.border}
               rounded-3xl 
-              p-4
-              pr-12
-              pl-12
+              p-12
               resize-none 
-              overflow-hidden 
+              overflow-auto 
               shadow-b-xl 
+              min-h-[80px] max-h-[300px]
             `}
               rows={1}
               style={{ scrollbarWidth: 'none' }}
@@ -226,7 +225,7 @@ const MessageInput = React.memo(
             h-8
             ${adaptable ? 'left-4 bottom-4 w-12 h-6' : 'left-6 bottom-6'}`}
             >
-              <SearchButton />
+              {/* <SearchButton /> */}
             </div>
             <div
               className={`
@@ -237,7 +236,7 @@ const MessageInput = React.memo(
             h-8
             ${adaptable ? 'left-[70px] bottom-4 w-12 h-6' : 'left-6 bottom-6'}`}
             >
-              <ThinkButton />
+              {/* <ThinkButton /> */}
             </div>
           </div>
         </div>
@@ -264,6 +263,7 @@ const MessageInput = React.memo(
                 resize-none 
                 overflow-hidden 
                 shadow-b-xl 
+                
               `}
                 rows={1}
                 style={{ scrollbarWidth: 'none' }}

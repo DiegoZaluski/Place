@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 import time
 import json
 import asyncio
@@ -382,7 +381,7 @@ class DownloadManager:
 manager = DownloadManager()
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan():
     manager.load_config()
     yield
 

@@ -1,9 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 if (typeof window !== 'undefined') {
-  // MODEL API
   contextBridge.exposeInMainWorld('api', {
-    // PROMPT OPERATIONS
     sendPrompt: (prompt) => {
       if (!prompt || typeof prompt !== 'string') {
         return Promise.reject(new Error('Prompt must be a non-empty string'));
@@ -21,7 +19,6 @@ if (typeof window !== 'undefined') {
     clearMemory: () => {
       return ipcRenderer.invoke('model:clear-memory');
     },
-
     // MODEL EVENT LISTENERS
     onNewToken: (callback) => {
       const listener = (event, data) => {

@@ -18,6 +18,5 @@ node-llama-cpp - create your own cpp library
 
 # feature:
 1. create loading screen x
-2. organize main.cjs 
 3. resolve theme problem 
 4. change the name of the python packages files 
