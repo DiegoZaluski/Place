@@ -1,0 +1,143 @@
+falha: Tempo esgotado para conexão.
+Conectando-se a huggingface.co (huggingface.co)|2600:9000:247e:6000:17:b174:6d00:93a1|:443... falha: Tempo esgotado para conexão.
+Conectando-se a huggingface.co (huggingface.co)|2600:9000:247e:ee00:17:b174:6d00:93a1|:443... falha: Tempo esgotado para conexão.
+Conectando-se a huggingface.co (huggingface.co)|2600:9000:247e:9200:17:b174:6d00:93a1|:443... falha: Tempo esgotado para conexão.
+Conectando-se a huggingface.co (huggingface.co)|2600:9000:247e:f600:17:b174:6d00:93a1|:443... falha: Tempo esgotado para conexão.
+Conectando-se a huggingface.co (huggingface.co)|2600:9000:247e:2c00:17:b174:6d00:93a1|:443... falha: Tempo esgotado para conexão.
+Conectando-se a huggingface.co (huggingface.co)|2600:9000:247e:5c00:17:b174:6d00:93a1|:443... falha: Tempo esgotado para conexão.
+Conectando-se a huggingface.co (huggingface.co)|2600:9000:247e:3a00:17:b174:6d00:93a1|:443... falha: Tempo esgotado para conexão.
+Conectando-se a huggingface.co (huggingface.co)|108.158.173.94|:443... conectado.
+A requisição HTTP foi enviada, aguardando resposta... 302 Found
+Localização: https://cas-bridge.xethub.hf.co/xet-bridge-us/65479a438767484a0548595b/c60ba218901d1adcbe6990455c93db103929a800a6682b3f819f34967fa84553?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20260104%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260104T011212Z&X-Amz-Expires=3600&X-Amz-Signature=516e266113c8e68a093bd0baf846f682f613178a2251f6b70fb6bee929ceb4e6&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=public&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27deepseek-coder-6.7b-instruct.Q4_K_M.gguf%3B+filename%3D%22deepseek-coder-6.7b-instruct.Q4_K_M.gguf%22%3B&x-id=GetObject&Expires=1767492732&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NzQ5MjczMn19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82NTQ3OWE0Mzg3Njc0ODRhMDU0ODU5NWIvYzYwYmEyMTg5MDFkMWFkY2JlNjk5MDQ1NWM5M2RiMTAzOTI5YTgwMGE2NjgyYjNmODE5ZjM0OTY3ZmE4NDU1MyoifV19&Signature=WSQ8TXzMGkwp7awyPS64qps9FPYrpqua-v9DbFn8aE9dWYk4nzSpVHOSp59-WDMFO6ASx6DBPcGk280w10NN9AKL4ivbK5xlgRDbhvH0W64xUZWp%7EQUQGyX8oYewxivTVxguySBhHK4Yg4jy1iuEkA8cMXkZodNk29QKpVN3dp3npj9Xm96-MT8Ooqgc4OzFMVFAsK4RZidkpWkWpAmvol1T0zEXXaYsA1agWUP4ivmehoEIVHxULbTP-ZIoDDFOq7rbSL4aihjdPvuiv7RojRwgamcS0s3pgPI9gUq8Gkya3WRdlvQxwDXSPo74uJFcK3JM%7EeQBnKK%7EslxymY2rgw__&Key-Pair-Id=K2L8F4GPSG1IFC [redirecionando]
+--2026-01-03 22:12:12--  https://cas-bridge.xethub.hf.co/xet-bridge-us/65479a438767484a0548595b/c60ba218901d1adcbe6990455c93db103929a800a6682b3f819f34967fa84553?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20260104%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260104T011212Z&X-Amz-Expires=3600&X-Amz-Signature=516e266113c8e68a093bd0baf846f682f613178a2251f6b70fb6bee929ceb4e6&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=public&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27deepseek-coder-6.7b-instruct.Q4_K_M.gguf%3B+filename%3D%22deepseek-coder-6.7b-instruct.Q4_K_M.gguf%22%3B&x-id=GetObject&Expires=1767492732&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc2NzQ5MjczMn19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82NTQ3OWE0Mzg3Njc0ODRhMDU0ODU5NWIvYzYwYmEyMTg5MDFkMWFkY2JlNjk5MDQ1NWM5M2RiMTAzOTI5YTgwMGE2NjgyYjNmODE5ZjM0OTY3ZmE4NDU1MyoifV19&Signature=WSQ8TXzMGkwp7awyPS64qps9FPYrpqua-v9DbFn8aE9dWYk4nzSpVHOSp59-WDMFO6ASx6DBPcGk280w10NN9AKL4ivbK5xlgRDbhvH0W64xUZWp%7EQUQGyX8oYewxivTVxguySBhHK4Yg4jy1iuEkA8cMXkZodNk29QKpVN3dp3npj9Xm96-MT8Ooqgc4OzFMVFAsK4RZidkpWkWpAmvol1T0zEXXaYsA1agWUP4ivmehoEIVHxULbTP-ZIoDDFOq7rbSL4aihjdPvuiv7RojRwgamcS0s3pgPI9gUq8Gkya3WRdlvQxwDXSPo74uJFcK3JM%7EeQBnKK%7EslxymY2rgw__&Key-Pair-Id=K2L8F4GPSG1IFC
+Resolvendo cas-bridge.xethub.hf.co (cas-bridge.xethub.hf.co)... 18.67.145.50, 18.67.145.125, 18.67.145.85, ...
+Conectando-se a cas-bridge.xethub.hf.co (cas-bridge.xethub.hf.co)|18.67.145.50|:443... conectado.
+A requisição HTTP foi enviada, aguardando resposta... 200 OK
+Tamanho: 4083015904 (3,8G)
+Salvando em: ‘../../../../llama.cpp/models/.tmp/deepseek-coder-6.7b-instruct.Q4_K_M.gguf.tmp’
+
+     0K ........ ........ ........ ........  0% 9,53M 6m45s
+ 32768K ........ ........ ........ ........  1% 9,69M 6m39s
+ 65536K ........ ........ ........ ........  2% 8,62M 6m50s
+ 98304K ........ ........ ........ ........  3% 8,65M 6m54s
+131072K ........ ........ ........ ........  4% 8,49M 6m56s
+163840K ........ ........ ........ ........  4% 9,20M 6m51s
+196608K ........ ........ ........ ........  5% 8,85M 6m49s
+229376K ........ ........ ........ ........  6% 8,77M 6m46s
+262144K ........ ........ ........ ........  7% 8,60M 6m45s
+294912K ........ ........ ........ ........  8% 8,54M 6m43s
+327680K ........ ........ ........ ........  9% 8,70M 6m40s
+360448K ........ ........ ........ ........  9% 9,44M 6m34s
+393216K ........ ........ ........ ........ 10% 9,85M 6m28s
+425984K ........ ........ ........ ........ 11% 9,21M 6m23s
+458752K ........ ........ ........ ........ 12% 9,32M 6m19s
+491520K ........ ........ ........ ........ 13% 9,21M 6m15s
+524288K ........ ........ ........ ........ 13% 8,29M 6m13s
+557056K ........ ........ ........ ........ 14% 8,70M 6m10s
+589824K ........ ........ ........ ........ 15% 10,5M 6m4s
+622592K ........ ........ ........ ........ 16% 10,4M 5m58s
+655360K ........ ........ ........ ........ 17% 9,84M 5m53s
+688128K ........ ........ ........ ........ 18% 9,53M 5m49s
+720896K ........ ........ ........ ........ 18% 9,56M 5m45s
+753664K ........ ........ ........ ........ 19% 9,08M 5m41s
+786432K ........ ........ ........ ........ 20% 7,76M 5m40s
+819200K ........ ........ ........ ........ 21% 9,59M 5m36s
+851968K ........ ........ ........ ........ 22% 9,80M 5m32s
+884736K ........ ........ ........ ........ 23% 9,76M 5m28s
+917504K ........ ........ ........ ........ 23% 9,07M 5m24s
+950272K ........ ........ ........ ........ 24% 9,37M 5m20s
+983040K ........ ........ ........ ........ 25% 10,5M 5m16s
+1015808K ........ ........ ........ ........ 26% 10,3M 5m11s
+1048576K ........ ........ ........ ........ 27% 9,62M 5m7s
+1081344K ........ ........ ........ ........ 27% 10,5M 5m3s
+1114112K ........ ........ ........ ........ 28% 10,4M 4m58s
+1146880K ........ ........ ........ ........ 29% 9,65M 4m55s
+1179648K ........ ........ ........ ........ 30% 10,8M 4m50s
+1212416K ........ ........ ........ ........ 31% 10,6M 4m46s
+1245184K ........ ........ ........ ........ 32% 10,8M 4m41s
+1277952K ........ ........ ........ ........ 32% 10,8M 4m37s
+1310720K ........ ........ ........ ........ 33% 9,98M 4m33s
+1343488K ........ ........ ........ ........ 34% 8,19M 4m31s
+1376256K ........ ........ ........ ........ 35% 7,92M 4m29s
+1409024K ........ ........ ........ ........ 36% 9,05M 4m26s
+1441792K ........ ........ ........ ........ 36% 9,06M 4m22s
+1474560K ........ ........ ........ ........ 37% 9,77M 4m19s
+1507328K ........ ........ ........ ........ 38% 9,70M 4m15s
+1540096K ........ ........ ........ ........ 39% 9,20M 4m12s
+1572864K ........ ........ ........ ........ 40% 9,33M 4m8s
+1605632K ........ ........ ........ ........ 41% 9,68M 4m5s
+1638400K ........ ........ ........ ........ 41% 8,21M 4m2s
+1671168K ........ ........ ........ ........ 42% 7,46M 4m0s
+1703936K ........ ........ ........ ........ 43% 8,69M 3m57s
+1736704K ........ ........ ........ ........ 44% 9,34M 3m53s
+1769472K ........ ........ ........ ........ 45% 9,44M 3m50s
+1802240K ........ ........ ........ ........ 46% 9,28M 3m46s
+1835008K ........ ........ ........ ........ 46% 8,00M 3m43s
+1867776K ........ ........ ........ ........ 47% 8,59M 3m40s
+1900544K ........ ........ ........ ........ 48% 9,05M 3m37s
+1933312K ........ ........ ........ ........ 49% 9,08M 3m33s
+1966080K ........ ........ ........ ........ 50% 7,77M 3m31s
+1998848K ........ ........ ........ ........ 50% 8,68M 3m27s
+2031616K ........ ........ ........ ........ 51% 8,93M 3m24s
+2064384K ........ ........ ........ ........ 52% 9,02M 3m21s
+2097152K ........ ........ ........ ........ 53% 9,92M 3m17s
+2129920K ........ ........ ........ ........ 54% 9,23M 3m13s
+2162688K ........ ........ ........ ........ 55% 9,41M 3m10s
+2195456K ........ ........ ........ ........ 55% 9,29M 3m6s
+2228224K ........ ........ ........ ........ 56% 8,79M 3m3s
+2260992K ........ ........ ........ ........ 57% 9,62M 2m59s
+2293760K ........ ........ ........ ........ 58% 8,47M 2m56s
+2326528K ........ ........ ........ ........ 59% 7,64M 2m53s
+2359296K ........ ........ ........ ........ 59% 7,83M 2m50s
+2392064K ........ ........ ........ ........ 60% 6,60M 2m48s
+2424832K ........ ........ ........ ........ 61% 8,42M 2m44s
+2457600K ........ ........ ........ ........ 62% 10,2M 2m40s
+2490368K ........ ........ ........ ........ 63% 10,7M 2m37s
+2523136K ........ ........ ........ ........ 64% 9,55M 2m33s
+2555904K ........ ........ ........ ........ 64% 9,26M 2m30s
+2588672K ........ ........ ........ ........ 65% 10,2M 2m26s
+2621440K ........ ........ ........ ........ 66% 8,90M 2m22s
+2654208K ........ ........ ........ ........ 67% 9,15M 2m19s
+2686976K ........ ........ ........ ........ 68% 9,58M 2m15s
+2719744K ........ ........ ........ ........ 69% 9,91M 2m12s
+2752512K ........ ........ ........ ........ 69% 10,0M 2m8s
+2785280K ........ ........ ........ ........ 70% 7,86M 2m5s
+2818048K ........ ........ ........ ........ 71% 8,17M 2m1s
+2850816K ........ ........ ........ ........ 72% 9,75M 1m58s
+2883584K ........ ........ ........ ........ 73% 10,0M 1m54s
+2916352K ........ ........ ........ ........ 73% 8,62M 1m51s
+2949120K ........ ........ ........ ........ 74% 8,43M 1m47s
+2981888K ........ ........ ........ ........ 75% 8,32M 1m44s
+3014656K ........ ........ ........ ........ 76% 8,32M 1m41s
+3047424K ........ ........ ........ ........ 77% 7,96M 97s
+3080192K ........ ........ ........ ........ 78% 9,47M 94s
+3112960K ........ ........ ........ ........ 78% 9,11M 90s
+3145728K ........ ........ ........ ........ 79% 9,68M 87s
+3178496K ........ ........ ........ ........ 80% 9,58M 83s
+3211264K ........ ........ ........ ........ 81% 8,29M 80s
+3244032K ........ ........ ........ ........ 82% 7,89M 76s
+3276800K ........ ........ ........ ........ 83% 7,59M 73s
+3309568K ........ ........ ........ ........ 83% 8,26M 69s
+3342336K ........ ........ ........ ........ 84% 9,15M 66s
+3375104K ........ ........ ........ ........ 85% 9,59M 62s
+3407872K ........ ........ ........ ........ 86% 8,56M 59s
+3440640K ........ ........ ........ ........ 87% 9,14M 55s
+3473408K ........ ........ ........ ........ 87% 9,38M 52s
+3506176K ........ ........ ........ ........ 88% 9,24M 48s
+3538944K ........ ........ ........ ........ 89% 8,70M 45s
+3571712K ........ ........ ........ ........ 90% 8,76M 41s
+3604480K ........ ........ ........ ........ 91% 9,67M 38s
+3637248K ........ ........ ........ ........ 92% 10,1M 34s
+3670016K ........ ........ ........ ........ 92% 9,17M 31s
+3702784K ........ ........ ........ ........ 93% 9,76M 27s
+3735552K ........ ........ ........ ........ 94% 7,18M 24s
+3768320K ........ ........ ........ ........ 95% 9,22M 20s
+3801088K ........ ........ ........ ........ 96% 9,19M 17s
+3833856K ........ ........ ........ ........ 96% 8,99M 13s
+3866624K ........ ........ ........ ........ 97% 9,16M 9s
+3899392K ........ ........ ........ ........ 98% 9,02M 6s
+3932160K ........ ........ ........ ........ 99% 9,54M 2s
+3964928K ........ ........ .....            100% 8,78M=7m9s
+
+2026-01-03 22:19:22 (9,07 MB/s) - ‘../../../../llama.cpp/models/.tmp/deepseek-coder-6.7b-instruct.Q4_K_M.gguf.tmp’ salvo [4083015904/4083015904]
+

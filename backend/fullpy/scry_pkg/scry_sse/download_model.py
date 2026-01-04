@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
-from typing import AsyncGenerator, Dict, List
+from typing import AsyncGenerator
 from fastapi.responses import StreamingResponse
 from scry_pkg.config.paths import possible_paths
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,25 +18,24 @@ class SecurityValidator:
     
     @staticmethod
     def validate_model_id(model_id: str) -> bool:
-        logger.debug(f"[VALIDATION] Validando ID: '{model_id}'")
-        
         # PERMISSIVE VALIDATION - ACCEPTS REAL IDs
         if not model_id or len(model_id) > 100:
             logger.debug(f"[VALIDATION] Empty or ID too long: {model_id}")
             return False
         
         # Allows: letters (uppercase/lowercase), numbers, hyphens, dots, underscores
-        if not re.match(r'^[a-zA-Z0-9\-\._]+$', model_id):
+        if not re.match(r'^[a-zA-Z0-9\-\._]+$', model_id): #########################
             logger.debug(f"[VALIDATION] ID contains invalid characters: {model_id}")
             return False
         
         logger.debug(f"[VALIDATION] ID VALID: {model_id}")
-        return True
+        return True 
+    
+    ####################################################################################                                         SECURITY VALIDATION
     @staticmethod
-    def validate_url(url: str, allowed_domains: List[str]) -> bool:
-        logger.debug(f"Validando URL: {url}")
+    def validate_url(url: str, allowed_domains: list[str]) -> bool:
         try:
-            parsed = urlparse(url)
+            parsed = urlparse(url) #####
             if parsed.scheme != 'https':
                 logger.warning(f"URL does not use HTTPS: {url}")
                 return False
@@ -47,10 +46,10 @@ class SecurityValidator:
         except Exception as e:
             logger.error(f"Error validating URL {url}: {str(e)}")
             return False
-    
+        
+    ###################################################################################
     @staticmethod
     def validate_filename(filename: str) -> bool:
-        logger.debug(f"Validando filename: {filename}")
         if '..' in filename or '/' in filename or '\\' in filename:
             logger.warning(f"Invalid filename (contains prohibited characters): {filename}")
             return False
@@ -58,17 +57,16 @@ class SecurityValidator:
         if not is_valid:
             logger.warning(f"Invalid file format or name too long: {filename}")
         return is_valid
-
-# COMMAND BUILDER
-class CommandBuilder:
     
+#####################################################################################################
+class CommandBuilder:   
     COMMANDS = {
         "wget": ["wget", "-c", "--progress=dot:giga", "-O"],
         "curl": ["curl", "-L", "-C", "-", "--progress-bar", "-o"]
     }
     
     @classmethod
-    def build(cls, method: str, url: str, output_file: str) -> List[str]:
+    def build(cls, method: str, url: str, output_file: str) -> list[str]:#                                                 COMMAND BUILDER: mount the command                             
         if method not in cls.COMMANDS:
             raise ValueError(f"Method {method} not supported")
         
@@ -80,83 +78,85 @@ class CommandBuilder:
         cmd.append(url)
         
         return cmd
-
-# DOWNLOAD MANAGER
+#####################################################################################################
 class DownloadManager:
-    
     def __init__(self):
-        self.config = {}
+        self.config = {}#                                                                               obj json go here
         self.models = {}
-        self.active_downloads = {}
+        self.active_downloads = {} #                                                                    states
     
-    def load_config(self):
+    def load_config(self) -> None:
         try:
-            logger.info(" Attempting to load configuration...")
+            logger.warning("load configuration...")
             # TEST MULTIPLE PATHS  - test remove fallback   
             config_path = None
-            for path in possible_paths:
+            for path in possible_paths: # imported - possible_paths
                 if os.path.exists(path):
                     config_path = path
-                    logger.info(f" File found at: {path}")
+                    logger.info(f"File found at: {path}")
                     break
                 else:
-                    logger.warning(f" Not found: {path}")
-            
+                    logger.warning(f"File Not found: {path}")
+            #####################################################################  ^^^ finds path in dir/files ^^^ (config_path ex: ./config/models.json")
+
             if config_path is None:
-                error_msg = " Error: models.json not found in any known location!"
-                logger.error(error_msg)
-                logger.error(f" Current directory: {os.getcwd()}")
-                logger.error(f" Directory contents: {os.listdir('.')}")
+                logger.error("Error: models.json not found in any known location!")
+                logger.error(f"Current directory: {os.getcwd()}")
+                logger.error(f"Directory contents: {os.listdir('.')}")
                 raise FileNotFoundError("models.json not found in any known location")
             
             logger.info(f" Reading file: {config_path}")
-            with open(config_path, 'r', encoding='utf-8') as f:
+            with open(config_path, 'r', encoding='utf-8') as f:#                                                            # DOWNLOAD MANAGER: is the main class
                 content = f.read()
-                logger.debug(f" File content (first 500 chars): {content[:500]}...")
-                
-                self.config = json.loads(content)
-                self.models = {m['id']: m for m in self.config['models']}
+                # logger.debug(f" File content (first 500 chars): {content[:500]}...")
+
+                self.config = json.loads(content)#                                                                          
+                self.models = {m['id']: m for m in self.config['models']}# ex: "Llama-3.2-3B-Instruct-Q4_K_M.gguf": {"id."."name"..} 
+
+            ##################################################################### borny cofig == full json in models.json
+
+            for dir_key in ['download_path', 'temp_path', 'log_path']:
+                if not dir_key in self.config:#                                                                                 
+                    raise FileNotFoundError("""
+                    File not find in models.json,
+                    line ..121...""")
+                if not os.path.exists(self.config[dir_key]):
+                    raise FileNotFoundError("""
+                    file code: download_model.py, 
+                    line ... 120 ... 
+                    """)#                                                                                                    file verification and JSON
             
-            # Create required directories
-            required_dirs = ['download_path', 'temp_path', 'log_path']
-            for dir_key in required_dirs:
-                if dir_key in self.config:
-                    Path(self.config[dir_key]).mkdir(parents=True, exist_ok=True)
-                    logger.info(f" Directory verified/created: {self.config[dir_key]}")
-            
-            logger.info(f" CONFIGURATION LOADED: {len(self.models)} models")
             logger.info(f" IDs available: {list(self.models.keys())}")
         
         except json.JSONDecodeError as e:
-            error_msg = f"ERROR: Failed to decode JSON file: {e}"
-            logger.error(error_msg)
+            logger.error(f"ERROR: Failed to decode JSON file: {e}")
             raise ValueError(f"Invalid configuration file: {e}")
         except Exception as e:
-            error_msg = f"CRITICAL ERROR loading configuration: {e}"
-            logger.error(error_msg)
+            logger.error(f"CRITICAL ERROR loading configuration: {e}")
             raise
-    
-    def get_models(self) -> List[Dict]:
+    #####################################################################
+    def get_models(self) -> list[dict]:
         result = []
         download_path = Path(self.config['download_path'])
         
         for model_id, model in self.models.items():
-            file_path = download_path / model['filename']
-            
+            file_path = download_path / model['filename'] # duplicate in json: id == filename
             result.append({
                 "id": model_id,
                 "name": model['name'],
                 "filename": model['filename'],
-                "size_gb": model['size_gb'],
+                "size_gb": model['size_gb'], # improve in the future
                 "is_downloaded": file_path.exists(),
                 "is_downloading": model_id in self.active_downloads
             })
         
         return result
     
-    def get_model_status(self, model_id: str) -> Dict:
+    ##################################################################### 
+
+    def get_model_status(self, model_id: str) -> dict:
         if model_id not in self.models:
-            raise ValueError(f"Model {model_id} not found")
+            raise ValueError(f"Model: {model_id} not found")
         
         model = self.models[model_id]
         file_path = Path(self.config['download_path']) / model['filename']
@@ -165,7 +165,7 @@ class DownloadManager:
         progress = 0
         if model_id in self.active_downloads:
             # Try to get progress from internal state (if available)
-            progress = getattr(self.active_downloads[model_id], 'progress', 0)
+            progress = getattr(self.active_downloads[model_id], 'progress', 0)#                                 received an instance of a class
         
         return {
             "id": model_id,
@@ -176,7 +176,9 @@ class DownloadManager:
             "file_path": str(file_path) if file_path.exists() else None
         }
     
-    async def download(self, model_id: str) -> AsyncGenerator[Dict, None]:
+    ##################################################################### 
+    
+    async def download(self, model_id: str) -> AsyncGenerator[dict, None]:
         # VALIDATION
         if not SecurityValidator.validate_model_id(model_id):
             yield {"type": "error", "message": "Invalid ID"}
@@ -185,7 +187,7 @@ class DownloadManager:
         if model_id not in self.models:
             yield {"type": "error", "message": "Model not found"}
             return
-        
+#                                                                                                              ( main download )   
         if model_id in self.active_downloads:
             yield {"type": "error", "message": "Download already in progress"}
             return
@@ -194,11 +196,15 @@ class DownloadManager:
         download_path = Path(self.config['download_path'])
         temp_path = Path(self.config['temp_path'])
         
-        final_file = download_path / model['filename']
+        final_file = download_path / model['filename'] # ex: "../../../../llama.cpp/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+         
+        #Add functionality to check if the file is corrupted here.
         if final_file.exists():
             yield {"type": "completed", "progress": 100, "message": "Already downloaded"}
             return
         
+        ##################################################################### 
+
         # CREATE STATE OBJECT TO STORE PROGRESS
         class DownloadState:
             def __init__(self):
@@ -206,7 +212,7 @@ class DownloadManager:
                 self.progress = 0
         
         state = DownloadState()
-        self.active_downloads[model_id] = state
+        self.active_downloads[model_id] = state#                                                         intacy active_downloads
         
         try:
             yield {"type": "started", "model_id": model_id, "model_name": model['name']}
@@ -217,7 +223,7 @@ class DownloadManager:
                 
                 yield {
                     "type": "info", 
-                    "message": f"Método {idx}/{len(model['methods'])}: {method_type}"
+                    "message": f"method {idx}/{len(model['methods'])}: {method_type}"
                 }
                 
                 if not SecurityValidator.validate_url(url, self.config['allowed_domains']):
@@ -247,7 +253,7 @@ class DownloadManager:
                             model['size_gb'],
                             state
                         ):
-                            yield event
+                            yield event #####
                             
                             if event.get("type") == "completed":
                                 temp_file.replace(final_file)
@@ -280,7 +286,7 @@ class DownloadManager:
         output_file: Path,
         size_gb: float,
         state  # DownloadState object
-    ) -> AsyncGenerator[Dict, None]:
+    ) -> AsyncGenerator[dict, None]:
         
         cmd = CommandBuilder.build(method, url, str(output_file))
         logger.info(f"Executing: {' '.join(cmd)}")
@@ -381,7 +387,7 @@ class DownloadManager:
 manager = DownloadManager()
 
 @asynccontextmanager
-async def lifespan():
+async def lifespan(app:FastAPI):
     manager.load_config()
     yield
 
