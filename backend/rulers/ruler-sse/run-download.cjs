@@ -1,12 +1,7 @@
-/**
- * SSE Download Server Initializer
- * @module run-download
- */
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const net = require('net');
-// const { once } = 'node:events';
 const { COLORS } = require('../../../utils/ansiColors.cjs'); 
 
 class ModelDownloadServerManager {

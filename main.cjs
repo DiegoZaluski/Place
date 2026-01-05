@@ -10,8 +10,9 @@ const { startSSEServer, stopSSEServer, ipcDownloadModel } = require('./ipc/ipc-d
 const ctrlCallModel = require('./ipc/ipc-call-model.cjs');
 const { createControlWindow, closeControlWindow, getControlWindow, } = require('./backend/second-window/control-window.cjs');
   
-let modelLookout = null;//INSTANCES
+let modelLookout = null;
 let httpServerInstance = null;  
+let mainWindow;
 
 initLog(COLORS);
 
@@ -24,7 +25,7 @@ const startHTTPServer = async () => {
     return true;
   } catch (error) {
     console.error(COLORS.RED + 'Failed to start HTTP Server:' + COLORS.RESET, error);
-    return false;
+    throw error;
   }
 };
 
@@ -40,13 +41,13 @@ const stopHTTPServer = () => {
 /* -------------------------------- // 
       ELECTRON WINDOW MANAGEMENT
 / -------------------------------- */ 
-let mainWindow;
 
 const createWindow = async () => {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     frame: false,
+    show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -54,49 +55,31 @@ const createWindow = async () => {
     },
   });
 
-  // CONFIGURE RECONNECTION CALLBACK
   serverManager.setReconnectCallback(() => {
     console.log('WebSocket reconnection triggered by server manager');
     websocketManager.connectToPythonServer(mainWindow);
   });
 
   const isDev = !app.isPackaged;
-  try {
-    if (isDev) {
-      await mainWindow.loadURL('http://localhost:3000/');
-      mainWindow.webContents.openDevTools();
-    } else {
-      await mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
-    }
-    console.log(COLORS.GREEN + 'WINDOW LOADED SUCCESSFULLY' + COLORS.RESET);
-
-    // START ALL SERVICES
-    setTimeout(async () => {
-      const serverStarted = await serverManager.startPythonServer(mainWindow); // MAIN SERVICES
-      if (serverStarted) {
-        websocketManager.connectToPythonServer(mainWindow);
-
-        modelLookout = new ModelLookout();
-        modelLookout.start();
-        console.log(COLORS.GREEN + 'MODEL LOOKOUT STARTED' + COLORS.RESET);
-
-        await startHTTPServer(); // HTTP SERVER
-      }
-    }, 1000);
-  } catch (err) {
-    console.error(COLORS.RED + 'ERROR LOADING WINDOW:' + COLORS.RESET, err);
+  
+  if (isDev) {
+    await mainWindow.loadURL('http://localhost:3000/');
+    mainWindow.webContents.openDevTools();
+  } else {
+    await mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
   }
+  
+  console.log(COLORS.GREEN + 'WINDOW LOADED SUCCESSFULLY' + COLORS.RESET);
 
   mainWindow.on('closed', () => {
     mainWindow = null;
     websocketManager.closeWebSocket();
     if (modelLookout) {
-      modelLookout.stop();// STOP 
+      modelLookout.stop();
     }
     stopHTTPServer();
   });
 };
-
 
 // IPC HANDLERS - WINDOW CONTROLS
 ipcMain.handle('window:minimize', () => {
@@ -124,27 +107,49 @@ ipcMain.handle('control-content-size', (_event, width, height) => {
   return { success: true };
 });
 
-// -------------------------------- // 
-
 ctrlCallModel(websocketManager, serverManager, mainWindow, ipcMain);
-ipcDownloadModel( ipcMain );
+ipcDownloadModel(ipcMain);
 
-// -------------------------------- // 
+// -------------------------------- //
 
 app.whenReady().then(async () => {
-  await createWindow();
-
-  // CREATE CONTROL WINDOW
-  createControlWindow(mainWindow);
-
-  // START SSE SERVER AFTER WINDOW
-  setTimeout(async () => {
-    try {
-      await startSSEServer();
-    } catch (error) {
-      console.error(COLORS.RED + 'SSE Server failed on startup:' + COLORS.RESET, error);
+  let allServersOK = false;
+  
+  try {
+    await createWindow();
+    
+    await startSSEServer();
+    
+    const serverStarted = await serverManager.startPythonServer(mainWindow);
+    
+    if (serverStarted) {
+      websocketManager.connectToPythonServer(mainWindow);
+      
+      modelLookout = new ModelLookout();
+      modelLookout.start();
+      console.log(COLORS.GREEN + 'MODEL LOOKOUT STARTED' + COLORS.RESET);
+      
+      await startHTTPServer();
+    } else {
+      throw new Error('Python server failed to start');
     }
-  }, 2000);
+    
+    createControlWindow(mainWindow);
+    
+    allServersOK = true;
+    
+  } catch (error) {
+    allServersOK = false;
+    console.error(COLORS.RED + 'STARTUP ERROR:' + COLORS.RESET, error);
+  }
+  
+  if (allServersOK && mainWindow) {
+    mainWindow.show();
+    console.log(COLORS.GREEN + 'APPLICATION READY' + COLORS.RESET);
+  } else {
+    console.error(COLORS.RED + 'Failed to initialize application' + COLORS.RESET);
+    app.quit();
+  }
 });
 
 app.on('window-all-closed', async () => {
@@ -153,7 +158,6 @@ app.on('window-all-closed', async () => {
   serverManager.stopPythonServer();
   await stopSSEServer();
 
-  // STOP ALL SERVICES
   if (modelLookout) {
     modelLookout.stop();
   }
@@ -170,7 +174,6 @@ app.on('before-quit', async () => {
   serverManager.stopPythonServer();
   await stopSSEServer();
 
-  // STOP ALL SERVICES
   if (modelLookout) {
     modelLookout.stop();
   }
@@ -181,12 +184,12 @@ app.on('will-quit', async () => {
   serverManager.stopPythonServer();
   await stopSSEServer();
 
-  // STOP ALL SERVICES
   if (modelLookout) {
     modelLookout.stop();
   }
   stopHTTPServer();
 });
+
 module.exports = {
   connectToPythonServer: websocketManager.connectToPythonServer,
 };

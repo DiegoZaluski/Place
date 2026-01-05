@@ -96,12 +96,10 @@ if (typeof window !== 'undefined') {
 
     // TEST
     sendContentSize: (width, height) => ipcRenderer.invoke('control-content-size', width, height),
-  });
 
-  // WINDOW CONTROL
-  contextBridge.exposeInMainWorld('electron', {
+    // WINDOW CONTROL
     invoke: (channel, data) => ipcRenderer.invoke(channel, data),
   });
-
+  
   console.log('✓ Preload script executed successfully');
 }

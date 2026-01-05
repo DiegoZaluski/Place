@@ -1,8 +1,7 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { AppContext } from '../../../global/AppProvider';
 
-// COLORS (ROOT CSS)
 const COLORS = {
   spinnerPrimary: '#3b82f6',
   progressBackground: '#e5e7eb',
@@ -10,7 +9,11 @@ const COLORS = {
   progressBorder: '#d1d5db',
   textPrimary: '#1f2937',
   textSecondary: '#6b7280',
+  blinkLight: '#ffffff',
+  blinkDark: '#d1d5db',
 };
+
+const STALL_TIMEOUT = 15000; // 15 seconds without progress
 
 interface DownloadProgressProps {
   modelId: string;
@@ -23,6 +26,32 @@ const DownloadProgress: React.FC<DownloadProgressProps> = ({ modelId, size = 'md
 
   const { getDownloadState } = context;
   const { status, progress, error } = getDownloadState(modelId);
+
+  const [isStalled, setIsStalled] = useState(false);
+  const [lastProgress, setLastProgress] = useState(0);
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
+
+  useEffect(() => {
+    if (status === 'downloading') {
+      if (progress !== lastProgress && progress > 0) {
+        setLastProgress(progress);
+        setLastUpdate(Date.now());
+        setIsStalled(false);
+      } else {
+        const timer = setTimeout(() => {
+          const timeSinceUpdate = Date.now() - lastUpdate;
+          if (timeSinceUpdate >= STALL_TIMEOUT && progress === lastProgress) {
+            setIsStalled(true);
+          }
+        }, STALL_TIMEOUT);
+
+        return () => clearTimeout(timer);
+      }
+    } else {
+      setIsStalled(false);
+      setLastProgress(0);
+    }
+  }, [status, progress, lastProgress, lastUpdate]);
 
   const sizes = {
     sm: {
@@ -66,7 +95,7 @@ const DownloadProgress: React.FC<DownloadProgressProps> = ({ modelId, size = 'md
         </div>
       )}
 
-      {status === 'downloading' && (
+      {status === 'downloading' && !isStalled && (
         <div className="w-full space-y-2">
           <div className="flex justify-between items-center">
             <p
@@ -100,6 +129,20 @@ const DownloadProgress: React.FC<DownloadProgressProps> = ({ modelId, size = 'md
         </div>
       )}
 
+      {status === 'downloading' && isStalled && (
+        <div className="flex flex-col items-center gap-2">
+          <p
+            className={`${currentSize.fontSize} font-medium animate-pulse`}
+            style={{
+              color: COLORS.textSecondary,
+              animationDuration: '1.5s',
+            }}
+          >
+            downloading
+          </p>
+        </div>
+      )}
+
       {status === 'downloaded' && (
         <div className="flex flex-col items-center gap-2">
           <CheckCircle2 size={currentSize.spinner} style={{ color: COLORS.progressFill }} />
@@ -125,3 +168,4 @@ const DownloadProgress: React.FC<DownloadProgressProps> = ({ modelId, size = 'md
 };
 
 export default DownloadProgress;
+
