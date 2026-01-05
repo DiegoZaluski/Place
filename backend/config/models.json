@@ -3,202 +3,110 @@
   "temp_path": "../../../../llama.cpp/models/.tmp",
   "log_path": "./logs",
   "timeout": 7200,
+  "stall_timeout": 120,
   "allowed_domains": ["huggingface.co", "hf.co"],
+  "ram_download_threshold_gb": 2.5,
   "models": [
     {
       "id": "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
       "name": "Llama 3.2 3B",
       "filename": "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
       "size_gb": 2.1,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
-        },
-        {
-          "type": "wget",
-          "url": "https://hf.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+        "https://hf.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+      ]
     },
     {
       "id": "mistral-7b-instruct-v0.3.Q4_K_M.gguf",
       "name": "Mistral 7B Instruct",
       "filename": "mistral-7b-instruct-v0.3.Q4_K_M.gguf",
       "size_gb": 4.1,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/mistral-7b-instruct-v0.3.Q4_K_M.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/mistral-7b-instruct-v0.3.Q4_K_M.gguf"
-        },
-        {
-          "type": "wget",
-          "url": "https://hf.co/TheBloke/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/mistral-7b-instruct-v0.3.Q4_K_M.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/mistral-7b-instruct-v0.3.Q4_K_M.gguf",
+        "https://hf.co/TheBloke/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/mistral-7b-instruct-v0.3.Q4_K_M.gguf"
+      ]
     },
     {
       "id": "qwen2.5-7b-instruct.Q4_K_M.gguf",
       "name": "Qwen 2.5 7B",
       "filename": "qwen2.5-7b-instruct-q4_k_m.gguf",
       "size_gb": 4.5,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/qwen2.5-7b-instruct-q4_k_m.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/qwen2.5-7b-instruct-q4_k_m.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/qwen2.5-7b-instruct-q4_k_m.gguf"
+      ]
     },
     {
       "id": "phi-3-mini-4k-instruct.Q4_K_M.gguf",
       "name": "Phi-3 Mini",
       "filename": "Phi-3-mini-4k-instruct-q4.gguf",
       "size_gb": 2.3,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf"
+      ]
     },
     {
       "id": "llama-3.1-8b-instruct.Q4_K_M.gguf",
       "name": "Llama 3.1 8B",
       "filename": "llama-3.1-8b-instruct.Q4_K_M.gguf",
       "size_gb": 5.2,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
+      ]
     },
     {
       "id": "deepseek-coder-6.7b-instruct.Q4_K_M.gguf",
       "name": "DeepSeek Coder",
       "filename": "deepseek-coder-6.7b-instruct.Q4_K_M.gguf",
       "size_gb": 4.2,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/TheBloke/deepseek-coder-6.7B-instruct-GGUF/resolve/main/deepseek-coder-6.7b-instruct.Q4_K_M.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/TheBloke/deepseek-coder-6.7B-instruct-GGUF/resolve/main/deepseek-coder-6.7b-instruct.Q4_K_M.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/TheBloke/deepseek-coder-6.7B-instruct-GGUF/resolve/main/deepseek-coder-6.7b-instruct.Q4_K_M.gguf"
+      ]
     },
     {
       "id": "Llama-3.2-1B-Instruct-Q4_K_M.gguf",
       "name": "Llama 3.2 1B",
       "filename": "Llama-3.2-1B-Instruct-Q4_K_M.gguf",
       "size_gb": 1.1,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+      ]
     },
     {
       "id": "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
       "name": "TinyLlama 1.1B",
       "filename": "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
       "size_gb": 0.8,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
+      ]
     },
     {
       "id": "zephyr-7b-beta.Q4_K_M.gguf",
       "name": "Zephyr 7B",
       "filename": "zephyr-7b-beta.Q4_K_M.gguf",
       "size_gb": 4.7,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/TheBloke/zephyr-7B-beta-GGUF/resolve/main/zephyr-7b-beta.Q4_K_M.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/TheBloke/zephyr-7B-beta-GGUF/resolve/main/zephyr-7b-beta.Q4_K_M.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/TheBloke/zephyr-7B-beta-GGUF/resolve/main/zephyr-7b-beta.Q4_K_M.gguf"
+      ]
     },
     {
       "id": "neural-chat-7b-v3-3.Q4_K_M.gguf",
       "name": "Neural Chat 7B",
       "filename": "neural-chat-7b-v3-3.Q4_K_M.gguf",
       "size_gb": 4.6,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/TheBloke/neural-chat-7B-v3-3-GGUF/resolve/main/neural-chat-7b-v3-3.Q4_K_M.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/TheBloke/neural-chat-7B-v3-3-GGUF/resolve/main/neural-chat-7b-v3-3.Q4_K_M.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/TheBloke/neural-chat-7B-v3-3-GGUF/resolve/main/neural-chat-7b-v3-3.Q4_K_M.gguf"
+      ]
     },
     {
       "id": "openchat-3.6-8b-20240522.Q4_K_M.gguf",
       "name": "Openchat 3.6",
       "filename": "openchat-3.6-8b-20240522.Q4_K_M.gguf",
       "size_gb": 4.9,
-      "methods": [
-        {
-          "type": "wget",
-          "url": "https://huggingface.co/TheBloke/openchat-3.6-8B-20240522-GGUF/resolve/main/openchat-3.6-8b-20240522.Q4_K_M.gguf"
-        },
-        {
-          "type": "curl",
-          "url": "https://huggingface.co/TheBloke/openchat-3.6-8B-20240522-GGUF/resolve/main/openchat-3.6-8b-20240522.Q4_K_M.gguf"
-        }
-      ],
-      "lora": []
+      "urls": [
+        "https://huggingface.co/TheBloke/openchat-3.6-8B-20240522-GGUF/resolve/main/openchat-3.6-8b-20240522.Q4_K_M.gguf"
+      ]
     }
   ]
 }

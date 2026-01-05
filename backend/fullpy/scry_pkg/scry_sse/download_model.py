@@ -2,184 +2,123 @@ import os
 import re
 import time
 import json
+import psutil
 import asyncio
 from pathlib import Path
 from urllib.parse import urlparse
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from fastapi.responses import StreamingResponse
 from scry_pkg.config.paths import possible_paths
 from fastapi.middleware.cors import CORSMiddleware
 from scry_pkg.scry_sse import logger, FALLBACK_PORTS_SSE
 
-# SECURITY VALIDATION
+
 class SecurityValidator:
-    
     @staticmethod
     def validate_model_id(model_id: str) -> bool:
-        # PERMISSIVE VALIDATION - ACCEPTS REAL IDs
-        if not model_id or len(model_id) > 100:
-            logger.debug(f"[VALIDATION] Empty or ID too long: {model_id}")
-            return False
-        
-        # Allows: letters (uppercase/lowercase), numbers, hyphens, dots, underscores
-        if not re.match(r'^[a-zA-Z0-9\-\._]+$', model_id): #########################
-            logger.debug(f"[VALIDATION] ID contains invalid characters: {model_id}")
-            return False
-        
-        logger.debug(f"[VALIDATION] ID VALID: {model_id}")
-        return True 
+        return bool(model_id and len(model_id) <= 150 and re.match(r'^[a-zA-Z0-9\-\._]+$', model_id))
     
-    ####################################################################################                                         SECURITY VALIDATION
     @staticmethod
-    def validate_url(url: str, allowed_domains: list[str]) -> bool:
+    def validate_url(url: str, allowed_domains: list) -> bool:
         try:
-            parsed = urlparse(url) #####
-            if parsed.scheme != 'https':
-                logger.warning(f"URL does not use HTTPS: {url}")
-                return False
-            
-            domain = parsed.netloc.lower()
-            logger.debug(f"Domain extracted: {domain}")
-            return any(domain.endswith(d) for d in allowed_domains)
-        except Exception as e:
-            logger.error(f"Error validating URL {url}: {str(e)}")
+            parsed = urlparse(url)
+            return parsed.scheme == 'https' and any(parsed.netloc.lower().endswith(d) for d in allowed_domains)
+        except:
             return False
-        
-    ###################################################################################
+
+
+class ProgressMonitor:
+    __slots__ = ('last_progress', 'last_update', 'stall_timeout', 'cancel_event')
+    
+    def __init__(self, stall_timeout: int = 120):
+        self.last_progress = 0
+        self.last_update = time.time()
+        self.stall_timeout = stall_timeout
+        self.cancel_event = asyncio.Event()
+    
+    def update(self, progress: int):
+        if progress != self.last_progress:
+            self.last_progress = progress
+            self.last_update = time.time()
+    
+    def is_stalled(self) -> bool:
+        return (time.time() - self.last_update) > self.stall_timeout
+
+
+class RAMDownloader:
     @staticmethod
-    def validate_filename(filename: str) -> bool:
-        if '..' in filename or '/' in filename or '\\' in filename:
-            logger.warning(f"Invalid filename (contains prohibited characters): {filename}")
-            return False
-        is_valid = filename.endswith('.gguf') and len(filename) < 100
-        if not is_valid:
-            logger.warning(f"Invalid file format or name too long: {filename}")
-        return is_valid
+    def get_available_ram_gb() -> float:
+        return psutil.virtual_memory().available / (1024**3)
     
-#####################################################################################################
-class CommandBuilder:   
-    COMMANDS = {
-        "wget": ["wget", "-c", "--progress=dot:giga", "-O"],
-        "curl": ["curl", "-L", "-C", "-", "--progress-bar", "-o"]
-    }
+    @staticmethod
+    def can_use_ram(size_gb: float, threshold_gb: float) -> bool:
+        return RAMDownloader.get_available_ram_gb() >= ((size_gb * 2) + threshold_gb)
     
-    @classmethod
-    def build(cls, method: str, url: str, output_file: str) -> list[str]:#                                                 COMMAND BUILDER: mount the command                             
-        if method not in cls.COMMANDS:
-            raise ValueError(f"Method {method} not supported")
-        
-        if ';' in url or '&' in url or '|' in url or '`' in url:
-            raise ValueError("URL contains prohibited characters")
-        
-        cmd = cls.COMMANDS[method].copy()
-        cmd.append(output_file)
-        cmd.append(url)
-        
-        return cmd
-#####################################################################################################
+    @staticmethod
+    async def download_to_ram(url: str) -> Optional[bytes]:
+        try:
+            import aiohttp
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=3600)) as response:
+                    return await response.read() if response.status == 200 else None
+        except Exception as e:
+            logger.error(f"RAM download error: {e}")
+            return None
+
+
 class DownloadManager:
     def __init__(self):
-        self.config = {}#                                                                               obj json go here
+        self.config = {}
         self.models = {}
-        self.active_downloads = {} #                                                                    states
+        self.active_downloads = {}
     
-    def load_config(self) -> None:
-        try:
-            logger.warning("load configuration...")
-            # TEST MULTIPLE PATHS  - test remove fallback   
-            config_path = None
-            for path in possible_paths: # imported - possible_paths
-                if os.path.exists(path):
-                    config_path = path
-                    logger.info(f"File found at: {path}")
-                    break
-                else:
-                    logger.warning(f"File Not found: {path}")
-            #####################################################################  ^^^ finds path in dir/files ^^^ (config_path ex: ./config/models.json")
-
-            if config_path is None:
-                logger.error("Error: models.json not found in any known location!")
-                logger.error(f"Current directory: {os.getcwd()}")
-                logger.error(f"Directory contents: {os.listdir('.')}")
-                raise FileNotFoundError("models.json not found in any known location")
-            
-            logger.info(f" Reading file: {config_path}")
-            with open(config_path, 'r', encoding='utf-8') as f:#                                                            # DOWNLOAD MANAGER: is the main class
-                content = f.read()
-                # logger.debug(f" File content (first 500 chars): {content[:500]}...")
-
-                self.config = json.loads(content)#                                                                          
-                self.models = {m['id']: m for m in self.config['models']}# ex: "Llama-3.2-3B-Instruct-Q4_K_M.gguf": {"id."."name"..} 
-
-            ##################################################################### borny cofig == full json in models.json
-
-            for dir_key in ['download_path', 'temp_path', 'log_path']:
-                if not dir_key in self.config:#                                                                                 
-                    raise FileNotFoundError("""
-                    File not find in models.json,
-                    line ..121...""")
-                if not os.path.exists(self.config[dir_key]):
-                    raise FileNotFoundError("""
-                    file code: download_model.py, 
-                    line ... 120 ... 
-                    """)#                                                                                                    file verification and JSON
-            
-            logger.info(f" IDs available: {list(self.models.keys())}")
+    def load_config(self):
+        config_path = next((p for p in possible_paths if os.path.exists(p)), None)
+        if not config_path:
+            raise FileNotFoundError("models.json not found")
         
-        except json.JSONDecodeError as e:
-            logger.error(f"ERROR: Failed to decode JSON file: {e}")
-            raise ValueError(f"Invalid configuration file: {e}")
-        except Exception as e:
-            logger.error(f"CRITICAL ERROR loading configuration: {e}")
-            raise
-    #####################################################################
-    def get_models(self) -> list[dict]:
-        result = []
+        with open(config_path, 'r', encoding='utf-8') as f:
+            self.config = json.load(f)
+            self.models = {m['id']: m for m in self.config['models']}
+        
+        for key in ['download_path', 'temp_path', 'log_path']:
+            Path(self.config[key]).mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Models loaded: {len(self.models)}")
+    
+    def get_models(self) -> list:
         download_path = Path(self.config['download_path'])
-        
-        for model_id, model in self.models.items():
-            file_path = download_path / model['filename'] # duplicate in json: id == filename
-            result.append({
-                "id": model_id,
-                "name": model['name'],
-                "filename": model['filename'],
-                "size_gb": model['size_gb'], # improve in the future
-                "is_downloaded": file_path.exists(),
-                "is_downloading": model_id in self.active_downloads
-            })
-        
-        return result
+        return [{
+            "id": mid,
+            "name": m['name'],
+            "filename": m['filename'],
+            "size_gb": m['size_gb'],
+            "is_downloaded": (download_path / m['filename']).exists(),
+            "is_downloading": mid in self.active_downloads,
+            "file_path": str(download_path / m['filename']) if (download_path / m['filename']).exists() else None
+        } for mid, m in self.models.items()]
     
-    ##################################################################### 
-
     def get_model_status(self, model_id: str) -> dict:
         if model_id not in self.models:
-            raise ValueError(f"Model: {model_id} not found")
+            raise ValueError(f"Model not found: {model_id}")
         
-        model = self.models[model_id]
-        file_path = Path(self.config['download_path']) / model['filename']
-        
-        # ADD PROGRESS INFO IF DOWNLOADING
-        progress = 0
-        if model_id in self.active_downloads:
-            # Try to get progress from internal state (if available)
-            progress = getattr(self.active_downloads[model_id], 'progress', 0)#                                 received an instance of a class
+        m = self.models[model_id]
+        fp = Path(self.config['download_path']) / m['filename']
         
         return {
             "id": model_id,
-            "name": model['name'],
-            "is_downloaded": file_path.exists(),
+            "name": m['name'],
+            "filename": m['filename'],
+            "size_gb": m['size_gb'],
+            "is_downloaded": fp.exists(),
             "is_downloading": model_id in self.active_downloads,
-            "progress": progress,
-            "file_path": str(file_path) if file_path.exists() else None
+            "progress": self.active_downloads[model_id].last_progress if model_id in self.active_downloads else 0,
+            "file_path": str(fp) if fp.exists() else None
         }
     
-    ##################################################################### 
-    
     async def download(self, model_id: str) -> AsyncGenerator[dict, None]:
-        # VALIDATION
         if not SecurityValidator.validate_model_id(model_id):
             yield {"type": "error", "message": "Invalid ID"}
             return
@@ -187,132 +126,90 @@ class DownloadManager:
         if model_id not in self.models:
             yield {"type": "error", "message": "Model not found"}
             return
-#                                                                                                              ( main download )   
+        
         if model_id in self.active_downloads:
-            yield {"type": "error", "message": "Download already in progress"}
+            yield {"type": "error", "message": "Download in progress"}
             return
         
         model = self.models[model_id]
         download_path = Path(self.config['download_path'])
         temp_path = Path(self.config['temp_path'])
+        final_file = download_path / model['filename']
         
-        final_file = download_path / model['filename'] # ex: "../../../../llama.cpp/models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
-         
-        #Add functionality to check if the file is corrupted here.
         if final_file.exists():
             yield {"type": "completed", "progress": 100, "message": "Already downloaded"}
             return
         
-        ##################################################################### 
-
-        # CREATE STATE OBJECT TO STORE PROGRESS
-        class DownloadState:
-            def __init__(self):
-                self.cancel_event = asyncio.Event()
-                self.progress = 0
-        
-        state = DownloadState()
-        self.active_downloads[model_id] = state#                                                         intacy active_downloads
+        monitor = ProgressMonitor(self.config.get('stall_timeout', 120))
+        self.active_downloads[model_id] = monitor
         
         try:
             yield {"type": "started", "model_id": model_id, "model_name": model['name']}
             
-            for idx, method_config in enumerate(model['methods'], 1):
-                method_type = method_config['type']
-                url = method_config['url']
+            if RAMDownloader.can_use_ram(model['size_gb'], self.config.get('ram_download_threshold_gb', 2.5)):
+                yield {"type": "info", "message": "RAM download"}
                 
-                yield {
-                    "type": "info", 
-                    "message": f"method {idx}/{len(model['methods'])}: {method_type}"
-                }
-                
+                for url in model['urls']:
+                    if not SecurityValidator.validate_url(url, self.config['allowed_domains']):
+                        continue
+                    
+                    data = await RAMDownloader.download_to_ram(url)
+                    if data:
+                        temp_file = temp_path / f"{model['filename']}.tmp"
+                        temp_file.write_bytes(data)
+                        temp_file.replace(final_file)
+                        yield {"type": "completed", "progress": 100}
+                        return
+            
+            yield {"type": "info", "message": "Traditional download"}
+            
+            wget_cmd = ["wget", "-4", "-c", "--progress=dot:mega", "--timeout=30", "--tries=3", "--read-timeout=60"]
+            curl_cmd = ["curl", "-4", "-L", "-C", "-", "--connect-timeout", "30", "--max-time", "7200", "--speed-time", "60", "--speed-limit", "1024", "--retry", "3"]
+            
+            for url in model['urls']:
                 if not SecurityValidator.validate_url(url, self.config['allowed_domains']):
-                    yield {"type": "warning", "message": f"URL não permitida: {method_type}"}
                     continue
-                
-                if not SecurityValidator.validate_filename(model['filename']):
-                    yield {"type": "error", "message": "Filename inválido"}
-                    return
                 
                 temp_file = temp_path / f"{model['filename']}.tmp"
                 
-                max_retries = 2
-                for retry in range(max_retries):
-                    if retry > 0:
-                        yield {
-                            "type": "info", 
-                            "message": f"Tentativa {retry + 1}/{max_retries}"
-                        }
-                        await asyncio.sleep(2)
+                for method_name, base_cmd in [("wget", wget_cmd), ("curl", curl_cmd)]:
+                    cmd = base_cmd + (["-O", str(temp_file), url] if method_name == "wget" else ["-o", str(temp_file), url])
                     
                     try:
-                        async for event in self._execute_download(
-                            method_type,
-                            url,
-                            temp_file,
-                            model['size_gb'],
-                            state
-                        ):
-                            yield event #####
-                            
+                        async for event in self._execute_download(method_name, cmd, model['size_gb'], monitor):
+                            yield event
                             if event.get("type") == "completed":
                                 temp_file.replace(final_file)
-                                logger.info(f"Download completo: {model_id} via {method_type}")
                                 return
-                        
-                        raise RuntimeError("Download não completou")
-                    
                     except Exception as e:
-                        logger.warning(f"Falha em {method_type} (tentativa {retry + 1}): {e}")
-                        
-                        if temp_file.exists():
-                            temp_file.unlink()
-                        
-                        if retry < max_retries - 1:
-                            continue
-                        else:
-                            yield {"type": "warning", "message": f"Failed after {max_retries} attempts"}
-                            break
+                        logger.warning(f"{method_name} failed: {e}")
+                        temp_file.unlink(missing_ok=True)
+                        yield {"type": "warning", "message": f"{method_name} failed"}
             
             yield {"type": "error", "message": "All methods failed"}
-        
         finally:
             self.active_downloads.pop(model_id, None)
     
-    async def _execute_download(
-        self,
-        method: str,
-        url: str,
-        output_file: Path,
-        size_gb: float,
-        state  # DownloadState object
-    ) -> AsyncGenerator[dict, None]:
-        
-        cmd = CommandBuilder.build(method, url, str(output_file))
-        logger.info(f"Executing: {' '.join(cmd)}")
-        
-        process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        
-        last_progress = 0
-        start_time = time.time()
+    async def _execute_download(self, method: str, cmd: list, size_gb: float, monitor: ProgressMonitor) -> AsyncGenerator[dict, None]:
+        process = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        start = time.time()
+        last_prog = -1
         
         try:
             while True:
-                if state.cancel_event.is_set():
+                if monitor.cancel_event.is_set():
                     process.kill()
                     await process.wait()
-                    yield {"type": "cancelled", "message": "Cancelled by user"}
+                    yield {"type": "cancelled"}
                     return
                 
+                if monitor.is_stalled():
+                    process.kill()
+                    await process.wait()
+                    raise RuntimeError("Stalled")
+                
                 try:
-                    line = await asyncio.wait_for(
-                        process.stderr.readline(),
-                        timeout=0.5
-                    )
+                    line = await asyncio.wait_for(process.stderr.readline(), timeout=0.5)
                 except asyncio.TimeoutError:
                     if process.returncode is not None:
                         break
@@ -321,44 +218,34 @@ class DownloadManager:
                 if not line:
                     break
                 
-                line_str = line.decode('utf-8', errors='ignore').strip()
+                line_str = line.decode('utf-8', errors='ignore')
                 
-                percent_match = re.search(r'(\d+(?:\.\d+)?)%', line_str)
-                if percent_match:
-                    progress = int(float(percent_match.group(1)))
-                    
-                    if abs(progress - last_progress) >= 1:
-                        state.progress = progress  
-                        elapsed = time.time() - start_time
+                match = re.search(r'(\d{1,3})%', line_str)
+                if match:
+                    prog = int(match.group(1))
+                    if 0 <= prog <= 100 and prog != last_prog:
+                        monitor.update(prog)
+                        elapsed = time.time() - start
                         
-                        downloaded_gb = (progress / 100) * size_gb
-                        downloaded_mb = downloaded_gb * 1024
-                        
-                        speed_mbps = downloaded_mb / elapsed if elapsed > 0 else 0
-                        
-                        if speed_mbps > 0:
-                            remaining_mb = (size_gb * 1024) - downloaded_mb
-                            eta_seconds = int(remaining_mb / speed_mbps)
-                        else:
-                            eta_seconds = 0
-                        
-                        yield {
-                            "type": "progress",
-                            "progress": progress,
-                            "speed_mbps": round(speed_mbps, 2),
-                            "eta_seconds": eta_seconds,
-                            "method": method
-                        }
-                        
-                        last_progress = progress
+                        if elapsed >= 0.5:
+                            speed = (prog / 100 * size_gb * 1024) / elapsed
+                            eta = int(((100 - prog) / 100 * size_gb * 1024) / speed) if speed > 0 else 0
+                            
+                            yield {
+                                "type": "progress",
+                                "progress": prog,
+                                "speed_mbps": round(speed, 2),
+                                "eta_seconds": eta,
+                                "method": method
+                            }
+                            last_prog = prog
             
             await process.wait()
             
-            if process.returncode == 0 and not state.cancel_event.is_set():
+            if process.returncode == 0:
                 yield {"type": "completed", "progress": 100, "method": method}
-            elif not state.cancel_event.is_set():
-                raise RuntimeError(f"Command failed with code {process.returncode}")
-        
+            else:
+                raise RuntimeError(f"Exit code {process.returncode}")
         finally:
             if process.returncode is None:
                 process.kill()
@@ -368,167 +255,87 @@ class DownloadManager:
         if model_id not in self.active_downloads:
             return False
         
-        state = self.active_downloads[model_id]
-        state.cancel_event.set()
+        self.active_downloads[model_id].cancel_event.set()
+        await asyncio.sleep(0.5)
         
-        await asyncio.sleep(1)
+        for tmp in Path(self.config['temp_path']).glob("*.tmp"):
+            tmp.unlink(missing_ok=True)
         
-        temp_path = Path(self.config['temp_path'])
-        for tmp_file in temp_path.glob("*.tmp"):
-            try:
-                tmp_file.unlink()
-            except:
-                pass
-        
-        logger.info(f"Download cancelled: {model_id}")
         return True
 
-# INITIALIZE MANAGER
+
 manager = DownloadManager()
 
+
 @asynccontextmanager
-async def lifespan(app:FastAPI):
+async def lifespan(app: FastAPI):
     manager.load_config()
     yield
 
-# CREATE APP
+
 app = FastAPI(title="Model Download API", lifespan=lifespan)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], 
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-# ROUTES
 @app.get("/api/models")
 async def list_models():
-    """ LIST ALL MODELS """
     try:
-        models = manager.get_models()
-        return {"success": True, "models": models}
+        return {"success": True, "models": manager.get_models()}
     except Exception as e:
-        logger.error(f"Erro ao listar: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/models/{model_id}/status")
 async def model_status(model_id: str):
-    """ MODEL STATUS """
     try:
-        logger.info(f"[PYTHON] STATUS REQUEST - ID received: '{model_id}")
-        logger.info(f"[PYTHON] IDs available in system: {list(manager.models.keys())}")
-        logger.info(f"[PYTHON] Total of models: {len(manager.models)}")
-        
         if not SecurityValidator.validate_model_id(model_id):
-            logger.error(f"[PYTHON] VALIDATION FAILED: {model_id}")
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Invalid ID: {model_id}. Use only lowercase letters, numbers, and hyphens."
-            )
-        
-        if model_id not in manager.models:
-            logger.error(f"[PYTHON] ID NOT FOUND: {model_id}")
-            logger.error(f"[PYTHON] IDs available: {list(manager.models.keys())}")
-            raise HTTPException(
-                status_code=404, 
-                detail=f"Model '{model_id}' not found. Available models: {', '.join(manager.models.keys())}"
-            )
-            
-        logger.info(f"[PYTHON] ID VALID: {model_id}")
-        status = manager.get_model_status(model_id)
-        return {"success": True, **status}
-    
-    except HTTPException:
-        # Re-raise HTTP exceptions as they are already properly formatted
-        raise
+            raise HTTPException(status_code=400, detail="Invalid ID")
+        return {"success": True, **manager.get_model_status(model_id)}
     except ValueError as e:
-        logger.error(f"[PYTHON] VALUE ERROR: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"[PYTHON] ERROR in model_status: {e}")
-        logger.error(f"[PYTHON] Stack trace: {traceback.format_exc()}")
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Erro interno ao processar a requisição: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=str(e))
 
-# IMPORTANT: CHANGE TO GET (compatible with EventSource)
+
 @app.get("/api/models/{model_id}/download")
 async def download_model(model_id: str):
-    """# DOWNLOAD MODEL VIA SSE (EventSource uses GET)"""
-    try:
-        if not SecurityValidator.validate_model_id(model_id):
-            raise HTTPException(status_code=400, detail="ID inválido")
-        
-        async def event_stream():
-            async for event in manager.download(model_id):
-                yield f"data: {json.dumps(event)}\n\n"
-        
-        return StreamingResponse(
-            event_stream(),
-            media_type="text/event-stream",
-            headers={
-                "Cache-Control": "no-cache",
-                "Connection": "keep-alive",
-                "X-Accel-Buffering": "no"
-            }
-        )
+    if not SecurityValidator.validate_model_id(model_id):
+        raise HTTPException(status_code=400, detail="Invalid ID")
     
-    except Exception as e:
-        logger.error(f"[PYTHON] ERROR in download_model: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    async def event_stream():
+        async for event in manager.download(model_id):
+            yield f"data: {json.dumps(event)}\n\n"
+    
+    return StreamingResponse(event_stream(), media_type="text/event-stream", 
+                           headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"})
+
 
 @app.delete("/api/models/{model_id}/download")
 async def cancel_download(model_id: str):
-    """# CANCEL DOWNLOAD"""
-    try:
-        if not SecurityValidator.validate_model_id(model_id):
-            raise HTTPException(status_code=400, detail="ID inválido")
-        
-        success = await manager.cancel(model_id)
-        
-        return {
-            "success": success,
-            "message": "Cancelled" if success else "No active download"
-        }
+    if not SecurityValidator.validate_model_id(model_id):
+        raise HTTPException(status_code=400, detail="Invalid ID")
     
-    except Exception as e:
-        logger.error(f"[PYTHON] ERROR in cancel_download: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    success = await manager.cancel(model_id)
+    return {"success": success, "message": "Cancelled" if success else "No active download"}
+
 
 @app.get("/health")
 async def health():
-    """# HEALTH CHECK"""
-    return {
-        "status": "ok",
-        "active_downloads": len(manager.active_downloads)
-    }
-def main() -> None:
-    import uvicorn
-    import socket
-    SUCCESSFUL_SSE = False
+    return {"status": "ok", "active_downloads": len(manager.active_downloads), "available_ram_gb": round(RAMDownloader.get_available_ram_gb(), 2)}
+
+
+def main():
+    import uvicorn, socket
+    
     for port in FALLBACK_PORTS_SSE:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind(('0.0.0.0', port))
-            
-            logger.info(f"[PYTHON] Starting server on port {port}")
-            uvicorn.run(
-                app,
-                host="0.0.0.0",
-                port=port,
-                reload=True
-                )
-            SUCCESSFUL_SSE = True
+            uvicorn.run(app, host="0.0.0.0", port=port, reload=False)
             break
-            
         except OSError:
-            logger.warning(f"[PYTHON] Port {port} busy, trying next...")
             continue
-    if not SUCCESSFUL_SSE:
-        logger.error("[PYTHON] Server failed to start.")
+
 
 if __name__ == "__main__":
-    main()   
+    main()
