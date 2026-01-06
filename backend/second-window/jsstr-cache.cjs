@@ -1,15 +1,7 @@
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 /*Reads the js file to be executed in executeJavaScript, maintains a single call.*/
-const pathForExecuteJavaScript = path.join(__dirname, 'for-executeJavaScript.js');;
+const pathForExecuteJavaScript = path.join(__dirname, 'for-executeJavaScript.js');
 
-const stringJS = () => {
-  const fd = fs.openSync(pathForExecuteJavaScript, 'r');
-  try {
-    return fs.readFileSync(fd, 'utf8');
-  } finally {
-    fs.closeSync(fd);
-  }
-};
-const jsstrcache = stringJS()
-module.exports = jsstrcache
+const jsstrcache = fs.readFileSync(pathForExecuteJavaScript, 'utf8');
+module.exports = jsstrcache;
