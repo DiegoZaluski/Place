@@ -190,7 +190,6 @@ const MessageInput = React.memo(
               resize-none 
               overflow-auto 
               shadow-b-xl 
-              min-h-[80px] max-h-[300px]
             `}
               rows={1}
               style={{ scrollbarWidth: 'none' }}

@@ -135,7 +135,7 @@ app.whenReady().then(async () => {
       throw new Error('Python server failed to start');
     }
     
-    createControlWindow(jsstrcachee);
+    createControlWindow(await jsstrcachee);
     
     allServersOK = true;
     

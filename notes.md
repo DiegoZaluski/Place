@@ -17,6 +17,5 @@ source /home/zaluski/Documentos/HugLab/backend/fullpy/venv/bin/activate
 node-llama-cpp - create your own cpp library
 
 # feature:
-1. create loading screen x
 3. resolve theme problem 
 4. change the name of the python packages files 
