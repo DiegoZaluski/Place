@@ -264,6 +264,15 @@ const ResBox: FC<ResBoxProps> = memo(({
   const { searchCode } = useContext(AppContext);
   const isSearching = searchCode === 200 || searchCode === 300;
   const { processedMessages, currentResponse } = useProcessedMessages(messages, isGenerating);
+  const [errCnt, setErrCnt] = useState(0);
+
+  useEffect(() => {
+    const lastMessage = processedMessages[processedMessages.length - 1];
+    if (lastMessage?.type === 'assistant') {
+      const isError = lastMessage.content.trim().startsWith('Error:');
+      setErrCnt(isError ? prev => prev + 1 : 0);
+    }
+  }, [processedMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -281,7 +290,7 @@ const ResBox: FC<ResBoxProps> = memo(({
             {msg.type === 'user' && (
               <div className="flex justify-end mb-6">
                 <div className="max-w-[85%] p-4 rounded-3xl bg-[#0000004D] border-black border font-semibold text-white shadow-md break-words">
-                  <p className="m-0 leading-relaxed font-playfair">{msg.content}</p>
+                  <p className="m-0 leading-relaxed font-playfair text-[0.95rem]">{msg.content}</p>
                 </div>
                 <div className="w-6 h-6 rounded-full bg-[#0000004D] border-black border flex justify-end" />
                 <div className="w-2 h-2 rounded-full bg-[#0000004D] border-black border flex justify-end" />
@@ -295,7 +304,11 @@ const ResBox: FC<ResBoxProps> = memo(({
             {msg.type === 'assistant' && (
               <div className="mb-6 font-playfair text-white/80 [&>p]:text-white/75 [&>ul]:text-white/75 [&>ol]:text-white/75 [&>li]:text-white/75 [&>h1]:text-white/90 [&>h2]:text-white/85 [&>h3]:text-white/80">
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeSanitize]} components={MARKDOWN_COMPONENTS}>
-                  {msg.content}
+                  {(() => {
+                    const isError = msg.content.trim().startsWith('Error:');
+                    return isError && errCnt < 5 ? `CARREGANDO MODELO: Aguarde alguns segundos antes de enviar novamente.
+                                                    ATENÇÃO: Tentativas muito rápidas e repetidas podem acionar falsos erros.` : msg.content;
+                  })()}
                 </ReactMarkdown>
               </div>
             )}
