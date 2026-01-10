@@ -17,7 +17,6 @@ const getWindowURL = () => {
 };
 
 const createControlWindow = (exj) => {
-  console.log(exj)
   if (controlWindow) {
     controlWindow.focus();
     return controlWindow;

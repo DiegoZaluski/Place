@@ -9,7 +9,7 @@ const HTTPRun = require('./backend/rulers/ruler-http/run-http.cjs');
 const { startSSEServer, stopSSEServer, ipcDownloadModel } = require('./ipc/ipc-download-model.cjs');
 const ctrlCallModel = require('./ipc/ipc-call-model.cjs');
 const { createControlWindow, closeControlWindow, getControlWindow, } = require('./backend/second-window/control-window.cjs');
-const jsstrcachee = require('./backend/second-window/jsstr-cache.cjs');
+const jsstrcache = require('./backend/second-window/jsstr-cache.cjs');
   
 let modelLookout = null;
 let httpServerInstance = null;  
@@ -135,7 +135,7 @@ app.whenReady().then(async () => {
       throw new Error('Python server failed to start');
     }
     
-    createControlWindow(await jsstrcachee);
+    createControlWindow(await jsstrcache);
     
     allServersOK = true;
     

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { SiHuggingface as Hf} from 'react-icons/si';
 import Chat from '@/components/layout/chat/Chat';
+import { HandGrab } from 'lucide-react' ;
 
 // SIZE CONSTANTS
 const MIN_HEIGHT = 300;
@@ -262,8 +264,10 @@ const Control = () => {
           w-8 h-8 
           rounded-full 
           drag-handle 
-          flex-shrink-0 
-          bg-black/30`} />
+          flex 
+          items-center
+          justify-center 
+          text-yellow-500/30`} > <HandGrab size={25}/> </div>
       )}
 
       <div
@@ -282,7 +286,10 @@ const Control = () => {
           display: '',
         }}
         onClick={handleBallClick}
-      ></div>
+      >
+        <Hf size={33} className='text-yellow-500/50'/>
+
+      </div>
       {chat && (
         <div
           style={{

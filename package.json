@@ -1,5 +1,5 @@
 {
-  "name": "Scry",
+  "name": "huglab",
   "private": true,
   "version": "0.0.0",
   "main": "main.cjs",
@@ -9,7 +9,6 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint frontend --ext .js,.jsx,.ts,.tsx --fix",
     "preview": "vite preview",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "npm run build && electron .",
     "start": "electron .",
     "type-check": "tsc --noEmit",
@@ -64,10 +63,10 @@
     "uuid": "^13.0.0",
     "ws": "^8.18.3"
   },
-  "description": "Scry",
+  "description": "huglab",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DiegoZaluski/Scry"
+    "url": "https://github.com/DiegoZaluski/huglab"
   },
   "keywords": [
     "ai",
@@ -77,7 +76,7 @@
   ],
   "author": "Diego Zaluski",
   "bugs": {
-    "url": "https://github.com/DiegoZaluski/Scry/blob/main/.github/ISSUE_TEMPLATE/bug_report.md"
+    "url": "https://github.com/DiegoZaluski/huglab/blob/main/.github/ISSUE_TEMPLATE/bug_report.md"
   },
   "overrides": {
     "prismjs": "^1.30.0"

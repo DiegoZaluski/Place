@@ -19,3 +19,7 @@ node-llama-cpp - create your own cpp library
 # feature:
 3. resolve theme problem 
 4. change the name of the python packages files 
+
+command util
+
+pip install -e .

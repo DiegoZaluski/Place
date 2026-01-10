@@ -20,6 +20,7 @@ lxml==6.0.2
 lxml_html_clean==0.4.3
 MarkupSafe==3.0.3
 numpy==2.3.5
+psutil==7.2.1
 pydantic==2.12.5
 pydantic_core==2.41.5
 python-dateutil==2.9.0.post0
