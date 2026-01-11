@@ -1,4 +1,3 @@
-import { headerTabsContent } from '../../../global/data';
 import { useTranslation } from 'react-i18next';
 
 const STYLES = {
@@ -8,9 +7,17 @@ const STYLES = {
   tab: 'min-w-[7rem] px-3 py-3 rounded-xl bg-color  transition-all duration-200 hover:bg-n-900 hover:dark-text-primary hover:scale-105 active:scale-95 cursor-pointer shadow-lg flex flex-col items-center justify-center',
   text: 'text-n-900 dark-text-primary font-semibold tracking-tighter text-center leading-none whitespace-nowrap font-thin',
 };
+interface HC {
+  Config: string;
+  Doc: string;
+  Contributions: string;
+}
+
+type ArrHC = Array<HC[keyof HC]>;
 
 function HeaderTabs() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
+  const headerTabsContent = t('headerTabsContent', { returnObjects: true }) as ArrHC;
   return (
     <nav className={STYLES.container} aria-label="Navegação principal">
       <div className={STYLES.wrapper}>

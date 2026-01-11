@@ -1,5 +1,4 @@
-export const headerTabsContent = ['Configuração', 'Documentação', 'Contribuições'];
-
+export const headerTabsContent = ["Configuração", "Documentação", "Contribuições"];
 
 export const modelCardsDetails = [
   {

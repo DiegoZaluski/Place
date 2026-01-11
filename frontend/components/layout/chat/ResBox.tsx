@@ -26,6 +26,7 @@ import python from 'react-syntax-highlighter/dist/esm/languages/prism/python';
 import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
 import json from 'react-syntax-highlighter/dist/esm/languages/prism/json';
 import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   role?: 'user' | 'assistant';
@@ -265,6 +266,7 @@ const ResBox: FC<ResBoxProps> = memo(({
   const isSearching = searchCode === 200 || searchCode === 300;
   const { processedMessages, currentResponse } = useProcessedMessages(messages, isGenerating);
   const [errCnt, setErrCnt] = useState(0);
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     const lastMessage = processedMessages[processedMessages.length - 1];
@@ -306,8 +308,7 @@ const ResBox: FC<ResBoxProps> = memo(({
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeSanitize]} components={MARKDOWN_COMPONENTS}>
                   {(() => {
                     const isError = msg.content.trim().startsWith('Error:');
-                    return isError && errCnt < 5 ? `CARREGANDO MODELO: Aguarde alguns segundos antes de enviar novamente.
-                                                    ATENÇÃO: Tentativas muito rápidas e repetidas podem acionar falsos erros.` : msg.content;
+                    return isError && errCnt < 5 ? t('awaitMount',{ returnObjects: false }): msg.content;
                   })()}
                 </ReactMarkdown>
               </div>

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { Upload, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // LORA UPLOAD COMPONENT
 interface LoRaUploadProps {
@@ -29,7 +30,7 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
     },
     [files.length, onAdd],
   );
-
+  const { t } = useTranslation('common');
   return (
     <div className="space-y-2">
       <div className={'p-4 border-b border-white/30'}>
@@ -57,7 +58,7 @@ export const LoRaUpload: React.FC<LoRaUploadProps> = ({ files, onAdd, onRemove }
         dark-text-primary 
         mb-4"
         >
-          Ajustes leves para modificar comportamento. Máximo 5 arquivos.
+          {t('loraAdjust', { returnObjects: false })}
         </p>
 
         {files.length < 5 && (

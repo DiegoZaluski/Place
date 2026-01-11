@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Download } from '../../shared/download/Download';
 import DownloadProgress from '../../shared/download/DownloadProgress';
 import { MountModel } from '../../shared/buttons/MountModel';
@@ -18,6 +19,8 @@ interface BottomCardProps {
 }
 
 function BottomCard({ item, index, icon }: BottomCardProps) {
+  const { t } = useTranslation('common');
+
   return (
     <div
       key={`bottom-card-${index + 5}`}
@@ -73,14 +76,14 @@ function BottomCard({ item, index, icon }: BottomCardProps) {
             ${COLORS.text} 
             text-sm`}
           >
-            <span className="font-semibold">Uso de Memória:</span> {item.memoryUsage}
+            <span className="font-semibold">{t('memoryUsage', { returnObjects: false})}</span> {item.memoryUsage}
           </p>
           <p
             className={`
             ${COLORS.text} 
             text-sm`}
           >
-            <span className="font-semibold">Nível de Inteligência:</span> {item.intelligenceLevel}
+            <span className="font-semibold">{t('modelIntelligence', { returnObjects: false})}</span> {item.intelligenceLevel}
           </p>
         </div>
 

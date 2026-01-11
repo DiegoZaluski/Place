@@ -1,9 +1,14 @@
 {
+    "headerTabsContent":["Configuração", "Documentação", "Contribuições"],
     "email": "E-mail",
     "name": "Nome",
     "question": "pergunta",
     "clear": "limpar Chat",
-    "search":"Digite o nome do modelo",
+    "search": "Digite o nome do modelo",
+    "memoryUsage": "Uso de Memória:",
+    "modelIntelligence":"Nível de Inteligência:",
+    "loraAdjust":"Ajustes leves para modificar comportamento. Máximo 5 arquivos.",
+    "awaitMount": "CARREGANDO MODELO: Aguarde alguns segundos antes de enviar novamente.\n ATENÇÃO: Tentativas muito rápidas e repetidas podem acionar falsos erros.",                                            
     "topCards": [
     {
         "title": "Source",

@@ -1,9 +1,14 @@
 {
+  "headerTabsContent": ["Configuration", "Documentation", "Contributions"],
   "email": "Email",
   "name": "Name",
   "question": "question",
   "clear": "clear Chat",
   "search":"Enter the model name",
+  "memoryUsage": "Memory Usage:",
+  "modelIntelligence":"model intelligence:", 
+  "loraAdjust":"Minor adjustments to modify behavior. Maximum 5 files.",
+  "awaitMount": "LOADING MODEL: Please wait a few seconds before sending again.\n WARNING: Very rapid and repeated attempts may trigger false errors.",
   "topCards": [
     {
       "title": "Source",
