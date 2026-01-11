@@ -267,7 +267,8 @@ const Control = () => {
           flex 
           items-center
           justify-center 
-          text-yellow-500/30`} > <HandGrab size={25}/> </div>
+          text-yellow-500/30
+          `} > <HandGrab size={25}/> </div>
       )}
 
       <div

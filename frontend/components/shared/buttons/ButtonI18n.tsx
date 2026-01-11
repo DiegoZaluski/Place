@@ -12,17 +12,8 @@ const ButtonI18n = ({ className }: { className?: string }) => {
   const { i18n } = useTranslation();
 
   const languages: Language[] = [
-    { id: 'ar' },
-    { id: 'de' },
     { id: 'en' },
-    { id: 'es' },
-    { id: 'fr' },
-    { id: 'it' },
-    { id: 'ja' },
-    { id: 'ko' },
     { id: 'pt' },
-    { id: 'ru' },
-    { id: 'zh' },
   ];
 
   useEffect(() => {

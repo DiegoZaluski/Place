@@ -1,20 +1,34 @@
 {
-  "welcome": "Welcome",
-  "loading": "Loading...",
-  "error": "An error occurred",
-  "success": "Success",
-  "save": "Save",
-  "cancel": "Cancel",
-  "delete": "Delete",
-  "edit": "Edit",
-  "search": "Search...",
-  "noResults": "No results found",
-  "back": "Back",
-  "submit": "Submit",
-  "confirm": "Confirm",
-  "close": "Close",
-  "next": "Next",
-  "previous": "Previous",
-  "required": "Required",
-  "optional": "Optional"
+  "email": "Email",
+  "name": "Name",
+  "question": "question",
+  "clear": "clear Chat",
+  "search":"Enter the model name",
+  "topCards": [
+    {
+      "title": "Source",
+      "detail": "In development. Models with fixed sources, fewer errors and voice interaction for support.",
+      "indicator": "Quality and error reduction may increase development time."
+    },
+    {
+      "title": "Test Chat",
+      "detail": "Development testing. Environment to test models by adjusting parameters and evaluating quality.",
+      "indicator": "Designed for quick testing, also works as regular chat."
+    },
+    {
+      "title": "Developing",
+      "detail": "Schedule. Organize studies and work with custom models for efficient progress.",
+      "indicator": "For those seeking a structured and productive routine."
+    },
+    {
+      "title": "Custom",
+      "detail": "Customize. Adjust all model parameters according to your specifications.",
+      "indicator": "Offers full control over your models."
+    },
+    {
+      "title": "Developing",
+      "detail": "Video lessons. Convert study history into video reviews or create personalized support videos.",
+      "indicator": "Requires dedicated GPU for video processing."
+    }
+  ]
 }

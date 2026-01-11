@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom';
 function TopCard({ item, index }) {
   const destination = () => {
     switch (item.title) {
-      case 'Models':
+      case 'Source':
         return '/models';
-      case 'Chat':
+      case 'Test Chat':
         return '/chat';
-      case 'Workflows':
+      case 'Developing':
         return '/workflows';
-      case 'customization':
+      case 'Custom':
         return '/custom';
-      case 'IDE':
+      case 'Developing':
         return '/ide';
       default:
         return '/';

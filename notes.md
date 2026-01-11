@@ -23,3 +23,9 @@ node-llama-cpp - create your own cpp library
 command util
 
 pip install -e .
+
+
+## tarefas 
+
+- traduzir app n8n 
+- ajustar consertar button de mudar de tema e button de levar ate o repositorio 

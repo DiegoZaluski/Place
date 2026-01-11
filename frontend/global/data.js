@@ -1,24 +1,5 @@
 export const headerTabsContent = ['Configuração', 'Documentação', 'Contribuições'];
 
-export const topCardsDetails = [
-  {
-    title: 'Models',
-    detail: 'Hello World. TEST UI OPTIONS CARDS.',
-    indicator: 'test - I love you',
-  },
-  { title: 'Chat', detail: 'Hello World. TEST UI OPTIONS CARDS.', indicator: 'test - I love you' },
-  {
-    title: 'Workflows Lib',
-    detail: 'Hello World. TEST UI OPTIONS CARDS.',
-    indicator: 'test - I love you',
-  },
-  {
-    title: 'customization',
-    detail: 'Hello World. TEST UI OPTIONS CARDS.',
-    indicator: 'test - I love you',
-  },
-  { title: 'IDE', detail: 'Hello World. TEST UI OPTIONS CARDS.', indicator: 'test - I love you' },
-];
 
 export const modelCardsDetails = [
   {

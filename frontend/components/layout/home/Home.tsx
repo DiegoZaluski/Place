@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Header from '../../shared/header/Header.js';
 import TopCardsModel from './TopCardsModel.tsx';
+import { useTranslation } from 'react-i18next';
 import Chat from '../chat/Chat.tsx';
 import SearchBar from '../../shared/search/SearchBar.tsx';
 import SearchController from '../../shared/search/SearchController.tsx';
 import { modelCardsDetails } from '../../../global/data.js';
 import BottomCard from './BottomCard.tsx';
 import { SiHuggingface as Huggingface } from 'react-icons/si';
+
 
 function Home() {
   const [searchQuery, setSearchQuery] = useState('');  
@@ -15,6 +17,7 @@ function Home() {
   const pointerIdRef = useRef<number | null>(null);
   const startXRef = useRef(0);
   const startWidthRef = useRef(20);
+  const { t } = useTranslation('common');
 
   const onPointerDown = (e: React.PointerEvent) => {
     const clientX = e.clientX;
@@ -170,7 +173,7 @@ function Home() {
         ></div>
         <SearchBar
           onSearchChange={(query) => setSearchQuery(query)}
-          placeholder="Search models..."
+          placeholder={t('search', { returnObjects: false })}
           className={`
             mb-4 mt-6 
             shadow 

@@ -28,7 +28,7 @@ interface ClearTooltipProps {
 }
 // Combine with the ClearButton component.
 const ClearTooltip = React.memo(({ tooltipRef, className }: ClearTooltipProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   return (
     <span
       id="clear"
@@ -54,7 +54,7 @@ const ClearTooltip = React.memo(({ tooltipRef, className }: ClearTooltipProps) =
         pointer-events-none`}
       role="tooltip"
     >
-      {t('clear')}
+      {t('clear', { returnObjects: false })}
     </span>
   );
 });

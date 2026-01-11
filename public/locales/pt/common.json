@@ -1,20 +1,34 @@
 {
-  "welcome": "Bem-vindo",
-  "loading": "Carregando...",
-  "error": "Ocorreu um erro",
-  "success": "Sucesso",
-  "save": "Salvar",
-  "cancel": "Cancelar",
-  "delete": "Excluir",
-  "edit": "Editar",
-  "search": "Pesquisar...",
-  "noResults": "Nenhum resultado encontrado",
-  "back": "Voltar",
-  "submit": "Enviar",
-  "confirm": "Confirmar",
-  "close": "Fechar",
-  "next": "Próximo",
-  "previous": "Anterior",
-  "required": "Obrigatório",
-  "optional": "Opcional"
-}
+    "email": "E-mail",
+    "name": "Nome",
+    "question": "pergunta",
+    "clear": "limpar Chat",
+    "search":"Digite o nome do modelo",
+    "topCards": [
+    {
+        "title": "Source",
+        "detail": "Em desenvolvimento. Modelos com fontes fixas, menos erros e interação por voz para suporte.",
+        "indicator": "Qualidade e redução de erros podem aumentar o tempo de desenvolvimento."
+    },
+    {
+        "title": "Test Chat",
+        "detail": "Teste de desenvolvimento. Ambiente para testar modelos ajustando parâmetros e avaliando qualidade.",
+        "indicator": "Projetado para testes rápidos, também funciona como chat comum."
+    },
+    {
+        "title": "Developing",
+        "detail": "Cronograma. Organize estudos e trabalho com modelos personalizados para progresso eficiente.",
+        "indicator": "Para quem busca rotina estruturada e produtiva."
+    },
+    {
+        "title": "Custom",
+        "detail": "Personalizar. Ajuste todos os parâmetros dos modelos conforme suas especificações.",
+        "indicator": "Oferece controle total sobre seus modelos."
+    },
+    {
+        "title": "Developing",
+        "detail": "Videoaula. Converta histórico de estudos em revisões em vídeo ou crie vídeos de apoio personalizados.",
+        "indicator": "Requer GPU dedicada para processamento de vídeo."
+    }
+    ]
+    }
