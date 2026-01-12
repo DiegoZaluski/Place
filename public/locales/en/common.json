@@ -9,21 +9,30 @@
   "modelIntelligence":"model intelligence:", 
   "loraAdjust":"Minor adjustments to modify behavior. Maximum 5 files.",
   "awaitMount": "LOADING MODEL: Please wait a few seconds before sending again.\n WARNING: Very rapid and repeated attempts may trigger false errors.",
+
+  "morning": "Good morning",
+  "afternoon": "Good afternoon",
+  "night": "Good evening",
+
+  "wDoubt": "any questions?",
+  "wHelp": "how can I help?",
+  "wWork": "Tell me about your project!",
+
   "topCards": [
     {
-      "title": "Source",
-      "detail": "In development. Models with fixed sources, fewer errors and voice interaction for support.",
-      "indicator": "Quality and error reduction may increase development time."
+      "title": "Developing",
+      "detail": "Source. Models with fixed sources, fewer errors and voice interaction for support.",
+      "indicator": "Focus on error reduction."
     },
     {
       "title": "Test Chat",
-      "detail": "Development testing. Environment to test models by adjusting parameters and evaluating quality.",
+      "detail": "Testing models. Environment to test models by adjusting parameters and evaluating quality.",
       "indicator": "Designed for quick testing, also works as regular chat."
     },
     {
       "title": "Developing",
-      "detail": "Schedule. Organize studies and work with custom models for efficient progress.",
-      "indicator": "For those seeking a structured and productive routine."
+      "detail": "Schedule. Organize studies and work with custom templates for efficient and faster progress.",
+      "indicator": "create routines and schedules focused on what really works"
     },
     {
       "title": "Custom",

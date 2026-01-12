@@ -27,6 +27,7 @@ import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
 import json from 'react-syntax-highlighter/dist/esm/languages/prism/json';
 import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
 import { useTranslation } from 'react-i18next';
+import welcome from './welcome';
 
 interface Message {
   role?: 'user' | 'assistant';
@@ -214,13 +215,14 @@ const MARKDOWN_COMPONENTS: Components = {
   li: (props) => <li className="mb-1 text-white/75" {...props} />,
 };
 
-const WELCOME_CONFIG = {
-  adaptable: { text: 'olá, alguma dúvida?', size: 'text-lg' },
-  newWindow: { text: 'bom dia, como posso ajudar?', size: 'text-2xl' },
-  default: { text: 'Conte-me sobre o seu projeto!', size: 'text-4xl' },
-};
-
 const WelcomeMessage: FC<{ adaptable: boolean; newWindow: boolean }> = ({ adaptable, newWindow }) => {
+  const { t } = useTranslation('common');
+  const WELCOME_CONFIG = {
+    adaptable: { text: `${t(welcome(), {"returnObjects":false})}, ${t( "wDoubt", {"returnObjects":false})}`, size: 'text-lg' },
+    newWindow: { text: `${t(welcome(), {"returnObjects":false})}, ${t("wHelp",{"returnObjects":false})}`, size: 'text-2xl' }, // HERE
+    default: { text: t("wWork", {"returnObjects":false}), size: 'text-4xl' },
+  };
+
   const config = adaptable && !newWindow ? WELCOME_CONFIG.adaptable : 
                 newWindow ? WELCOME_CONFIG.newWindow : WELCOME_CONFIG.default;
 

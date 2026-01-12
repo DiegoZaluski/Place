@@ -8,22 +8,32 @@
     "memoryUsage": "Uso de Memória:",
     "modelIntelligence":"Nível de Inteligência:",
     "loraAdjust":"Ajustes leves para modificar comportamento. Máximo 5 arquivos.",
-    "awaitMount": "CARREGANDO MODELO: Aguarde alguns segundos antes de enviar novamente.\n ATENÇÃO: Tentativas muito rápidas e repetidas podem acionar falsos erros.",                                            
+    "awaitMount": "CARREGANDO MODELO: Aguarde alguns segundos antes de enviar novamente.\n ATENÇÃO: Tentativas muito rápidas e repetidas podem acionar falsos erros.",   
+    "timeWelcome": ["Bom dia", "Boa Tarde", "Boa Noite"],
+
+    "morning": "Bom dia",
+    "afternoon": "Boa tarde",
+    "night": "Boa noite",
+
+    "wDoubt":"alguma dúvida?",
+    "wHelp":"como posso ajudar?",
+    "wWork":"Conte-me sobre o seu projeto!",
+    
     "topCards": [
     {
-        "title": "Source",
-        "detail": "Em desenvolvimento. Modelos com fontes fixas, menos erros e interação por voz para suporte.",
-        "indicator": "Qualidade e redução de erros podem aumentar o tempo de desenvolvimento."
+        "title": "Developing",
+        "detail": "Source. Modelos com fontes fixas, menos erros e interação por voz para suporte.",
+        "indicator": "Foco na redução de erros."
     },
     {
         "title": "Test Chat",
-        "detail": "Teste de desenvolvimento. Ambiente para testar modelos ajustando parâmetros e avaliando qualidade.",
+        "detail": "Teste modelos. Ambiente para testar modelos ajustando parâmetros e avaliando qualidade.",
         "indicator": "Projetado para testes rápidos, também funciona como chat comum."
     },
     {
         "title": "Developing",
-        "detail": "Cronograma. Organize estudos e trabalho com modelos personalizados para progresso eficiente.",
-        "indicator": "Para quem busca rotina estruturada e produtiva."
+        "detail": "Cronograma. Organize estudos e trabalho com modelos personalizados para um progresso eficiente e mais rápido.",
+        "indicator": "crie rotinas e cronogramas com foco no que realmente funciona"
     },
     {
         "title": "Custom",

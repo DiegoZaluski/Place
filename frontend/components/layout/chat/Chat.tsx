@@ -46,7 +46,7 @@ type NewWindow = true | false;
 
 const Chat = ({ adaptable, newWindow }: { adaptable: AdaptableProps; newWindow?: NewWindow }) => {
   // TRANSLATION
-  const { t, ready } = useTranslation(['auth']);
+  const { t } = useTranslation('common');
 
   const CONTEXT = useContext(AppContext);
   const searchCode = CONTEXT.searchCode; // 100 not search | 200 simple search | 300 deep search
@@ -59,7 +59,6 @@ const Chat = ({ adaptable, newWindow }: { adaptable: AdaptableProps; newWindow?:
   const [message, setMessage] = React.useState('');
   const { tooltipRef, showTooltip, hideTooltip } = useTooltip();
   const { textareaRef, adjustHeight } = useAutoResize();
-
   // HANDLER: send message to llama
   const handleSend = (msg: string) => {
     if (!msg?.trim()) return;
@@ -83,24 +82,6 @@ const Chat = ({ adaptable, newWindow }: { adaptable: AdaptableProps; newWindow?:
 
   const clearMessage = () => setMessage('');
 
-  // LOADING: render loading state until translation ready
-  if (!ready) {
-    return (
-      <div
-        className={`
-        flex
-        items-center
-        justify-center
-        h-screen
-        w-full
-        ${COLORS.TEXT}
-        `}
-        style={{ backgroundColor: COLORS.BACKGROUND }}
-      >
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
   // RENDER: main chat interface
   return (
     <div
@@ -154,7 +135,7 @@ const Chat = ({ adaptable, newWindow }: { adaptable: AdaptableProps; newWindow?:
           textareaRef={textareaRef}
           value={message}
           onChange={updateMessage}
-          placeholder={t('question')}
+          placeholder={t('question', { returnObjects:false } )} //HERE
           onHeightAdjust={adjustHeight}
           onClear={clearMessage}
           onSend={handleSend}
@@ -181,7 +162,7 @@ const Chat = ({ adaptable, newWindow }: { adaptable: AdaptableProps; newWindow?:
         `}
           style={{ backgroundColor: COLORS.BACKGROUND }}
         >
-          <span>Scry&trade;</span>
+          <span>hunglab&trade;</span>
         </footer>
       )}
     </div>
