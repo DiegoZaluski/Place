@@ -22,7 +22,8 @@ node-llama-cpp - create your own cpp library
 
 command util
 
-pip install -e .
+pip install -e . 
+
 
 
 ## tarefas 

@@ -9,7 +9,10 @@ class HTTPRun {
   startHTTP() {
     return new Promise((resolve, reject) => {
       // PATH CONFIG: Locate Python virtual environment
-      const pythonPath = path.join(__dirname, '..', '..', 'fullpy', 'venv', 'bin', 'python3');
+      const pythonPath = process.platform === 'win32' 
+      ? path.join(__dirname, '..', '..', 'fullpy', 'venv', 'scripts', 'python.exe')
+      : path.join(__dirname, '..', '..', 'fullpy', 'venv', 'bin', 'python3'); 
+      
       const cwd = path.join(__dirname, '..', '..','fullpy', 'scry_pkg', 'scry_http');
 
       // PROCESS SPAWN: Start Uvicorn server with specific configuration
