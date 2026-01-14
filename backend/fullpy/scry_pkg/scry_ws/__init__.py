@@ -1,4 +1,5 @@
 """Model settings for the Websocket package"""
+import sys
 import json
 from pathlib import Path
 from scry_pkg.utils import setup_logging
@@ -35,7 +36,7 @@ def load_config():
         raise ValueError("model_name not found in JSON")
     
     # PATH IS SIMILAR TO YOUR EXAMPLE
-    model_path = f"../llama.cpp/models/{model_name}"
+    model_path = f"../llama.cpp/models/{model_name}" if sys.platform == 'linux' else str(Path(__file__).resolve().parent.parent.parent.parent.parent / "llama.cpp" / "models" / model_name) 
     
     # GET THE CORRECT FORMAT
     chat_format = MODEL_FORMATS.get(model_name, "chatml")

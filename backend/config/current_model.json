@@ -1,5 +1,5 @@
 {
-  "model_name": "deepseek-coder-6.7b-instruct.Q4_K_M.gguf",
+  "model_name": "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
   "last_updated": "2026-01-10T23:29:20.514803",
   "status": "active"
 }
