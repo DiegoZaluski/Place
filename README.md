@@ -1,4 +1,4 @@
-# 🧬 huglab (v0.0 - Alpha)
+# 🧬 huglab (v0.0.1 - Alpha)
 
 **huglab** is a local sandbox designed for testing and managing **GGUF models**. It offers a clean, straightforward interface to download, switch, and experiment with local AI models, giving you full control over parameters and model management.
 
