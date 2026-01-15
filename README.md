@@ -1,38 +1,36 @@
-# huglab
+# 🧬 huglab (v0.0 - Alpha)
 
-## Version
-Initial test version 0.0
-
-## About the Project
-Currently, the app is a local testing space for **GGUF models**. It facilitates downloading GGUF models and provides an interface to use and test them, with parameter control, quick model switching, and parameter saving. The project is still in its initial version.
-
-### Ideation
-Currently at version 0.0 with minimal features. Below is a small list of planned future functionalities:
-
-- **Improved response handling:** For .gguf models through provided sources (RAG).
-- **Study Interface:** Focused on enhancing and facilitating studies with visual support.
-- **Text-to-Audio:** Integrated audio descriptions for text.
-- **Hugging Face Search:** Quick search for GGUF models to increase download possibilities.
-- **Local Support:** Expanded support for more local model types.
-- ***Feature ideas are welcome in this project!***
-
-The goal is to simplify the use of local AI models by providing something straightforward and improved.
-
-### Current Focus
-Currently, I'm not focusing on feature functionality, but once the project stabilizes, I plan to optimize and make it lighter. Although the project is already quite lightweight, it has various overheads—some unnecessary, others intentional to allow future features.
+**huglab** is a local sandbox designed for testing and managing **GGUF models**. It offers a clean, straightforward interface to download, switch, and experiment with local AI models, giving you full control over parameters and model management.
 
 ---
 
-## Download and Configuration
+## 🚀 About the Project
+Currently in its early alpha stage, the project is focused on making local AI experimentation easier for everyone.
+
+### ✨ The Vision (Future Goals)
+While we are starting small, here is what’s on the horizon:
+- [ ] **Smarter RAG:** Improved response handling using external source files.
+- [ ] **Study-Focused UI:** An interface designed to support academic research with visual aids.
+- [ ] **Audio Support:** Integrated text-to-audio descriptions.
+- [ ] **HF Search:** Direct Hugging Face integration to find and download GGUF models faster.
+- [ ] **Wider Support:** Compatibility with more local model formats.
+- [ ] **Refinement:** Once the core is stable, I'll be stripping away the overhead to make the app even lighter.
+
+> [!TIP]
+> **Have a great idea?** Suggestions are always welcome! Feel free to contribute and help shape the project.
+
+---
+
+## 🛠️ Setup & Configuration
 
 ### 1. Requirements & Recommendations
 * **Node.js Versions:**
-    * Windows: Node **v22.12.0**
-    * POSIX (Linux/macOS): Node **v22.21.0**
-* **Cleanup:** Delete `package-lock.json` and `npm-shrinkwrap.json` if they exist.
-* **Storage:** On Windows, it is recommended to keep the project **outside of OneDrive**.
+    * **Windows:** v22.12.0
+    * **POSIX (Linux/macOS):** v22.21.0
+* **Housekeeping:** Delete `package-lock.json` and `npm-shrinkwrap.json` if they are already in your folder before starting.
+* **Storage (Windows):** It is highly recommended to keep the project **outside of OneDrive** to avoid sync issues.
 
-### 2. Installation
+### 2. Main Installation
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -41,10 +39,10 @@ cd huglab
 # Install dependencies
 npm install
 ```
-> **Note:** Ensure package compatibility. If needed, update project dependencies manually. This process can be a bit tedious.
+> **Note:** Dependency management can be a bit finicky. If you run into version conflicts, you might need to update specific packages manually.
 
 ### 3. Backend Setup
-Navigate to the `backend/fullpy` folder and set up your Python environment:
+Head into the `backend/fullpy` folder and set up your Python environment:
 ```bash
 cd backend/fullpy
 
@@ -59,48 +57,30 @@ pip install -e .
 
 ---
 
-## 🏃 Running the App
-
-### First Run (Environment Setup)
-To configure the `llama.cpp` repository and compile the project binary, run:
-```bash
-node ./huglab.mjs
-```
-**Details:** This script downloads dependencies and initializes the app. You will likely see an error at the end of the first execution—**this is normal**. It serves to set up the binary environment.
-
-### Final Execution
-After the first run, you can start the project using:
-```bash
-node ./huglab.mjs
-```
-**OR** use two separate terminals for development:
-* **Terminal 1:** `npm run dev`
-* **Terminal 2:** `npm start`
-
----
-
 ## 📁 Project Structure
 
 ```text
 huglab/
 ├── backend/
 │   ├── config/            # Backend configurations  
-│   ├── fullpy/            # Main Python code  
-│   ├── rulers/            # Rules and validations  
-│   └── second-window/     # Secondary window code  
+│   ├── fullpy/            # Main Python logic  
+│   ├── rulers/            # Validation rules and logic  
+│   └── second-window/     # Secondary window management  
 ├── frontend/
-│   ├── components/        # React components  
+│   ├── components/        # Reusable React components  
 │   ├── global/            # Global styles and configurations  
-│   ├── hooks/             # Custom hooks  
-│   ├── i18n/              # Internationalization  
-│   ├── style/             # Styles  
-│   ├── App.jsx            # Main component  
+│   ├── hooks/             # Custom React hooks  
+│   ├── i18n/              # Internationalization and languages  
+│   ├── style/             # CSS and styling  
+│   ├── App.jsx            # Main application component  
 │   └── main.jsx           # Entry point  
 ├── ipc/                   # Inter-process communication  
-├── public/                # Static files  
-├── utils/                 # Shared utilities  
+├── public/                # Static assets  
+├── utils/                 # Shared helper functions  
 └── (other configuration files)
 ```
 
+---
+
 ## 🗺️ ROADMAP
-A place to mark tasks or pick tasks to solve.
+A dedicated space to track progress, pick up open tasks, or plan new features.
