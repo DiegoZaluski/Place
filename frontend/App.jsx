@@ -8,6 +8,7 @@ import Chat from './components/layout/chat/Chat';
 import Home from './components/layout/home/Home';
 import CustomUI from './components/layout/custom-model/CustomUI';
 import Control from './components/second-window/ctrl/Control';
+import UIConfig from './components/config-app/UIConfig'
 
 function App() {
   return (
@@ -19,6 +20,9 @@ function App() {
           <Route path="/custom" element={<CustomUI />} />
           <Route path="/models" element={<Home />} />
           <Route path="/control" element={<Control />} />
+          <Route path="/configs" element={<UIConfig />} />
+          <Route path="/doc" element={<UIConfig />} />
+          <Route path="//contributions" element={<UIConfig />} />
         </Routes>
       </div>
     </AppProvider>

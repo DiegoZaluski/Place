@@ -9,12 +9,12 @@ Currently in its early alpha stage, the project is focused on making local AI ex
 
 ### ✨ The Vision (Future Goals)
 While we are starting small, here is what’s on the horizon:
-- [ ] **Smarter RAG:** Improved response handling using external source files.
-- [ ] **Study-Focused UI:** An interface designed to support academic research with visual aids.
-- [ ] **Audio Support:** Integrated text-to-audio descriptions.
-- [ ] **HF Search:** Direct Hugging Face integration to find and download GGUF models faster.
-- [ ] **Wider Support:** Compatibility with more local model formats.
-- [ ] **Refinement:** Once the core is stable, I'll be stripping away the overhead to make the app even lighter.
+- **Smarter RAG:** Improved response handling using external source files.
+- **Study-Focused UI:** An interface designed to support academic research with visual aids.
+- **Audio Support:** Integrated text-to-audio descriptions.
+- **HF Search:** Direct Hugging Face integration to find and download GGUF models faster.
+- **Wider Support:** Compatibility with more local model formats.
+- **Refinement:** Once the core is stable, I'll be stripping away the overhead to make the app even lighter.
 
 > [!TIP]
 > **Have a great idea?** Suggestions are always welcome! Feel free to contribute and help shape the project.
