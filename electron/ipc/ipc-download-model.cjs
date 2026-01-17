@@ -1,6 +1,6 @@
 const path = require('path');
-const { COLORS } = require('../utils/ansiColors.cjs');
-const { downloadManager } = require('../backend/rulers/ruler-sse/run-download.cjs'); // SSE DOWNLOAD SERVER
+const { COLORS } = require('../../utils/ansiColors.cjs');
+const { downloadManager } = require('../../backend/rulers/ruler-sse/run-download.cjs'); // SSE DOWNLOAD SERVER
 let sseServer = null;
 // SSE SERVER MANAGEMENT
 const startSSEServer = async () => {
@@ -14,7 +14,7 @@ const startSSEServer = async () => {
     }
 
     console.log(COLORS.CYAN + 'Starting SSE Download Server...' + COLORS.RESET);
-    const rootDir = path.join(__dirname, '..');
+    const rootDir = path.join(__dirname, '..', '..');
     const scriptPath = path.join(rootDir, 'backend', 'fullpy', 'scry_pkg', 'scry_sse', 'download_model.py');
     const pythonPath = process.platform === 'win32' 
       ? path.join(rootDir, 'backend', 'fullpy', 'venv', 'Scripts', 'python.exe')

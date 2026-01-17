@@ -1,4 +1,4 @@
-const { COLORS } = require('../utils/ansiColors.cjs');
+const { COLORS } = require('../../utils/ansiColors.cjs');
 
 function ctrlCallModel(websocketManager, serverManager, mainWindow, ipcMain){
     // IPC HANDLERS - SERVER OPERATIONS

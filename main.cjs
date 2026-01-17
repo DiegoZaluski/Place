@@ -6,10 +6,11 @@ const serverManager = require('./backend/rulers/ruler-ws/process-ws.cjs');
 const websocketManager = require('./backend/rulers/ruler-ws/manager-ws.cjs');
 const ModelLookout = require('./backend/rulers/ruler-ws/vigilant.cjs');
 const HTTPRun = require('./backend/rulers/ruler-http/run-http.cjs');
-const { startSSEServer, stopSSEServer, ipcDownloadModel } = require('./ipc/ipc-download-model.cjs');
-const ctrlCallModel = require('./ipc/ipc-call-model.cjs');
+const { startSSEServer, stopSSEServer, ipcDownloadModel } = require('./electron/ipc/ipc-download-model.cjs');
+const ctrlCallModel = require('./electron/ipc/ipc-call-model.cjs');
 const { createControlWindow, closeControlWindow, getControlWindow, } = require('./backend/second-window/control-window.cjs');
 const jsstrcache = require('./backend/second-window/jsstr-cache.cjs');
+const  isOverlaySupported = require('./electron/track/isOverlaySupported.cjs');
   
 let modelLookout = null;
 let httpServerInstance = null;  
@@ -100,6 +101,7 @@ ipcMain.handle('window:close', () => {
 /* -------------------------------- // 
           SECOND WINDOW
 / -------------------------------- */ 
+
 ipcMain.handle('control-content-size', (_event, width, height) => {
   const cWindow = getControlWindow(websocketManager);
   if (cWindow) {
@@ -134,8 +136,8 @@ app.whenReady().then(async () => {
     } else {
       throw new Error('Python server failed to start');
     }
-    
-    createControlWindow(await jsstrcache);
+
+    isOverlaySupported() && createControlWindow(await jsstrcache); // CREAETE SECOND WINDOW
     
     allServersOK = true;
     
