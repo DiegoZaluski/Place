@@ -74,7 +74,9 @@ huglab/
 │   ├── style/             # CSS and styling  
 │   ├── App.jsx            # Main application component  
 │   └── main.jsx           # Entry point  
-├── ipc/                   # Inter-process communication  
+├── electron /
+|    ├── ipc/              # Inter-process communication  
+|    ├── track             # function for conditional in main.cjs   
 ├── public/                # Static assets  
 ├── utils/                 # Shared helper functions  
 └── (other configuration files)
