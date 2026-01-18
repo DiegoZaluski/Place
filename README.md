@@ -57,6 +57,14 @@ pip install -e .
 
 ---
 
+## ⚡ REBILLING CHALLENGE 
+
+**Challenge:**
+Completely replace Python from the project with Go and C++.
+
+**Reason:**
+Simplify when building the project executable, improved performance, and scaling a lighter and more performant project.
+
 ## 📁 Project Structure
 
 ```text
@@ -76,7 +84,7 @@ huglab/
 │   └── main.jsx           # Entry point  
 ├── electron /
 |    ├── ipc/              # Inter-process communication  
-|    ├── track             # function for conditional in main.cjs   
+|    ├── track/            # functions for conditional in main.cjs   
 ├── public/                # Static assets  
 ├── utils/                 # Shared helper functions  
 └── (other configuration files)
